@@ -9,4 +9,4 @@ var qissues = new Qissues(screen, {
     cwd: process.argv[2]
 });
 
-qissues.start();
+qissues.start(process.argv[3] || 'listIssues');
