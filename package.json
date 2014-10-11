@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "blessed": "0.0.37"
+    "blessed": "0.0.37",
+    "commander": "^2.3.0"
   }
 }
