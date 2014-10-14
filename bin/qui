@@ -6,15 +6,22 @@ var App     = require('../lib/app');
 
 program
   .version('0.0.1')
-  .option('-p --path [path]', 'Path to project')
+  .option('-h --hostname [domain]', 'Domain containing JIRA')
+  .option('-u --username [name]', 'Username for JIRA')
+  .option('-p --password [string]', 'Password for JIRA')
   .option('-l --log [file]', 'Write logs to filename')
   .parse(process.argv);
 
 process.title = 'qissues';
 
 var app = new App(blessed.screen(), {
-  cwd:     program.path || process.cwd(),
-  logfile: program.logfile
+  cwd      : program.path || process.cwd(),
+  username : program.username,
+  password : program.password,
+  hostname : program.hostname,
+  logfile  : program.logfile
 });
 
-app.start(process.argv[3] || 'listIssues');
+console.error("\n\n\n\n\n");
+
+app.start('listIssues');

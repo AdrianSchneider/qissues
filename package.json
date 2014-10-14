@@ -1,6 +1,8 @@
 {
   "dependencies": {
     "blessed": "0.0.37",
-    "commander": "^2.3.0"
+    "commander": "^2.3.0",
+    "request": "^2.45.0",
+    "underscore": "^1.7.0"
   }
 }
