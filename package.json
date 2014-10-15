@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "async": "^0.9.0",
     "blessed": "0.0.37",
     "commander": "^2.3.0",
     "request": "^2.45.0",
