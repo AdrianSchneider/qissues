@@ -9,7 +9,8 @@ program
   .option('-h --hostname [domain]', 'Domain containing JIRA')
   .option('-u --username [name]', 'Username for JIRA')
   .option('-p --password [string]', 'Password for JIRA')
-  .option('-l --log [file]', 'Write logs to filename')
+  .option('-r --run [func]', 'Action to run')
+  .option('-i --issue [id]', 'Issue to run it against')
   .parse(process.argv);
 
 process.title = 'qissues';
@@ -18,10 +19,8 @@ var app = new App(blessed.screen(), {
   cwd      : program.path || process.cwd(),
   username : program.username,
   password : program.password,
-  hostname : program.hostname,
-  logfile  : program.logfile
+  hostname : program.hostname
 });
 
 console.error("\n\n\n\n\n");
-
-app.start('listIssues');
+app.start(program.run, program.issue);
