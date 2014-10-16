@@ -1,4 +1,3 @@
-var async         = require('async');
 var util          = require('util');
 var path          = require('path');
 var EventEmitter  = require('events').EventEmitter;
@@ -13,49 +12,24 @@ module.exports = Application;
 
 function Application(screen, options) {
   var app = this;
-  var config;
 
   /**
    * Starts up the application
    * @param initial view
    */
   this.start = function(action, id) {
+    app.storage = new Storage(path.resolve(options.cwd, './.qi.json'));
+    app.reports = new ReportManager(app.storage);
+    app.filters = app.reports.getDefault().getFilters();
 
     setupKeyboard();
     screen.render();
 
-    loadConfig(function(err, configStore) {
-      config = configStore.serialize();
-
-      app.storage = new Storage(path.resolve(options.cwd, './.qi.json'));
-      app.reports = new ReportManager(app.storage);
-      app.filters = app.reports.getDefault().getFilters();
-
-      if(action) {
-        app[action](id);
-      } else {
-        app.listIssues();
-      }
-    });
-  };
-
-  var loadConfig = function(done) {
-    var fields = ['hostname', 'username', 'password'];
-    var configStore = new Storage(path.resolve('/Users/adrian/.qi.json'));
-
-    async.eachSeries(fields, function(field, next) {
-      if(configStore.get(field)) return next();
-
-      prompt('Configuration: ' + field, screen, function(err, text) {
-        if(err) return next(err);
-        configStore.set(field, text);
-        return next(null, text);
-      });
-
-    }, function(err) {
-      if(err) return done(err);
-      return done(null, configStore);
-    });
+    if(action) {
+      app[action](id);
+    } else {
+      app.listIssues();
+    }
   };
 
   /**
@@ -67,11 +41,7 @@ function Application(screen, options) {
     });
 
     screen.key('?', function() {
-      var opt = {
-        stdio: 'inherit',
-        env: process.env,
-      };
-      screen.exec('less', ['-c', 'docs/help.txt'], opt, function() {});
+      screen.exec('less', ['docs/help.txt'], {}, function() {});
       screen.render();
     });
 
@@ -82,7 +52,7 @@ function Application(screen, options) {
     });
 
     screen.key('m', function() {
-      backend.metadata(config, function(err, data) {
+      backend.metadata(options, function(err, data) {
         app.storage.set('metadata', data);
         console.error(data);
       });
@@ -96,7 +66,7 @@ function Application(screen, options) {
     app.loading();
 
     var list = views.list(screen, app.filters, app.reports, app.storage, function(done) {
-      return backend.query(config, app.storage, app.filters, done);
+      return backend.query(options, app.storage, app.filters, done);
     });
 
     list.key('r', function() {
@@ -112,7 +82,7 @@ function Application(screen, options) {
   this.viewIssue = function(num) {
     app.loading();
 
-    backend.lookup(num, config, function(err, issue) {
+    backend.lookup(num, options, function(err, issue) {
       if(err) return app.emit('error', err);
 
       app.empty();
@@ -133,12 +103,12 @@ function Application(screen, options) {
    */
   this.createIssue = function() {
       app.loading();
-      backend.createTemplate(config, function(err, template) {
+      backend.createTemplate(options, function(err, template) {
         app.empty();
 
         screen.readEditor({ value: template }, function(err, data) {
 
-          backend.create(data, config, function(err, num) {
+          backend.create(data, options, function(err, num) {
             console.log(arguments);
             return;
             if(err) console.log(err);

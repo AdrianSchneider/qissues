@@ -6,9 +6,6 @@ var App     = require('../lib/app');
 
 program
   .version('0.0.1')
-  .option('-h --hostname [domain]', 'Domain containing JIRA')
-  .option('-u --username [name]', 'Username for JIRA')
-  .option('-p --password [string]', 'Password for JIRA')
   .option('-r --run [func]', 'Action to run')
   .option('-i --issue [id]', 'Issue to run it against')
   .parse(process.argv);
@@ -16,10 +13,7 @@ program
 process.title = 'qissues';
 
 var app = new App(blessed.screen(), {
-  cwd      : program.path || process.cwd(),
-  username : program.username,
-  password : program.password,
-  hostname : program.hostname
+  cwd: program.path || process.cwd()
 });
 
 console.error("\n\n\n\n\n");
