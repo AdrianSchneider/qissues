@@ -13,8 +13,8 @@ program
 process.title = 'qissues';
 
 var app = new App(blessed.screen(), {
-  cwd: program.path || process.cwd()
+  cwd:        program.path || process.cwd(),
+  userConfig: process.env.HOME + '/.qi.json'
 });
 
-console.error("\n\n\n\n\n");
 app.start(program.run, program.issue);
