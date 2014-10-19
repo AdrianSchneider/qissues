@@ -3,40 +3,74 @@ Qissues Interface
   This is a vim-like interface to the JIRA issue tracker.
 
 
-Application Hotkeys
-    ?                       Open help
-    Ctrl+C                  Exits qissues
-    Ctrl+R                  Reload current view
-    Escape                  Close/cancel popup
-    m                       Reload metadata          *
+1. BASIC USAGE
+
+    a) Application Hotkeys
+        ?                       Open help
+        Ctrl+C                  Exits qissues
+        Ctrl+R                  Reload current view
+        Escape                  Close/cancel popup
+        m                       Reload metadata          *
+    
+    b) Navigation Hotkeys
+        j                       Move down one line
+        k                       Move up one line
+        Enter                   Select entry
+        Escape                  Close dialog
+        /                       Start search
+        n                       Next search result
+        N                       Previous search result
+        Space                   Clear search results
+        x                       Remove
+    
+    c) Issue List Hotkeys
+        c                       Create issue using filters
+        C                       Create new issue
+        I                       Open Issue number
+        ,fl                     Show filters
+        ,fa                     Filter by assignee
+        ,fs                     Filter by status
+        ,fp                     Filter by project
+        ,fS                     Filter by sprint
+        ,rs                     Save current filters as report
+        ,rl                     Show reports
+    
+    d) View Issue Hotkeys
+        h                      Go back to issues
+        c                      Comment (via prompt)
+        C                      Comment (via $EDITOR)
+    
+
+2. GENERAL INFORMATION
+
+    a) Caching
+
+    Qissues heavily relies on caching to keep the interface snappy. Press Ctrl+R to force any 
+    stale page to be refreshed.
+
+    b) Filtering and Reports
+
+    As you add and remove filters, they are automatically remembered before closing. You can
+    save them to named reports to easily jump between multiple views. After saving a report,
+    subsequent changes will only modify the default report -- not the saved one.
 
 
-Navigation Hotkeys
-    j                       Move down one line
-    k                       Move up one line
-    Enter                   Select entry
-    Escape                  Close dialog
-    /                       Start search
-    n                       Next search result
-    N                       Previous search result
-    Space                   Clear search results
-    x                       Remove
+3. Creating and Editing Issues
 
+    a) Starting an Issue
 
-Issue List Hotkeys
-    c                       Create issue using filters
-    C                       Create new issue
-    I                       Open Issue number
-    ,fl                     Show filters
-    ,fa                     Filter by assignee
-    ,fs                     Filter by status
-    ,fp                     Filter by project
-    ,fS                     Filter by sprint
-    ,rs                     Save current filters as report
-    ,rl                     Show reports
+    In addition to the standard empty issue template, you can use your currently applied filters
+    to prefill or suggest options to you. Taking project as an example: if your filters are only
+    showing one project, the issue template will omit that field for you. If there are multiple,
+    the suggestions will be reduced to just those selected.
 
+    b) Matching fields
 
-View Issue Hotkeys
-    h                      Go back to issues
-    c                      Comment (via prompt)
-    C                      Comment (via $EDITOR)
+    All meta fields are fuzzy matched. They'll use the first value that satisfies a case-insensitive
+    fuzzy search. For instance, 'smith' will match 'john.smithson'.
+
+    c) Cancel Changes
+
+    If you want to cancel creating or editing an issue, you can either save/close the file with no
+    changes, or you can empty and then save/close it;
+
