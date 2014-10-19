@@ -1,150 +1,42 @@
-var util          = require('util');
-var path          = require('path');
-var EventEmitter  = require('events').EventEmitter;
-var backend       = require('./backend');
-var views         = require('./views');
-var ReportManager = require('./model/reportManager');
-var Storage       = require('./storage');
-var message       = require('./widgets/message');
-var prompt        = require('./widgets/prompt');
+Qissues Interface
+  
+  This is a vim-like interface to the JIRA issue tracker.
 
-module.exports = Application;
 
-function Application(screen, options) {
-  var app = this;
+Application Hotkeys
+    ?                       Open help
+    Ctrl+C                  Exits qissues
+    Ctrl+R                  Reload current view
+    Escape                  Close/cancel popup
+    m                       Reload metadata          *
 
-  /**
-   * Starts up the application
-   * @param initial view
-   */
-  this.start = function(action, id) {
-    app.storage = new Storage(path.resolve(options.cwd, './.qi.json'));
-    app.reports = new ReportManager(app.storage);
-    app.filters = app.reports.getDefault().getFilters();
 
-    setupKeyboard();
-    screen.render();
+Navigation Hotkeys
+    j                       Move down one line
+    k                       Move up one line
+    Enter                   Select entry
+    Escape                  Close dialog
+    /                       Start search
+    n                       Next search result
+    N                       Previous search result
+    Space                   Clear search results
+    x                       Remove
 
-    if(action) {
-      app[action](id);
-    } else {
-      app.listIssues();
-    }
-  };
 
-  /**
-   * Sets up the global keyboard handlers
-   */
-  var setupKeyboard = function() {
-    screen.key(['q', 'C-c'], function(ch, key) {
-      return process.exit(0);
-    });
+Issue List Hotkeys
+    c                       Create issue using filters
+    C                       Create new issue
+    I                       Open Issue number
+    ,fl                     Show filters
+    ,fa                     Filter by assignee
+    ,fs                     Filter by status
+    ,fp                     Filter by project
+    ,fS                     Filter by sprint
+    ,rs                     Save current filters as report
+    ,rl                     Show reports
 
-    screen.key('?', function() {
-      screen.exec('less', ['docs/help.txt'], {}, function() {});
-      screen.render();
-    });
 
-    screen.key('S-i', function(key, ch) {
-      prompt('Open Issue', screen, function(err, text) {
-        app.viewIssue(text);
-      });
-    });
-
-    screen.key('m', function() {
-      backend.metadata(options, function(err, data) {
-        app.storage.set('metadata', data);
-        console.error(data);
-      });
-    });
-  };
-
-  /**
-   * Lists all of the issues
-   */
-  this.listIssues = function() {
-    app.loading();
-
-    var list = views.list(screen, app.filters, app.reports, app.storage, function(done) {
-      return backend.query(options, app.storage, app.filters, done);
-    });
-
-    list.key('r', function() {
-      console.error('refresh');
-    });
-    list.on('open', app.viewIssue);
-  };
-
-  /**
-   * View a single issue
-   * @param number num issue number
-   */
-  this.viewIssue = function(num) {
-    app.loading();
-
-    backend.lookup(num, options, function(err, issue) {
-      if(err) return app.emit('error', err);
-
-      app.empty();
-      var single = views.single(screen, issue);
-
-      single.key(['escape', 'h'], function() {
-        app.listIssues();
-      });
-
-      single.key('r', function() {
-        app.viewIssue(num);
-      });
-    });
-  };
-
-  /**
-   * Creates a new issue interactively
-   */
-  this.createIssue = function() {
-      app.loading();
-      backend.createTemplate(options, function(err, template) {
-        app.empty();
-
-        screen.readEditor({ value: template }, function(err, data) {
-
-          backend.create(data, options, function(err, num) {
-            console.log(arguments);
-            return;
-            if(err) console.log(err);
-            app.viewIssue(num);
-          });
-        });
-      });
-  };
-
-  /**
-   * Edit an issue
-   * @param number num issue number
-   */
-  this.editIssue = function(num) {
-    screen.readEditor({ value: num }, function(err, data) {
-      app.viewIssue(num);
-    });
-  };
-
-  /***
-   * Clears the screen and draws a loading indicator
-   */
-  this.loading = function() {
-    app.empty();
-    message(screen, 'Loading...', Infinity);
-  };
-
-  /**
-   * Clears the screen
-   */
-  this.empty = function() {
-    screen.children.forEach(function(child) {
-      screen.remove(child);
-    });
-    screen.render();
-  };
-}
-
-util.inherits(Application, EventEmitter);
+View Issue Hotkeys
+    h                      Go back to issues
+    c                      Comment (via prompt)
+    C                      Comment (via $EDITOR)
