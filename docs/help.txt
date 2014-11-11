@@ -39,6 +39,13 @@ Qissues Interface
         h                      Go back to issues
         c                      Comment (via prompt)
         C                      Comment (via $EDITOR)
+
+    e) Issue Editing Hotkeys (List or View)
+        e/E                    Edit (via $EDITOR)
+        ,ct                    Change title
+        ,ca                    Change assignee
+        ,cs                    Change status
+        ,cS                    Change sprint
     
 
 2. GENERAL INFORMATION
