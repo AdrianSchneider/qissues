@@ -1,20 +1,28 @@
 #!/usr/bin/env node
 
-var program = require('commander');
-var blessed = require('blessed');
-var App     = require('../lib/app');
+var path          = require('path');
+var program       = require('commander');
+var blessed       = require('blessed');
+var bootstrap     = require('../lib/bootstrap');
+var UserInterface = require('../lib/ui');
+var Application = require('../lib/app/main');
+var configFile    = path.resolve(process.env.HOME, './.qi.json');
 
 program
-  .version('0.0.1')
-  .option('-r --run [func]', 'Action to run')
-  .option('-i --issue [id]', 'Issue to run it against')
+  .version('2.0.0')
+  .option('--clear-cache', 'Clears the cache')
   .parse(process.argv);
 
 process.title = 'qissues';
 
-var app = new App(blessed.screen(), {
-  cwd:        program.path || process.cwd(),
-  userConfig: process.env.HOME + '/.qi.json'
-});
+var container = bootstrap(configFile);
 
-app.start(program.run, program.issue);
+if(program.clearCache) {
+  container.get('cache').invalidateAll();
+}
+
+var app = new Application(container);
+app.start(
+  new UserInterface(process.stdin, process.stdout)
+);
+app.exit = process.exit;
