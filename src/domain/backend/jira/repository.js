@@ -20,7 +20,7 @@ function JiraRepository(client, cache, mapping) {
    * @param {NewIssue} newIssue
    * @return {Promise<Issue>}
    */
-  this.create = function(newIssue) {
+  this.createIssue = function(newIssue) {
     return client.post('/', mapping.newIssueToPayload(newIssue))
       .then(mapping.toIssue);
   };

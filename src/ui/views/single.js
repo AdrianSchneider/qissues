@@ -3,6 +3,7 @@
 var _        = require('underscore');
 var blessed  = require('blessed');
 var editable = require('./editable');
+var sprintf  = require('util').format;
 
 /**
  * Single Issue View
@@ -52,32 +53,30 @@ function renderIssue(issue) {
 }
 
 function buildHeader(issue) {
-  return '{bold}{yellow-fg}' + issue.key + '{/yellow-fg} - ' + issue.fields.summary + ' {/bold}';
+  return sprintf(
+    '{bold}{yellow-fg}%s{/yellow-fg} - %s{/bold}',
+    issue.getId(),
+    issue.getTitle()
+  );
 }
 
 function buildMeta(issue) {
-  var meta = {
-    status      : issue.fields.status.name,
-    type        : issue.fields.issuetype ? issue.fields.issuetype.name : '',
-    priority    : issue.fields.priority ? issue.fields.priority.name : '',
-    dateCreated : new Date(issue.fields.created),
-    dateUpdated : new Date(issue.fields.updated),
-    reporter    : issue.fields.creator.name,
-    assignee    : issue.fields.assignee ? issue.fields.assignee.name : ''
-  };
+  var meta = _.mapObject({
+    status      : issue.getStatus(),
+    type        : issue.get('type'),
+    priority    : issue.get('priority'),
+    dateCreated : issue.get('dateCreated'),
+    dateUpdated : issue.get('dateCreated'),
+    reporter    : issue.get('reporter'),
+    assignee    : issue.get('assignee')
+  }, String);
 
   var out = '';
 
   out += '\t{blue-fg}' + meta.status + '{/blue-fg} ';
     out += meta.type;
-  if(meta.assignee) {
-    out += ' assigned to ' + meta.assignee;
-  } else {
-    out += ' currently unassigned';
-  }
-
+  out += getAssigned(meta);
   out += ' ' + meta.priority;
-
   out += '\n\treported by ' + meta.reporter;
     out += ' on ' + meta.dateCreated;
 
@@ -85,15 +84,22 @@ function buildMeta(issue) {
 
 }
 
-function buildBody(issue) {
-  if(!issue.fields.description) issue.fields.description = 'No description';
+function getAssigned(meta) {
+  if(!meta.assignee) return 'currently unassigned';
+  return 'assigned to ' + meta.assignee;
+}
 
-  return '{yellow-fg}DESCRIPTION{/yellow-fg}\n\n\t' +
-    issue.fields.description.replace(/\n/g, '\n\t');
+function buildBody(issue) {
+  return sprintf(
+    '{yellow-fg}DESCRIPTION{/yellow-fg}\n\n\t%s',
+    issue.getDescription() ? issue.getDescription().replace(/\n/g, '\n\t') : 'No description'
+  );
 }
 
 function buildComments(issue) {
   var out = '{yellow-fg}COMMENTS{/yellow-fg}';
+  if(!issue.get('comments')) return out += '\t\n\n\tNo comments';
+
 
   if(!issue.fields.comment.comments.length) return out += '\t\n\n\tNo comments';
 

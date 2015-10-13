@@ -11,7 +11,7 @@ module.exports = function Repository() {
    * @param {NewIssue} newIssue
    * @return {Promise<Issue>}
    */
-  this.create = function(newIssue) {
+  this.createIssue = function(newIssue) {
     throw new Error('Repository must implement create');
   };
 

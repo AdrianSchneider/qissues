@@ -169,11 +169,14 @@ module.exports = function BlessedApplication(screen, app) {
 
   /**
    * Creates a new issue interactively
+   *
+   * @param {FilterSet|null} filters
+   * @param {String|null} draft - last edit attempt
    */
   ui.createIssue = function(filters, draft) {
     showLoading();
 
-    var template = format.seed(tracker.requirements.issue.create);
+    var template = format.seed(trackerNormalizer.getNewIssueRequirements());
     var content = draft || template;
 
     editExternally(content, screen)
@@ -185,6 +188,7 @@ module.exports = function BlessedApplication(screen, app) {
         return message('Cancelled').then(ui.listIssues);
       })
       .then(createIssue)
+      .then(function(issue) { return issue.id; })
       .then(ui.viewIssue)
       .catch(ValidationError, function(error) {
         if(content === template) {
@@ -210,7 +214,7 @@ module.exports = function BlessedApplication(screen, app) {
    * @return {Promise<Issue>}
    */
   var createIssue = function(data) {
-    return trackerRepository.createIssue(tracker.mapping.toNewIssue(data));
+    return trackerRepository.createIssue(trackerNormalizer.toNewIssue(data));
   };
 
   /**

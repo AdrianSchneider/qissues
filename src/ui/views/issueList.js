@@ -31,7 +31,7 @@ module.exports = function IssueList(parent, app, focus, data) {
     });
 
     list.getSelected = function() {
-      return list.issues.get(list.selected).key;
+      return list.issues.get(list.selected).getId();
     };
 
     list.getIssue = function() {
@@ -110,8 +110,8 @@ module.exports = function IssueList(parent, app, focus, data) {
   var renderIssue = function(issue) {
     return sprintf(
       '{yellow-fg}%s{/yellow-fg}: %s',
-      issue.key,
-      issue.fields.summary
+      issue.getId(),
+      issue.getTitle()
     );
   };
 

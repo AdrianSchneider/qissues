@@ -1,15 +1,20 @@
 'use strict';
 
-var util                  = require('util');
-var Issue                 = require('../../model/issue');
-var IssuesCollection      = require('../../model/issues');
-var NewIssue              = require('../../model/newIssue');
-//var Comment             = require('../../model/comment');
-var NewComment            = require('../../model/newComment');
-var issueRequirements     = require('./requirements/issue');
-//var commentRequirements = require('./requirements/comment');
-var ValidationError       = require('../../../errors/validation');
-var TrackerNormalizer     = require('../../model/trackerNormalizer');
+var util                = require('util');
+var moment              = require('moment');
+var issueRequirements   = require('./requirements/issue');
+var Issue               = require('../../model/issue');
+var IssuesCollection    = require('../../model/issues');
+var Comment             = require('../../model/comment');
+var NewIssue            = require('../../model/newIssue');
+var NewComment          = require('../../model/newComment');
+var TrackerNormalizer   = require('../../model/trackerNormalizer');
+var User                = require('../../model/meta/user');
+var Label               = require('../../model/meta/label');
+var Priority            = require('../../model/meta/priority');
+var Sprint              = require('../../model/meta/sprint');
+var Type                = require('../../model/meta/type');
+var Status              = require('../../model/meta/status');
 
 /**
  * @param {JiraMetadata} metadata
@@ -17,15 +22,16 @@ var TrackerNormalizer     = require('../../model/trackerNormalizer');
  */
 function JiraNormalizer(metadata, config) {
   TrackerNormalizer.call(this);
+  var normalizer = this;
 
   /**
    * Gets the requirements for creating/editing an issue
    *
    * @param {Issue|null} existing
-   * @return {Joi.Schema}
+   * @return {Expectations}
    */
   this.getNewIssueRequirements = function(existing) {
-    return existing ? issueRequirements.update(existing) : issueRequirements.create();
+    return issueRequirements[existing ? 'update' : 'create'](metadata);
   };
 
   /**
@@ -35,12 +41,43 @@ function JiraNormalizer(metadata, config) {
    * @return {NewIssue}
    */
   this.toNewIssue = function(data) {
-    return new NewIssue(
-      config.project,
-      data.title,
-      data.description,
-      data.type
-    );
+    return new NewIssue(data.title, data.description, (function() {
+      var meta = {};
+
+      if (data.type)     meta.type     = new Type(data.type);
+      if (data.assignee) meta.assignee = new User(data.assignee);
+      if (data.sprint)   meta.sprint   = new Sprint(null, data.sprint);
+      if (data.priority) meta.priority = new Priority(data.priority);
+
+      return meta;
+    }));
+  };
+
+  /**
+   * Converts a new issue into the json payload that jira accepts
+   *
+   * @param {NewIssue} newIssue
+   * @return {Object}
+   */
+  this.newIssueToJson = function(newIssue) {
+    var json = {
+      fields: {
+        project: { id: config.project },
+        summary: newIssue.getTitle(),
+        description: newIssue.getDescription(),
+        issueType: { id: metadata.getTypeByIdName(newIssue.get('type')) }
+      }
+    };
+
+    if (newIssue.has('assignee')) {
+      json.fields.assignee = { name: newIssue.get('assignee').getName() };
+    }
+
+    if (newIssue.has('type')) {
+      json.fields.type = { name: newIssue.get('type').getType() };
+    }
+
+    return json;
   };
 
   /**
@@ -50,7 +87,24 @@ function JiraNormalizer(metadata, config) {
    * @return {Issue}
    */
   this.toIssue = function(response) {
-    return new Issue(response);
+    return new Issue(
+      response.key,
+      response.fields.summary,
+      response.fields.description,
+      new Status(response.fields.status.name),
+      (function() {
+        var meta = {};
+
+        if (response.fields.created)       meta.dateCreated = moment(response.fields.created).toDate();
+        if (response.fields.updated)       meta.dateUpdated = moment(response.fields.updated).toDate();
+        if (response.fields.assignee)      meta.assignee    = new User(response.fields.assignee.name);
+        if (response.fields.reporter)      meta.reporter    = new User(response.fields.reporter.name);
+        if (response.fields.priority)      meta.priority    = new Priority(response.fields.priority.id, response.fields.priority.name);
+        if (response.fields.issuetype)     meta.type        = new Type(response.fields.issuetype.name);
+
+        return meta;
+      })()
+    );
   };
 
   /**
@@ -60,26 +114,7 @@ function JiraNormalizer(metadata, config) {
    * @return {IssuesCollection}
    */
   this.toIssuesCollection = function(response) {
-    return new IssuesCollection(response.issues.map(this.toIssue));
-  };
-
-  /**
-   * Gets the requirements for posting a comment
-   *
-   * @return {Joi.Schema}
-   */
-  this.getNewCommentRequirements = function() {
-
-  };
-
-  /**
-   * Converts the required jira comment fields into a new comment
-   *
-   * @param {Object} data
-   * @return {NewComment}
-   */
-  this.toNewComment = function(data) {
-    return new NewComment();
+    return new IssuesCollection(response.issues.map(normalizer.toIssue));
   };
 
   /**
@@ -92,7 +127,7 @@ function JiraNormalizer(metadata, config) {
     return new Comment();
   };
 
-};
+}
 
 util.inherits(JiraNormalizer, TrackerNormalizer);
 

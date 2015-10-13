@@ -1,19 +1,78 @@
 'use strict';
 
-var _ = require('underscore');
+var User     = require('./meta/user');
+var Label    = require('./meta/label');
+var Priority = require('./meta/priority');
+var Sprint   = require('./meta/sprint');
+var Type     = require('./meta/type');
+
 
 /**
- * Represents a new issue being persisted to an issue backend
+ * Represents a new issue being persisted to a 3rd party issue tracker
+ *
+ * @param {String} title
+ * @param {String} description
+ * @param {Object} attributes
  */
-module.exports = function NewIssue(project, title, description, type, attributes) {
+module.exports = function NewIssue(title, description, attributes) {
   if(!attributes) attributes = {};
 
+  var attributeFunctions = {
+    assignee: 'setAssignee',
+    sprint: 'setSprint'
+  };
+
+  Object.keys(attributes).forEach(function(attribute) {
+    if(typeof attributeFunctions[attribute] === 'undefined') {
+      throw new ReferenceError(attribute + ' is not a valid NewIssue attribute');
+    }
+
+    attributeFunctions[attribute](attributes[attribute]);
+  });
+
+  var setAssignee = function(user) {
+    if(!(user instanceof User)) throw new TypeError('assignee must be a valid User');
+    attributes.assignee = user;
+  };
+
+  var setSprint = function(sprint) {
+    if(!(sprint instanceof Sprint)) throw new TypeError('sprint must be a valid Sprint');
+    attributes.sprint = sprint;
+  };
+
+  var setType = function(type) {
+    if(!(type instanceof Type)) throw new TypeError('type must be a valid Type');
+    attributes.type = type;
+  };
+
+  var setPriority = function(priority) {
+    if(!(priority instanceof Priority)) throw new TypeError('priority must be a valid Priority');
+    attributes.priority = priority;
+  };
+
+  this.getTitle = function() {
+    return title;
+  };
+
+  this.getDescription = function() {
+    return description;
+  };
+
   this.serialize = function() {
-    return _.extend(
-      {},
-      attributes,
-      { project: project, title: title, description: description, type: type }
-    );
+    return {
+      title: title,
+      description: description,
+      attributes: attributes
+    };
+  };
+
+  this.get = function(field) {
+    if(!this.has(field)) throw new ReferenceError(field + ' is not an existing attribute');
+    return attributes[field];
+  };
+
+  this.has = function(field) {
+    return typeof attributes[field] !== 'undefined';
   };
 
 };
