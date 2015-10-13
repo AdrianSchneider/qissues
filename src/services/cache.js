@@ -2,7 +2,7 @@ var moment = require('moment');
 var crypto = require('crypto');
 
 module.exports = function Cache(storage) {
-  var self = this;
+  var cache = this;
   var prefix = 'cache:';
 
   /**
@@ -17,7 +17,7 @@ module.exports = function Cache(storage) {
    * Attempt to get an item from cache
    *
    * @param string key
-   * @param boolean invalidate 
+   * @param boolean invalidate
    */
   this.get = function(key, invalidate) {
     if(invalidate) return;
@@ -36,6 +36,21 @@ module.exports = function Cache(storage) {
       expires: moment().add(ttl || 3600, 'seconds')
     });
   };
+
+  /**
+   * Returns a function that caches the result
+   *
+   * @param {String} key
+   * @param {Number|null} ttl
+   * @return {Function}
+   */
+  this.setThenable = function(key, ttl) {
+    return function(result) {
+      cache.set(key, result, ttl);
+      return result;
+    };
+  };
+
 
   /**
    * Invalidate an item in the cache

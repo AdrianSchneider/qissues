@@ -4,7 +4,7 @@ var _       = require('underscore');
 var Promise = require('bluebird');
 var request = require('request');
 
-module.exports = function(domain, username, password) {
+module.exports = function JiraHttpClient(domain, username, password) {
 
   this.get = function(path, options) {
     return new Promise(function(resolve, reject) {

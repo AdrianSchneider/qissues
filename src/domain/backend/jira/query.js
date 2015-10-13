@@ -20,19 +20,9 @@ module.exports = function(client, cache) {
     var cached = cache.get(cacheId, invalidate);
     if (cached) return Promise.resolve(toCollection(cached));
 
-    return fetch(options)
-      .then(function(response) {
-        cache.set(cacheId, response);
-        return toCollection(response);
-      });
-  };
-
-  /**
-   * Fetches the result from jira
-   * @return {Promise<Objet>}
-   */
-  var fetch = function(options) {
-    return client.get('/rest/api/2/search', options);
+    return client.get('/rest/api/2/search', options)
+      .then(cache.setThenable(cacheId))
+      .then(toCollection);
   };
 
   /**

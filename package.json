@@ -4,9 +4,17 @@
     "blessed": "0.0.37",
     "bluebird": "^2.10.2",
     "commander": "^2.3.0",
-    "js-yaml": "^3.2.2",
+    "joi": "^6.9.0",
+    "js-yaml": "^3.4.3",
     "moment": "^2.8.3",
     "request": "^2.45.0",
     "underscore": "^1.8.3"
+  },
+  "devDependencies": {
+    "chai": "^3.0.0",
+    "coveralls": "^2.11.2",
+    "istanbul": "^0.3.17",
+    "mocha": "^2.2.5",
+    "nodemock": "^0.3.4"
   }
 }

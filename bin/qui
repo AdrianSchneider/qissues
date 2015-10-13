@@ -3,9 +3,9 @@
 var path          = require('path');
 var program       = require('commander');
 var blessed       = require('blessed');
-var bootstrap     = require('../lib/bootstrap');
-var UserInterface = require('../lib/ui');
-var Application = require('../lib/app/main');
+var bootstrap     = require('../src/bootstrap');
+var UserInterface = require('../src/ui');
+var Application   = require('../src/app/main');
 var configFile    = path.resolve(process.env.HOME, './.qi.json');
 
 program

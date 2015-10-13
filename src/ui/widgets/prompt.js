@@ -45,7 +45,7 @@ module.exports = function Prompt(text, parent, done) {
   });
 
   input.key('C-c', function() {
-    process.exit(0);
+    return done(null, null);
   });
 
   input.readInput(function(err, text) {
