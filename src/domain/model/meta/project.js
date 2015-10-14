@@ -1,16 +1,12 @@
 'use strict';
 
-function Sprint(id, name) {
+function Project(id, name) {
 
   this.getId = function() {
     return id;
   };
 
   this.getName = function() {
-    return name;
-  };
-
-  this.toString = function() {
     return name;
   };
 
@@ -23,8 +19,8 @@ function Sprint(id, name) {
 
 }
 
-Sprint.unserialize = function(json) {
-  return new Sprint(json.id, json.name);
+Project.unserialize = function(json) {
+  return new Project(json.id, json.name);
 };
 
-module.exports = Sprint;
+module.exports = Project;

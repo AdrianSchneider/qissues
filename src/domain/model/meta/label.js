@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = function Label(id, name) {
+function Label(id, name) {
 
   this.getId = function() {
     return id;
@@ -10,4 +10,17 @@ module.exports = function Label(id, name) {
     return name;
   };
 
+  this.serialize = function() {
+    return {
+      id: id,
+      name: name
+    };
+  };
+
+}
+
+Label.unserialize = function(json) {
+  return new Label(json.id, json.name);
 };
+
+module.exports = Label;

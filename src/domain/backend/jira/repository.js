@@ -21,7 +21,8 @@ function JiraRepository(client, cache, mapping) {
    * @return {Promise<Issue>}
    */
   this.createIssue = function(newIssue) {
-    return client.post('/', mapping.newIssueToPayload(newIssue))
+    throw new Error('last minute');
+    return client.post('/', mapping.newIssueToJson(newIssue))
       .then(mapping.toIssue);
   };
 

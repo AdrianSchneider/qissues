@@ -1,3 +1,6 @@
+'use strict';
+
+var _      = require('underscore');
 var moment = require('moment');
 var crypto = require('crypto');
 
@@ -47,6 +50,13 @@ module.exports = function Cache(storage) {
   this.setThenable = function(key, ttl) {
     return function(result) {
       cache.set(key, result, ttl);
+      return result;
+    };
+  };
+
+  this.setSerializedThenable = function(key, ttl) {
+    return function(result) {
+      cache.set(key, _.invoke(result, 'serialize'), ttl);
       return result;
     };
   };

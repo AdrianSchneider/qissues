@@ -176,17 +176,22 @@ module.exports = function BlessedApplication(screen, app) {
   ui.createIssue = function(filters, draft) {
     showLoading();
 
-    var template = format.seed(trackerNormalizer.getNewIssueRequirements());
-    var content = draft || template;
+    var content;
+    var template;
+    var expectations = trackerNormalizer.getNewIssueRequirements();
 
-    editExternally(content, screen)
+    var input = format.seed(expectations)
+      .then(function(seeded) {
+        content = draft || seeded;
+        template = seeded;
+        return content;
+      })
+      .then(editExternally)
       .then(function(input) {
         content = input;
         return format.parse(input);
       })
-      .catch(ValidationError, function() {
-        return message('Cancelled').then(ui.listIssues);
-      })
+      .then(expectations.ensureValid)
       .then(createIssue)
       .then(function(issue) { return issue.id; })
       .then(ui.viewIssue)
@@ -195,9 +200,18 @@ module.exports = function BlessedApplication(screen, app) {
           return message('Cancelled').then(ui.listIssues);
         }
         ui.createIssue(filters, prependErrorToContent(error, content));
+      })
+      .catch(Error, function(error) {
+        return message(error.message, 5000).then(ui.listIssues);
       });
   };
 
+  /**
+   * Prepends an error message to the content for the user to edit
+   *
+   * @param {Error} error
+   * @param {String} content
+   */
   var prependErrorToContent = function(error, content) {
     var pos = content.indexOf('---');
     return sprintf(

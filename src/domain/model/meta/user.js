@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = function User(account, id, name) {
+function User(account, id, name) {
 
   this.getAccount = function() {
     return account;
@@ -18,4 +18,18 @@ module.exports = function User(account, id, name) {
     return name || account;
   };
 
+  this.serialize = function() {
+    return {
+      account: account,
+      id: id,
+      name: name
+    };
+  };
+
+}
+
+User.unserialize = function(json) {
+  return new User(json.account, json.id, json.name);
 };
+
+module.exports = User;

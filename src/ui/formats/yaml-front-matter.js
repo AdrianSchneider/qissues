@@ -10,15 +10,31 @@ module.exports = function(parser, yamlParser, contentField) {
    *
    * @param {Object}     data
    * @param {Joi.Schema} schema
-   * @return {String}
+   * @return {Promise<String>}
    */
   this.seed = function(expectations, values) {
     var data = expectations.getValues(values);
-    return sprintf(
+    var template = sprintf(
       "---\n%s---\n%s",
       buildYaml(data),
       data[contentField]
     );
+
+    return expectations.getSuggestions()
+      .then(function(suggestions) {
+        suggestions.forEach(function(suggestion) {
+          var field = suggestion[0];
+          var choices = suggestion[1];
+
+          template = template.split('\n').map(function(line) {
+            if(line.indexOf(field) === 0) {
+              line += ' # [' + choices.map(String).join(', ') + ']';
+            }
+            return line;
+          }).join('\n');
+        });
+        return template;
+      });
   };
 
   /**

@@ -36,7 +36,9 @@ module.exports = function(configFile) {
     ));
 
     container.set('tracker.jira.metadata', new JiraMetadata(
-      container.get('tracker.jira.client')
+      container.get('tracker.jira.client'),
+      container.get('cache'),
+      config.project
     ));
 
     container.set('tracker.jira.normalizer', new JiraNormalizer(

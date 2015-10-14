@@ -1,7 +1,6 @@
 'use strict';
 
-module.exports = function Type(type) {
-
+function Type(type) {
   this.getType = function() {
     return type;
   };
@@ -10,4 +9,13 @@ module.exports = function Type(type) {
     return type;
   };
 
+  this.serialize = function() {
+    return { type: type };
+  };
+}
+
+Type.unserialize = function(json) {
+  return new Type(json.type);
 };
+
+module.exports = Type;

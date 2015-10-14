@@ -10,7 +10,7 @@ module.exports = function JiraHttpClient(domain, username, password) {
     return new Promise(function(resolve, reject) {
       request.get(buildUrl(path), attachOptions(options), function(err, res, body) {
         if(err) return reject(err);
-        if(res.statusCode !== 200) return reject(new Error('Received ' + res.statusCode + ' instead of 200'));
+        if(res.statusCode !== 200) return reject(new Error('Received ' + res.statusCode + ' instead of 200 (url = ' + path + ')'));
         return resolve(body);
       });
     });
