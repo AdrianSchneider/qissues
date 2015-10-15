@@ -75,6 +75,7 @@ function buildMeta(issue) {
 
   out += '\t{blue-fg}' + meta.status + '{/blue-fg} ';
     out += meta.type;
+
   out += getAssigned(meta);
   out += ' ' + meta.priority;
   out += '\n\treported by ' + meta.reporter;

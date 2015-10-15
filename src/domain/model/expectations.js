@@ -60,7 +60,6 @@ module.exports = function Expectations(schemaDefinition) {
         if (result.error) throw new ValidationError(result.error.message);
         return data;
       });
-
   };
 
   /**
@@ -104,7 +103,7 @@ module.exports = function Expectations(schemaDefinition) {
 
     if (field.choices) {
       return field.choices.then(function(choices) {
-        node.valid(choices.map(String));
+        node = node.valid(choices.map(String));
         return [fieldName, node];
       });
     }

@@ -15,6 +15,7 @@ var Priority            = require('../../model/meta/priority');
 var Sprint              = require('../../model/meta/sprint');
 var Type                = require('../../model/meta/type');
 var Status              = require('../../model/meta/status');
+var Project             = require('../../model/meta/project');
 
 /**
  * @param {JiraMetadata} metadata
@@ -44,13 +45,14 @@ function JiraNormalizer(metadata, config) {
     return new NewIssue(data.title, data.description, (function() {
       var meta = {};
 
-      if (data.type)     meta.type     = new Type(data.type);
+      if (data.type)     meta.type     = new Type(null, data.type);
       if (data.assignee) meta.assignee = new User(data.assignee);
       if (data.sprint)   meta.sprint   = new Sprint(null, data.sprint);
       if (data.priority) meta.priority = new Priority(data.priority);
+      if (data.project)  meta.project  = new Project(data.project);
 
       return meta;
-    }));
+    })());
   };
 
   /**
@@ -62,19 +64,15 @@ function JiraNormalizer(metadata, config) {
   this.newIssueToJson = function(newIssue) {
     var json = {
       fields: {
-        project: { id: config.project },
+        project: { key: newIssue.get('project').getId() },
         summary: newIssue.getTitle(),
         description: newIssue.getDescription(),
-        issueType: { id: metadata.getTypeIdByName(newIssue.get('type')) }
+        issuetype: { name: newIssue.get('type').getType() }
       }
     };
 
     if (newIssue.has('assignee')) {
-      json.fields.assignee = { name: newIssue.get('assignee').getName() };
-    }
-
-    if (newIssue.has('type')) {
-      json.fields.type = { name: newIssue.get('type').getType() };
+      json.fields.assignee = { name: newIssue.get('assignee').getAccount() };
     }
 
     return json;
@@ -105,6 +103,10 @@ function JiraNormalizer(metadata, config) {
         return meta;
       })()
     );
+  };
+
+  this.toNum = function(response) {
+    return response.key;
   };
 
   /**

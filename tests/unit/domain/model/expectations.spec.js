@@ -43,14 +43,24 @@ describe('Expectations', function() {
       return this.expectations.ensureValid({ title: 'adrian' });
     });
 
-    it('Passes when using a preselected choice', function() {
+    it('Fails when not using a preselected choice', function() {
       var choices = Promise.resolve(['adrian']);
       this.expectations = new Expectations({ title: { type: 'string', required: true, choices: choices } });
       return this.expectations.ensureValid({ title: 'dude' })
         .catch(ValidationError, function(e) {
-          expect(e.message).to.contain('invalid');
+          expect(e.message).to.contain('must be one of');
         });
     });
+
+    it('Fails when not using a preselected choice', function() {
+      var choices = Promise.resolve(['adrian', 'joe']);
+      this.expectations = new Expectations({ title: { type: 'string', required: true, choices: choices } });
+      return this.expectations.ensureValid({ title: 'dude' })
+        .catch(ValidationError, function(e) {
+          expect(e.message).to.contain('must be one of');
+        });
+    });
+
 
   });
 

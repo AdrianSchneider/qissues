@@ -9,20 +9,20 @@ var TrackerRepository = require('../../model/trackerRepository');
  *
  * @param {JiraHttpClient} client
  * @param {Cache} cache
- * @param {JiraMapping} mapping
+ * @param {JiraNormalizer} normalizer
  */
-function JiraRepository(client, cache, mapping) {
+function JiraRepository(client, cache, normalizer) {
   TrackerRepository.call(this);
 
   /**
    * Creates a new issue on jira
    *
    * @param {NewIssue} newIssue
-   * @return {Promise<Issue>}
+   * @return {Promise<String>}
    */
   this.createIssue = function(newIssue) {
-    return client.post('/', mapping.newIssueToJson(newIssue))
-      .then(mapping.toIssue);
+    return client.post('/rest/api/2/issue', normalizer.newIssueToJson(newIssue))
+      .then(normalizer.toNum);
   };
 
   /**
@@ -35,11 +35,11 @@ function JiraRepository(client, cache, mapping) {
   this.lookup = function(num, invalidate) {
     var cacheId = 'lookup:' + num;
     var cached = cache.get(cacheId, invalidate);
-    if (cached) return Promise.resolve(mapping.toIssue(cached));
+    if (cached) return Promise.resolve(normalizer.toIssue(cached));
 
     return client.get('/rest/api/2/issue/' + num)
       .then(cache.setThenable(cacheId))
-      .then(mapping.toIssue);
+      .then(normalizer.toIssue);
   };
 
   /**
@@ -54,11 +54,11 @@ function JiraRepository(client, cache, mapping) {
 
     var cacheId = 'issues:' + options.qs.jql;
     var cached = cache.get(cacheId, invalidate);
-    if (cached) return Promise.resolve(mapping.toIssuesCollection(cached));
+    if (cached) return Promise.resolve(normalizer.toIssuesCollection(cached));
 
     return client.get('/rest/api/2/search', options)
       .then(cache.setThenable(cacheId))
-      .then(mapping.toIssuesCollection);
+      .then(normalizer.toIssuesCollection);
   };
 
 }

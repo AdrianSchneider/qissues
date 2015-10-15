@@ -24,7 +24,7 @@ module.exports = function JiraHttpClient(domain, username, password) {
       request.post(buildUrl(path), opts, function(err, res, body) {
         if(err) return reject(err);
         if(res.statusCode === 400) {
-          return reject(new ValidationError(err.message));
+          return reject(new ValidationError(JSON.stringify(body)));
         }
         return resolve(body);
       });

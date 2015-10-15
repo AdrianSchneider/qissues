@@ -173,14 +173,4 @@ module.exports = function JiraMetadata(client, cache, projectKey) {
       .then(cache.setSerializedThenable('statuses', ttl));
   };
 
-  this.getTypeIdByName = function(requestedType) {
-    return this.getTypes()
-      .filter(function(type) {
-        return type.getType() === requestedType;
-      })
-      .reduce(function(result, type) {
-        return type.getId();
-      }, null);
-  };
-
 };

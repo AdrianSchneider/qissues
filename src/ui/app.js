@@ -180,7 +180,7 @@ module.exports = function BlessedApplication(screen, app) {
     var template;
     var expectations = trackerNormalizer.getNewIssueRequirements();
 
-    var input = format.seed(expectations)
+    format.seed(expectations)
       .then(function(seeded) {
         content = draft || seeded;
         template = seeded;
@@ -193,7 +193,6 @@ module.exports = function BlessedApplication(screen, app) {
       })
       .then(expectations.ensureValid)
       .then(createIssue)
-      .then(function(issue) { return issue.id; })
       .then(ui.viewIssue)
       .catch(ValidationError, function(error) {
         console.error('validation error caught');
@@ -203,7 +202,7 @@ module.exports = function BlessedApplication(screen, app) {
         ui.createIssue(filters, prependErrorToContent(error, content));
       })
       .catch(Error, function(error) {
-        console.error('uncaught error')
+        console.error('uncaught error');
         console.error(error.stack);
         return message(error.message, 5000).then(ui.listIssues);
       });
