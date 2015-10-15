@@ -10,6 +10,10 @@ function Project(id, name) {
     return name;
   };
 
+  this.toString = function() {
+    return id;
+  };
+
   this.serialize = function() {
     return {
       id: id,

@@ -3,6 +3,7 @@
 var _       = require('underscore');
 var Promise = require('bluebird');
 var request = require('request');
+var ValidationError = require('../../../errors/validation');
 
 module.exports = function JiraHttpClient(domain, username, password) {
 
@@ -22,6 +23,9 @@ module.exports = function JiraHttpClient(domain, username, password) {
       opts.json = data;
       request.post(buildUrl(path), opts, function(err, res, body) {
         if(err) return reject(err);
+        if(res.statusCode === 400) {
+          return reject(new ValidationError(err.message));
+        }
         return resolve(body);
       });
     });

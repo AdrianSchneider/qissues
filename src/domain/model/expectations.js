@@ -8,13 +8,13 @@ var ValidationError = require('../../errors/validation');
 /**
  * Defines a tracker's expectations from the user at a given point in time
  *
- * @param {Object} schema
+ * @param {Object} schemaDefinition
  *
  *   {
  *      fieldName: { type: string, required: bool, default: mixed, choices: Promise }
  *   }
  */
-module.exports = function Expectations(schema) {
+module.exports = function Expectations(schemaDefinition) {
 
   /**
    * Gets the initial values for the user to edit
@@ -24,7 +24,7 @@ module.exports = function Expectations(schema) {
    */
   this.getValues = function(overrideValues) {
     return _.extend(
-      _.mapObject(schema, function(v) { return v.default; }),
+      _.mapObject(schemaDefinition, function(v) { return v.default; }),
       overrideValues || {}
     );
   };
@@ -36,11 +36,11 @@ module.exports = function Expectations(schema) {
    */
   this.getSuggestions = function() {
     return Promise
-      .filter(Object.keys(schema), function(field) {
-        return !!schema[field].choices;
+      .filter(Object.keys(schemaDefinition), function(field) {
+        return !!schemaDefinition[field].choices;
       })
       .map(function(field) {
-        return schema[field].choices.then(function(choices) {
+        return schemaDefinition[field].choices.then(function(choices) {
           return [field, choices];
         });
       });
@@ -50,13 +50,17 @@ module.exports = function Expectations(schema) {
    * Throws a ValidationError when the incoming data does not match the schema
    *
    * @param {Object} data - user input
-   * @return {Object} data - user input
+   * @return {Promise<Object>} data - user input
    * @throws {ValidationError} when invalid
    */
   this.ensureValid = function(data) {
-    var result = joi.validate(data, objectSchemaToJoi(schema));
-    if (result.error) throw new ValidationError(result.error.message);
-    return data;
+    return objectSchemaToJoi(schemaDefinition)
+      .then(function(schema) {
+        var result = joi.validate(data, schema);
+        if (result.error) throw new ValidationError(result.error.message);
+        return data;
+      });
+
   };
 
   /**
@@ -65,15 +69,27 @@ module.exports = function Expectations(schema) {
    * @return {Joi.Schema}
    */
   var objectSchemaToJoi = function() {
-    return joi.object(_.mapObject(schema, fieldSchemaToJoi));
+    return Promise
+      .map(Object.keys(schemaDefinition), fieldSchemaToJoi)
+      .then(function(data) {
+        return data;
+      })
+      .reduce(function(out, field) {
+        out[field[0]] = field[1];
+        return out;
+      }, {})
+      .then(function(fields) {
+        return joi.object(fields);
+      });
   };
 
   /**
-   * Returns the schema field as a joi schema
+   * Promises the schema field as a joi schema
    *
-   * @return {Joi.Schema}
+   * @return {Promise<Joi.Schema>}
    */
-  var fieldSchemaToJoi = function(field) {
+  var fieldSchemaToJoi = function(fieldName) {
+    var field = schemaDefinition[fieldName];
     var node = joi[field.type]();
 
     if (field.required) {
@@ -82,9 +98,18 @@ module.exports = function Expectations(schema) {
       node = node.allow('');
     }
 
-    if (field.default)  node = node.default(field.default);
+    if (field.default)  {
+      node = node.default(field.default);
+    }
 
-    return node;
+    if (field.choices) {
+      return field.choices.then(function(choices) {
+        node.valid(choices.map(String));
+        return [fieldName, node];
+      });
+    }
+
+    return [fieldName, node];
   };
 
 };

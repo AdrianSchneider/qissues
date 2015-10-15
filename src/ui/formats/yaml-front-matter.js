@@ -1,5 +1,6 @@
 'use strict';
 
+var _       = require('underscore');
 var sprintf = require('util').format;
 
 module.exports = function(parser, yamlParser, contentField) {
@@ -48,7 +49,7 @@ module.exports = function(parser, yamlParser, contentField) {
   };
 
   var buildYaml = function(data) {
-    return yamlParser.safeDump(data);
+    return yamlParser.safeDump(_.omit(data, contentField));
   };
 
 };

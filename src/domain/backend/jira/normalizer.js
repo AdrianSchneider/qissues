@@ -65,7 +65,7 @@ function JiraNormalizer(metadata, config) {
         project: { id: config.project },
         summary: newIssue.getTitle(),
         description: newIssue.getDescription(),
-        issueType: { id: metadata.getTypeByIdName(newIssue.get('type')) }
+        issueType: { id: metadata.getTypeIdByName(newIssue.get('type')) }
       }
     };
 

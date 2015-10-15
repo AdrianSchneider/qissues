@@ -28,13 +28,13 @@ module.exports = function JiraMetadata(client, cache, projectKey) {
    */
   this.getTypes = function(invalidate) {
     var cached = cache.get('types', invalidate);
-    if (cached) return Promise.resolve(cached.map(User.unserialize));
+    if (cached) return Promise.resolve(cached.map(Type.unserialize));
 
     return client.get('/rest/api/2/issue/createmeta')
       .then(function(response) {
         return response.projects.map(function(project) {
           return project.issuetypes.map(function(type) {
-            return new Type(type.name);
+            return new Type(type.id, type.name);
           });
         });
       })
@@ -70,6 +70,9 @@ module.exports = function JiraMetadata(client, cache, projectKey) {
           return user.getAccount();
         });
       }, [])
+      .filter(function(user) {
+        return user.getAccount().indexOf('addon_') !== 0;
+      })
       .then(cache.setSerializedThenable('users', ttl));
   };
 
@@ -168,6 +171,16 @@ module.exports = function JiraMetadata(client, cache, projectKey) {
         });
       })
       .then(cache.setSerializedThenable('statuses', ttl));
+  };
+
+  this.getTypeIdByName = function(requestedType) {
+    return this.getTypes()
+      .filter(function(type) {
+        return type.getType() === requestedType;
+      })
+      .reduce(function(result, type) {
+        return type.getId();
+      }, null);
   };
 
 };

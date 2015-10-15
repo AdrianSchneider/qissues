@@ -19,7 +19,9 @@ module.exports = function NewIssue(title, description, attributes) {
 
   var attributeFunctions = {
     assignee: 'setAssignee',
-    sprint: 'setSprint'
+    sprint: 'setSprint',
+    type: 'setType',
+    priority: 'setPriority'
   };
 
   Object.keys(attributes).forEach(function(attribute) {
@@ -67,7 +69,7 @@ module.exports = function NewIssue(title, description, attributes) {
   };
 
   this.get = function(field) {
-    if(!this.has(field)) throw new ReferenceError(field + ' is not an existing attribute');
+    //if(!this.has(field)) throw new ReferenceError(field + ' is not an existing attribute');
     return attributes[field];
   };
 

@@ -1,6 +1,11 @@
 'use strict';
 
-function Type(type) {
+function Type(id, type) {
+
+  this.getId = function() {
+    return id;
+  };
+
   this.getType = function() {
     return type;
   };
@@ -10,12 +15,15 @@ function Type(type) {
   };
 
   this.serialize = function() {
-    return { type: type };
+    return {
+      id: id,
+      type: type
+    };
   };
 }
 
 Type.unserialize = function(json) {
-  return new Type(json.type);
+  return new Type(json.id, json.type);
 };
 
 module.exports = Type;

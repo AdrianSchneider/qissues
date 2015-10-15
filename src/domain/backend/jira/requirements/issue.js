@@ -8,6 +8,7 @@ var Sprint       = require('../../../model/meta/sprint');
 module.exports = {
   create: function(metadata) {
     return new Expectations({
+      project     : { type: 'string', required: true,  default: '', choices: metadata.getProjects() },
       title       : { type: 'string', required: true,  default: '' },
       description : { type: 'string', required: false, default: "" },
       type        : { type: 'string', required: true,  default: '', choices: metadata.getTypes() },

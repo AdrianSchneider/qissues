@@ -196,12 +196,15 @@ module.exports = function BlessedApplication(screen, app) {
       .then(function(issue) { return issue.id; })
       .then(ui.viewIssue)
       .catch(ValidationError, function(error) {
+        console.error('validation error caught');
         if(content === template) {
           return message('Cancelled').then(ui.listIssues);
         }
         ui.createIssue(filters, prependErrorToContent(error, content));
       })
       .catch(Error, function(error) {
+        console.error('uncaught error')
+        console.error(error.stack);
         return message(error.message, 5000).then(ui.listIssues);
       });
   };
