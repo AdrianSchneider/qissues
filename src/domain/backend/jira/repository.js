@@ -28,9 +28,9 @@ function JiraRepository(client, cache, normalizer) {
   /**
    * Fetches an issue by its number
    *
-   * @param {Report} report
+   * @param {String} num
    * @param {Boolean} invalidate - bypass cache
-   * @return {Promise<IssuesCollection>} - promised array of issues
+   * @return {Promise<Issue>} - promised array of issues
    */
   this.lookup = function(num, invalidate) {
     var cacheId = 'lookup:' + num;
