@@ -8,12 +8,6 @@ var promptWidget    = require('./widgets/prompt');
 var NewIssue        = require('../domain/model/newIssue');
 var NewComment      = require('../domain/model/newComment');
 var ValidationError = require('../errors/validation');
-var yamlFrontMatter = new (require('./formats/yaml-front-matter'))(
-  new (require('../util/frontmatter-yaml'))(
-    require('js-yaml')
-  ),
-  require('js-yaml')
-);
 
 /**
  * Main Qissues application
@@ -26,8 +20,7 @@ module.exports = function BlessedApplication(screen, app) {
   var tracker = app.get('tracker');
   var trackerNormalizer = app.get('tracker').getNormalizer();
   var trackerRepository = app.get('tracker').getRepository();
-
-  var format = yamlFrontMatter;
+  var format = app.get('ui.formats.yaml-frontmatter');
 
   /**
    * Starts up the user interface

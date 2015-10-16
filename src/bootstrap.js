@@ -1,20 +1,23 @@
 'use strict';
 
-var Container      = require('./services/container');
-var Cache          = require('./services/cache');
-var Storage        = require('./services/storage');
-var Browser        = require('./ui/browser');
-var IssueTracker   = require('./domain/model/tracker');
-var JiraClient     = require('./domain/backend/jira/client');
-var JiraRepository = require('./domain/backend/jira/repository');
-var JiraNormalizer = require('./domain/backend/jira/normalizer');
-var JiraMetadata   = require('./domain/backend/jira/metadata');
+var Container             = require('./services/container');
+var Cache                 = require('./services/cache');
+var Storage               = require('./services/storage');
+var Browser               = require('./ui/browser');
+var IssueTracker          = require('./domain/model/tracker');
+var JiraClient            = require('./domain/backend/jira/client');
+var JiraRepository        = require('./domain/backend/jira/repository');
+var JiraNormalizer        = require('./domain/backend/jira/normalizer');
+var JiraMetadata          = require('./domain/backend/jira/metadata');
+var YamlFrontMatterParser = require('./util/frontmatter-yaml');
+var YamlFrontMatterFormat = require('./ui/formats/yaml-front-matter');
 
 module.exports = function(configFile) {
   var main = function() {
     var container = new Container();
     setupCoreServices(container);
     setupJira(container);
+    setupUi(container);
     return container;
   };
 
@@ -58,6 +61,17 @@ module.exports = function(configFile) {
     ));
 
     container.set('tracker', container.get('tracker.jira'));
+  };
+
+  var setupUi = function(container) {
+    container.set('util.yaml-frontmatter', new YamlFrontMatterParser(
+      require('js-yaml')
+    ));
+
+    container.set('ui.formats.yaml-frontmatter', new YamlFrontMatterFormat(
+      container.get('util.yaml-frontmatter'),
+      require('js-yaml')
+    ));
   };
 
   return main();
