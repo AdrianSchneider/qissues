@@ -1,13 +1,15 @@
 'use strict';
 
-var _       = require('underscore');
-var Promise = require('bluebird');
-var Label   = require('../../model/meta/label');
-var User    = require('../../model/meta/user');
-var Sprint  = require('../../model/meta/sprint');
-var Type    = require('../../model/meta/type');
-var Status  = require('../../model/meta/status');
-var Project = require('../../model/meta/project');
+var _               = require('underscore');
+var util            = require('util');
+var Promise         = require('bluebird');
+var TrackerMetadata = require('../../model/trackerMetadata');
+var Label           = require('../../model/meta/label');
+var User            = require('../../model/meta/user');
+var Sprint          = require('../../model/meta/sprint');
+var Type            = require('../../model/meta/type');
+var Status          = require('../../model/meta/status');
+var Project         = require('../../model/meta/project');
 
 /**
  * Metadata for JIRA
@@ -16,9 +18,11 @@ var Project = require('../../model/meta/project');
  * @param {JiraClient} client
  * @param {Storage} storage
  */
-module.exports = function JiraMetadata(client, cache, projectKey) {
+function JiraMetadata(client, cache, projectKey) {
   var metadata = this;
   var ttl = 86400;
+
+  TrackerMetadata.call(this);
 
   /**
    * Fetches the available types in Jira
@@ -173,4 +177,8 @@ module.exports = function JiraMetadata(client, cache, projectKey) {
       .then(cache.setSerializedThenable('statuses', ttl));
   };
 
-};
+}
+
+util.inherits(JiraMetadata, TrackerMetadata);
+
+module.exports = JiraMetadata;

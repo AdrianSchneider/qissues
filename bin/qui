@@ -11,17 +11,22 @@ var configFile    = path.resolve(process.env.HOME, './.qi.json');
 program
   .version('2.0.0')
   .option('--clear-cache', 'Clears the cache')
+  .option('-v --verbose', 'Verbosity (increase verbosity with more vs)', function(add, level) {
+    return level + 1;
+  }, 0)
   .parse(process.argv);
 
 process.title = 'qissues';
 
 var container = bootstrap(configFile);
+container.set('logger', require('../src/services/logger')(program.verbose));
 
 if(program.clearCache) {
   container.get('cache').invalidateAll();
 }
 
 var app = new Application(container);
+
 app.start(
   new UserInterface(process.stdin, process.stdout)
 );

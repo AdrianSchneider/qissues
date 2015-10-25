@@ -19,7 +19,7 @@ function FilterableList(options) {
   var self = this;
   var sequencer = new Sequencer(this);
   var filters = options.filters;
-  var metadata = options.metadata;
+  var normalizer = options.normalizer;
   var reports = options.reports;
   var activeReport = options.report;
 
@@ -63,12 +63,14 @@ function FilterableList(options) {
    * Called when "fp" is pressed
    */
   var promptProject = function() {
-    promptList(
-      'Project',
-      _.pluck(metadata.projects, 'key'),
-      self.screen,
-      addFilter('project')
-    );
+    normalizer.getProjects().then(function(projects) {
+      promptList(
+        'Project',
+        projects,
+        self.screen,
+        addFilter('project')
+      );
+    });
   };
 
   /**
@@ -77,7 +79,7 @@ function FilterableList(options) {
   var promptAssignee = function() {
     promptList(
       'Assignee',
-      _.pluck(metadata.users, 'name'),
+      _.pluck(normalizer.users, 'name'),
       self.screen,
       addFilter('assignee')
     );
@@ -89,7 +91,7 @@ function FilterableList(options) {
   var promptStatus = function() {
     promptList(
       'Status',
-      metadata.statuses,
+      normalizer.statuses,
       self.screen,
       addFilter('status')
     );
@@ -101,7 +103,7 @@ function FilterableList(options) {
   var promptSprint = function() {
     promptList(
       'Sprint',
-      _.pluck(metadata.sprints, 'name'),
+      _.pluck(normalizer.sprints, 'name'),
       self.screen,
       addFilter('sprint')
     );

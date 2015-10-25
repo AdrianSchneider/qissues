@@ -15,7 +15,7 @@ var editable       = require('./editable');
  *
  * @return {blessed.List}
  */
-module.exports = function IssueList(parent, app, focus, data) {
+module.exports = function IssueList(parent, app, normalizer, focus, data) {
 
   var main = function() {
     var list = createList();
@@ -52,7 +52,7 @@ module.exports = function IssueList(parent, app, focus, data) {
       filters: app.getFilters(),
       report: app.getActiveReport(),
       reports: app.getReports(),
-      metadata: app.get('storage').get('metadata'),
+      normalizer: normalizer,
       name: 'issues',
       width: '100%',
       height: '100%',

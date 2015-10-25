@@ -1,5 +1,6 @@
 'use strict';
 
+var _               = require("underscore");
 var Promise         = require('bluebird');
 var sprintf         = require('util').format;
 var views           = require('./views');
@@ -17,10 +18,13 @@ var ValidationError = require('../errors/validation');
  */
 module.exports = function BlessedApplication(screen, app) {
   var ui = this;
-  var tracker = app.get('tracker');
   var trackerNormalizer = app.get('tracker').getNormalizer();
   var trackerRepository = app.get('tracker').getRepository();
+  var trackerMetadata = app.get('tracker').getRepository();
   var format = app.get('ui.formats.yaml-frontmatter');
+  var logger = app.get('logger');
+  var keys = app.get('ui.keys');
+  var showHelp = app.get('ui.help');
 
   /**
    * Starts up the user interface
@@ -29,6 +33,8 @@ module.exports = function BlessedApplication(screen, app) {
    * @param {String|null} id
    */
   ui.start = function(action, id) {
+    logger.debug('Booting up ui');
+
     if(!action) action = 'listIssues';
     ui[action](id);
 
@@ -36,29 +42,10 @@ module.exports = function BlessedApplication(screen, app) {
       ui.listIssues();
     });
 
-    setupKeyboard();
+    screen.key(keys.help, function() { showHelp(screen); });
+    screen.key(keys.exit, function() { app.exit(0); });
   };
 
-
-  /**
-   * Sets up the global keyboard handlers
-   */
-  var setupKeyboard = function() {
-    screen.key('C-c', function(ch, key) {
-      app.exit();
-    });
-
-    screen.key('?', function() {
-      var opt = {
-        stdio: 'inherit',
-        env: process.env,
-      };
-      screen.exec('less', ['-c', 'docs/help.txt'], opt, function() {});
-      screen.render();
-    });
-
-    screen.key('m', app.reloadMetadata);
-  };
 
   /**
    * Lists all of the issues
@@ -67,35 +54,37 @@ module.exports = function BlessedApplication(screen, app) {
    * @param {String|null} focus - jumps to matching line
    */
   ui.listIssues = function(invalidate, focus) {
+    logger.info('Loading issues');
     showLoading(invalidate ? 'Refreshing...' : 'Loading...');
 
     var list = views.issueList(
       screen,
       app,
+      trackerMetadata,
       focus,
       trackerRepository.query(app.getActiveReport(), !!invalidate)
     );
 
-    list.on('select', function(num) {
+    list.on(keys.select, function(num) {
       ui.viewIssue(list.getSelected());
     });
 
-    list.key('S-i', function() {
+    list.key(keys['issue.lookup'], function() {
       prompt('Open Issue', screen).then(ui.viewIssue);
     });
 
-    list.key('c', function() {
+    list.key(keys['issue.create.contextual'], function() {
       ui.createIssue(app.report.getFilters());
     });
-    list.key('S-c', function() {
+    list.key(keys['issue.create'], function() {
       ui.createIssue();
     });
 
-    list.key('C-r', function() {
+    list.key(keys.refresh, function() {
       ui.listIssues(true, list.getSelected());
     });
 
-    list.key('w', function() {
+    list.key(keys.web, function() {
       app.get('browser').open(trackerNormalizer.getIssuesUrl(app.getActiveReport()));
     });
 
@@ -108,28 +97,32 @@ module.exports = function BlessedApplication(screen, app) {
    * @param {Boolean} invalidate
    */
   ui.viewIssue = function(num, invalidate) {
+    logger.info('Viewing issue ' + num);
+
     clearScreen();
     showLoading(invalidate ? 'Refreshing...' : 'Loading ' + num + '...');
     var view = views.single(screen, app, trackerRepository.lookup(num, invalidate));
 
-    view.key(['escape', 'h'], function() {
+    view.key(keys.back, function() {
       ui.listIssues(null, num);
     });
 
-    view.key('C-r', refreshIssue(num));
+    view.key(keys.refresh, function() {
+      refreshIssue(num);
+    });
 
-    view.key('w', function() {
+    view.key(keys.web, function() {
       app.get('browser').open(trackerNormalizer.getIssueUrl(num, app.getActiveReport()));
     });
 
-    view.key('c', function() {
+    view.key(keys['issue.comment.inline'], function() {
       prompt('Comment')
         .then(postComment(num))
         .then(refreshIssue(num))
         .catch(ValidationError, function(){});
     });
 
-    view.key('S-c', function() {
+    view.key(keys['issue.comment.external'], function() {
       editExternally('')
         .then(postComment(num))
         .then(refreshIssue(num))
@@ -167,6 +160,7 @@ module.exports = function BlessedApplication(screen, app) {
    * @param {String|null} draft - last edit attempt
    */
   ui.createIssue = function(filters, draft) {
+    logger.info('Creating new issue' + (draft ? ' with previous content' : ''));
     showLoading();
 
     var content;
@@ -188,15 +182,14 @@ module.exports = function BlessedApplication(screen, app) {
       .then(createIssue)
       .then(ui.viewIssue)
       .catch(ValidationError, function(error) {
-        console.error('validation error caught');
+        logger.debug('Caught validation error: ' + error.message);
         if(content === template) {
           return message('Cancelled').then(ui.listIssues);
         }
         ui.createIssue(filters, prependErrorToContent(error, content));
       })
       .catch(Error, function(error) {
-        console.error('uncaught error');
-        console.error(error.stack);
+        logger.error('Caught error: ' + error.toString());
         return message(error.message, 5000).then(ui.listIssues);
       });
   };

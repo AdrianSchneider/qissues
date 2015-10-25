@@ -3,6 +3,8 @@
 var Container             = require('./services/container');
 var Cache                 = require('./services/cache');
 var Storage               = require('./services/storage');
+var keys                  = require('./ui/keys');
+var help                  = require('./ui/help');
 var Browser               = require('./ui/browser');
 var IssueTracker          = require('./domain/model/tracker');
 var JiraClient            = require('./domain/backend/jira/client');
@@ -57,7 +59,8 @@ module.exports = function(configFile) {
 
     container.set('tracker.jira', new IssueTracker(
       container.get('tracker.jira.normalizer'),
-      container.get('tracker.jira.repository')
+      container.get('tracker.jira.repository'),
+      container.get('tracker.jira.metadata')
     ));
 
     container.set('tracker', container.get('tracker.jira'));
@@ -72,6 +75,9 @@ module.exports = function(configFile) {
       container.get('util.yaml-frontmatter'),
       require('js-yaml')
     ));
+
+    container.set('ui.keys', keys(container.get('config')));
+    container.set('ui.help', help('less', ['-c'], 'docs/help.txt'));
   };
 
   return main();
