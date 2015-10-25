@@ -1,12 +1,15 @@
+'use strict';
+
 var blessed = require('blessed');
 
 /**
- * Prompt for user input
+ * A prompt for user input
  *
- * @param string   prompt text
- * @param function done   err,text
+ * @param {String} text
+ * @param {blessed.Node} parent
+ * @return {blessed.Node}
  */
-module.exports = function Prompt(text, parent, done) {
+module.exports = function Prompt(text, parent) {
   var form = new blessed.form({
     top: 'center',
     left: 'center',
@@ -44,15 +47,6 @@ module.exports = function Prompt(text, parent, done) {
     }
   });
 
-  input.key('C-c', function() {
-    return done(null, null);
-  });
-
-  input.readInput(function(err, text) {
-    parent.remove(form);
-    parent.render();
-    done(err, text);
-  });
-
   parent.render();
+  return form;
 };

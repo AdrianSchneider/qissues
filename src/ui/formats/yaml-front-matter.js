@@ -13,7 +13,9 @@ module.exports = function(parser, yamlParser, contentField) {
    * @param {Joi.Schema} schema
    * @return {Promise<String>}
    */
-  this.seed = function(expectations, values) {
+  this.seed = function(expectations, values, draft, error) {
+    if (draft) return prependErrorToContent(error, draft);
+
     var data = expectations.getValues(values);
     var template = sprintf(
       "---\n%s---\n%s",
@@ -37,6 +39,22 @@ module.exports = function(parser, yamlParser, contentField) {
         return template;
       });
   };
+
+  /**
+   * Prepends an error message to the content for the user to edit
+   *
+   * @param {Error} error
+   * @param {String} content
+   */
+  var prependErrorToContent = function(error, content) {
+    var pos = content.indexOf('---');
+    return sprintf(
+      '# Error: %s\n%s',
+      error.message,
+      typeof pos !== 'undefined' ? content.substr(pos) : content
+    );
+  };
+
 
   /**
    * Parses data from a YAML front-matter document

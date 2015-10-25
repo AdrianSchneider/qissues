@@ -3,6 +3,7 @@
 var _              = require('underscore');
 var sprintf        = require('util').format;
 var filterableList = require('../widgets/filterableList');
+var UserInput      = require('../input');
 var editable       = require('./editable');
 
 /**
@@ -15,7 +16,7 @@ var editable       = require('./editable');
  *
  * @return {blessed.List}
  */
-module.exports = function IssueList(parent, app, normalizer, focus, data) {
+module.exports = function IssueList(parent, app, normalizer, metadata, focus, data) {
 
   var main = function() {
     var list = createList();
@@ -52,7 +53,10 @@ module.exports = function IssueList(parent, app, normalizer, focus, data) {
       filters: app.getFilters(),
       report: app.getActiveReport(),
       reports: app.getReports(),
+      input: new UserInput(parent, app.get('ui.keys')),
+      logger: app.get('logger'),
       normalizer: normalizer,
+      metadata: metadata,
       name: 'issues',
       width: '100%',
       height: '100%',

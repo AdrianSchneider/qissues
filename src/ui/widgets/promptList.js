@@ -1,14 +1,17 @@
+'use strict';
+
 var blessed = require('blessed');
 var List    = require('./list');
 
 /**
- * Prompt for user input
+ * A prompt for user input
  *
- * @param string   prompt text
- * @param array    options
- * @param function done   err,text
+ * @param {String} text
+ * @param {blessed.Node} parent
+ * @param {Array<String>} options
+ * @return {blessed.Node}
  */
-module.exports = function PromptList(text, options, parent, done) {
+module.exports = function(text, parent, options) {
   var list = new List({
     parent: parent,
     width: '40%',
@@ -26,9 +29,10 @@ module.exports = function PromptList(text, options, parent, done) {
     }
   });
 
-  list.setItems(options);
+  list.setItems(options.map(String));
   list.select(0);
   list.focus();
+  list.render();
 
   list.prepend(new blessed.Text({
     left: 2,
@@ -36,20 +40,6 @@ module.exports = function PromptList(text, options, parent, done) {
     fg: 'green'
   }));
 
-  list.on('select', function(item, i) {
-    parent.remove(list);
-    parent.render();
-    return done(null, item.content);
-  });
-
-  list.key(['escape', 'h'], function() {
-    parent.remove(list);
-    parent.render();
-    done(null, '');
-    return false;
-  });
-
   parent.render();
-
   return list;
 };

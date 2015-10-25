@@ -4,10 +4,11 @@ var _               = require("underscore");
 var Promise         = require('bluebird');
 var sprintf         = require('util').format;
 var views           = require('./views');
+var UserInput       = require('./input');
 var messageWidget   = require('./widgets/message');
-var promptWidget    = require('./widgets/prompt');
 var NewIssue        = require('../domain/model/newIssue');
 var NewComment      = require('../domain/model/newComment');
+var Cancellation    = require('../errors/cancellation');
 var ValidationError = require('../errors/validation');
 
 /**
@@ -20,11 +21,12 @@ module.exports = function BlessedApplication(screen, app) {
   var ui = this;
   var trackerNormalizer = app.get('tracker').getNormalizer();
   var trackerRepository = app.get('tracker').getRepository();
-  var trackerMetadata = app.get('tracker').getRepository();
+  var trackerMetadata = app.get('tracker').getMetadata();
   var format = app.get('ui.formats.yaml-frontmatter');
   var logger = app.get('logger');
   var keys = app.get('ui.keys');
   var showHelp = app.get('ui.help');
+  var input = new UserInput(screen, keys);
 
   /**
    * Starts up the user interface
@@ -60,17 +62,18 @@ module.exports = function BlessedApplication(screen, app) {
     var list = views.issueList(
       screen,
       app,
+      trackerNormalizer,
       trackerMetadata,
       focus,
       trackerRepository.query(app.getActiveReport(), !!invalidate)
     );
 
-    list.on(keys.select, function(num) {
+    list.on('select', function(num) {
       ui.viewIssue(list.getSelected());
     });
 
     list.key(keys['issue.lookup'], function() {
-      prompt('Open Issue', screen).then(ui.viewIssue);
+      input.ask('Open Issue', screen).then(ui.viewIssue);
     });
 
     list.key(keys['issue.create.contextual'], function() {
@@ -116,17 +119,17 @@ module.exports = function BlessedApplication(screen, app) {
     });
 
     view.key(keys['issue.comment.inline'], function() {
-      prompt('Comment')
+      input.ask('Comment')
         .then(postComment(num))
         .then(refreshIssue(num))
-        .catch(ValidationError, function(){});
+        .catch(Cancellation, _.noop);
     });
 
     view.key(keys['issue.comment.external'], function() {
-      editExternally('')
+      input.editExternally('')
         .then(postComment(num))
         .then(refreshIssue(num))
-        .catch(ValidationError, function(){});
+        .catch(Cancellation, _.noop);
     });
   };
 
@@ -159,54 +162,30 @@ module.exports = function BlessedApplication(screen, app) {
    * @param {FilterSet|null} filters
    * @param {String|null} draft - last edit attempt
    */
-  ui.createIssue = function(filters, draft) {
+  ui.createIssue = function(filters, draft, failure) {
     logger.info('Creating new issue' + (draft ? ' with previous content' : ''));
     showLoading();
 
     var content;
-    var template;
     var expectations = trackerNormalizer.getNewIssueRequirements();
 
-    format.seed(expectations)
-      .then(function(seeded) {
-        content = draft || seeded;
-        template = seeded;
-        return content;
-      })
-      .then(editExternally)
-      .then(function(input) {
-        content = input;
-        return format.parse(input);
-      })
+    format.seed(expectations, filters, draft, failure)
+      .then(input.editExternally)
+      .then(function(input) { content = input;  return content; })
+      .then(format.parse)
       .then(expectations.ensureValid)
       .then(createIssue)
       .then(ui.viewIssue)
+      .catch(Cancellation, function() {
+        message('Cancelled').then(ui.listIssues);
+      })
       .catch(ValidationError, function(error) {
-        logger.debug('Caught validation error: ' + error.message);
-        if(content === template) {
-          return message('Cancelled').then(ui.listIssues);
-        }
-        ui.createIssue(filters, prependErrorToContent(error, content));
+        ui.createIssue(filters, content, error);
       })
       .catch(Error, function(error) {
         logger.error('Caught error: ' + error.toString());
-        return message(error.message, 5000).then(ui.listIssues);
+        message(error.message, 5000).then(ui.listIssues);
       });
-  };
-
-  /**
-   * Prepends an error message to the content for the user to edit
-   *
-   * @param {Error} error
-   * @param {String} content
-   */
-  var prependErrorToContent = function(error, content) {
-    var pos = content.indexOf('---');
-    return sprintf(
-      '# Error: %s\n%s',
-      error.message,
-      typeof pos !== 'undefined' ? content.substr(pos) : content
-    );
   };
 
   /**
@@ -234,32 +213,6 @@ module.exports = function BlessedApplication(screen, app) {
   var clearScreen = function() {
     screen.children.forEach(function(child) { screen.remove(child); });
     screen.render();
-  };
-
-  /**
-   * Returns the promise of text from the user input
-   *
-   * @param {String} text to prompt user with
-   * @return {Promise<String>} user input
-   */
-  var prompt = function(text) {
-    return Promise.promisify(promptWidget)(text, screen);
-  };
-
-  /**
-   * Returns the promise of text from externally edited text
-   *
-   * @param {String} initial
-   * @return {Promise<String>} user input
-   */
-  var editExternally = function(initial) {
-    // promisify fails
-    return new Promise(function(resolve, reject) {
-      screen.readEditor({ value: initial }, function(err, data) {
-        if (err) return reject(err);
-        return resolve(data);
-      });
-    });
   };
 
   /**

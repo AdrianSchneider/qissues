@@ -13,7 +13,7 @@ module.exports = function(config) {
     'exit'                    : 'C-c',
     'web'                     : 'w',
     'issue.lookup'            : 'S-i',
-    'issue.create'            : 'C',
+    'issue.create'            : 'S-c',
     'issue.create.contextual' : 'c',
     'issue.comment.inline'    : 'c',
     'issue.comment.external'  : 'S-c',
