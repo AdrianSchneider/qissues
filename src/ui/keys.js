@@ -17,6 +17,18 @@ module.exports = function(config) {
     'issue.create.contextual' : 'c',
     'issue.comment.inline'    : 'c',
     'issue.comment.external'  : 'S-c',
-    'input.cancel'            : ['C-c', 'escape']
+    'input.cancel'            : ['C-c', 'escape'],
+    'leader'                  : ',',
+    'filter.list'             : 'fl',
+    'filter.project'          : 'fp',
+    'filter.assignee'         : 'fa',
+    'filter.status'           : 'fs',
+    'filter.sprint'           : 'fS',
+    'reports.list'            : 'rl',
+    'reports.save'            : 'rs',
+    'change.title'            : 'ct',
+    'change.assignee'         : 'ca',
+    'change.status'           : 'cs',
+    'change.sprint'           : 'cS'
   }, config.keys || {});
 };

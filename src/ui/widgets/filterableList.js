@@ -3,15 +3,15 @@
 var _            = require('underscore');
 var util         = require('util');
 var blessed      = require('blessed');
-var Sequencer    = require('../events/sequencer');
-var Filter       = require('../../domain/model/filter');
-var FilterSet    = require('../../domain/model/filterSet');
 var message      = require('./message');
-var filterView   = require('../views/filters');
-var reportsList  = require('../views/reports');
 var List         = require('./list');
 var prompt       = require('./prompt');
 var promptList   = require('./promptList');
+var filterView   = require('../views/filters');
+var reportsList  = require('../views/reports');
+var Sequencer    = require('../events/sequencer');
+var Filter       = require('../../domain/model/filter');
+var FilterSet    = require('../../domain/model/filterSet');
 var Cancellation = require('../../errors/cancellation');
 
 /**
@@ -20,28 +20,33 @@ var Cancellation = require('../../errors/cancellation');
 function FilterableList(options) {
   List.call(this, options || {});
 
+  if (!options.filters)   throw new Error('FilterableList requires options.filters');
+  if (!options.reports)   throw new Error('FilterableList requires options.reports');
+  if (!options.metadata)  throw new Error('FilterableList requires options.metadata');
+  if (!options.report)    throw new Error('FilterableList requires options.report');
+  if (!options.input)     throw new Error('FilterableList requires options.input');
+  if (!options.keyConfig) throw new Error('FilterableList requires options.keyConfig');
+
   var self = this;
-  var sequencer = new Sequencer(this);
   var filters = options.filters;
   var metadata = options.metadata;
   var reports = options.reports;
   var activeReport = options.report;
   var input = options.input;
+  var keys = options.keyConfig;
 
   /**
    * Sets up the filtering system
    */
-  var setupFiltering = function() {
-    sequencer
-      .on('fl', showFilters)
-      .on('fp', filter(metadata.getProjects, 'Project',  'project'))
-      .on('fa', filter(metadata.getUsers,    'Assignee', 'assignee'))
-      .on('fs', filter(metadata.getStatuses, 'Status',   'status'))
-      .on('fS', filter(metadata.getSprints,  'Sprint',   'sprint'));
-
-    sequencer
-      .on('rs', reportsSave)
-      .on('rl', showReportsList);
+  var construct = function() {
+    (new Sequencer(self, keys.leader))
+      .on(keys['filter.list'],     showFilters)
+      .on(keys['filter.project'],  filter(metadata.getProjects, 'Project',  'project'))
+      .on(keys['filter.assignee'], filter(metadata.getUsers,    'Assignee', 'assignee'))
+      .on(keys['filter.status'],   filter(metadata.getStatuses, 'Status',   'status'))
+      .on(keys['filter.sprint'],   filter(metadata.getSprints,  'Sprint',   'sprint'))
+      .on(keys['reports.save'],    reportsSave)
+      .on(keys['reports.list'],    showReportsList);
   };
 
   var showFilters = function() {
@@ -56,7 +61,7 @@ function FilterableList(options) {
     return function() {
       getOptions()
         .then(input.selectFromListWith(message))
-        .then(function(text) { console.error(text); filters.add(new Filter(filter, text)); })
+        .then(function(text) { filters.add(new Filter(filter, text)); })
         .catch(Cancellation, _.noop);
     };
   };
@@ -71,7 +76,7 @@ function FilterableList(options) {
     reportsList(self.screen, options.reports, options.report);
   };
 
-  setupFiltering();
+  construct();
   return self;
 }
 

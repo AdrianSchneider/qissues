@@ -70,6 +70,7 @@ module.exports = function IssueList(parent, app, normalizer, metadata, focus, da
       selectedFg: 'black',
       selectedBg: 'green',
       keys: true,
+      keyConfig: app.get('ui.keys'),
       vi: true
     });
 

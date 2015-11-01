@@ -1,63 +1,57 @@
-var _          = require('underscore');
-var prompt     = require('../widgets/prompt');
-var promptList = require('../widgets/promptList');
-var Sequencer  = require('../events/sequencer');
+'use strict';
 
-module.exports = function(view, app) {
-  var sequencer = new Sequencer(view);
+var _            = require('underscore');
+var prompt       = require('../widgets/prompt');
+var promptList   = require('../widgets/promptList');
+var Sequencer    = require('../events/sequencer');
+var Cancellation = require('../../errors/cancellation');
 
-  sequencer.on('ct', function() {
-    prompt('Title', view.screen, function(err, title) {
-      if(title) view.emit('issue.change', { 
-        issue: view.getIssue().key,
-        changes: { title: title }
-      });
-    });
+module.exports = function(view, keys, input) {
+  var sequencer = new Sequencer(view, keys.leader);
+  var metadata;
+
+  sequencer.on(keys['change.title'], function() {
+    input.ask('Title')
+      .then(emitChanged('title'))
+      .catch(Cancellation, _.noop);
   });
 
-  sequencer.on('ca', function() {
-    promptList(
-      'Assignee', 
-      ['Unassigned'].concat(_.pluck(app.metadata.users, 'name')),
-      view.screen, 
-      function(err, assignee) {
-        if(assignee) view.emit('issue.change', { 
-          issue: view.getIssue().key,
-          changes: { assignee: assignee == 'Unassigned' ? '' : assignee  }
-        });
-      }
-    );
+  sequencer.on(keys['change.assignee'], function() {
+    metadata.fetchUsers()
+      .then(prepend('Unassigned'))
+      .then(input.selectFromListWith('Asignee'))
+      .then(emitChanged('assignee'))
+      .catch(Cancellation, _.noop);
   });
 
-  sequencer.on('cs', function() {
-    var project = _.find(app.metadata.projects, function(project) {
-      return project.key == view.getIssue().fields.project.key;
-    });
-
-    promptList(
-      'Status', 
-      _.pluck(project.statuses, 'name'),
-      view.screen, 
-      function(err, status) {
-        if(status) view.emit('issue.change', { 
-          issue: view.getIssue().key,
-          changes: { status: status }
-        });
-      }
-    );
+  sequencer.on(keys['change.status'], function() {
+    metadata.fetchStatuses()
+      .then(input.selectFromListWith('Status'))
+      // TODO filter by statuses in this project
+      .then(emitChanged('status'))
+      .catch(Cancellation, _.noop);
   });
 
-  sequencer.on('cS', function() {
-    promptList(
-      'Sprint',
-      ['Backlog'].concat(_.pluck(app.metadata.sprints, 'name')),
-      view.screen,
-      function(err, sprint) {
-        if(sprint) view.emit('issue.change', {
-          issue: view.getIssue().key,
-          changes: { sprint: sprint }
-        });
-      }
-    );
+  sequencer.on(keys['change.sprint'], function() {
+    metadata.fetchSprints()
+      .then(prepend('Backlog'))
+      .then(input.selectFromListWith('Sprint'))
+      .then(emitChanged('sprint'))
+      .catch(Cancellation, _.noop);
   });
+
+  var emitChanged = function(field) {
+    return function(content) {
+      var changes = {};
+      changes[field] = content;
+      view.emit('issue.change', { issue: view.getIssue().key, changes: changes });
+    };
+  };
+
+  var prepend = function(option) {
+    return function(options) {
+      return [option].concat(options);
+    };
+  };
+
 };
