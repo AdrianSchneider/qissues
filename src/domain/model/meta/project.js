@@ -1,6 +1,6 @@
 'use strict';
 
-function Project(id, name) {
+function Project(id, name, internalId) {
 
   this.getId = function() {
     return id;
@@ -14,17 +14,22 @@ function Project(id, name) {
     return id;
   };
 
+  this.getInternalId = function() {
+    return internalId;
+  };
+
   this.serialize = function() {
     return {
       id: id,
-      name: name
+      name: name,
+      internalId: internalId
     };
   };
 
 }
 
 Project.unserialize = function(json) {
-  return new Project(json.id, json.name);
+  return new Project(json.id, json.name, json.internalId);
 };
 
 module.exports = Project;

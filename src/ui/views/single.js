@@ -71,18 +71,15 @@ function buildMeta(issue) {
     assignee    : issue.get('assignee')
   }, String);
 
-  var out = '';
-
-  out += '\t{blue-fg}' + meta.status + '{/blue-fg} ';
-    out += meta.type;
-
-  out += getAssigned(meta);
-  out += ' ' + meta.priority;
-  out += '\n\treported by ' + meta.reporter;
-    out += ' on ' + meta.dateCreated;
-
-  return out;
-
+  return sprintf(
+    '\t{blue-fg}%s{/blue-fg} %s %s %s\n\treported by %s on %s',
+    meta.status,
+    meta.type,
+    getAssigned(meta),
+    meta.priority,
+    meta.reporter,
+    meta.dateCreated
+  );
 }
 
 function getAssigned(meta) {
@@ -93,7 +90,7 @@ function getAssigned(meta) {
 function buildBody(issue) {
   return sprintf(
     '{yellow-fg}DESCRIPTION{/yellow-fg}\n\n\t%s',
-    issue.getDescription() ? issue.getDescription().replace(/\n/g, '\n\t') : 'No description'
+    issue.getDescription() ? maintainIndentation(issue.getDescription(), 1) : 'No description'
   );
 }
 
@@ -107,12 +104,18 @@ function buildComments(issue) {
   return out + issue.fields.comment.comments.map(function(comment) {
     return '\n\n\t{blue-fg}' + comment.author.name + '{/blue-fg} ' +
       'at {blue-fg}' + formatDate(comment.created) + '{/blue-fg}\n\n\t\t' +
-      formatCommentText(comment.body);
+      maintainIndentation(comment.body, 2);
   }).join('');
 }
 
 function formatCommentText(text) {
   return text.split('\n').join('\n\t\t');
+}
+
+function maintainIndentation(text, level) {
+  return text
+    .split('\n')
+    .join('\n' + _.range(level).map(_.constant('\t')));
 }
 
 function formatDate(date) {

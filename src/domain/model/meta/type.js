@@ -11,7 +11,7 @@ function Type(id, type) {
   };
 
   this.toString = function() {
-    return type;
+    return id || type;
   };
 
   this.serialize = function() {

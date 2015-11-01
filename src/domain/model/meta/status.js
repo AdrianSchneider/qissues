@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = function Status(status) {
+function Status(status) {
 
   this.getStatus = function() {
     return status;
@@ -10,4 +10,14 @@ module.exports = function Status(status) {
     return status;
   };
 
+  this.serialize = function() {
+    return { status: status };
+  };
+
+}
+
+Status.unserialize = function(json) {
+  return new Status(json.status);
 };
+
+module.exports = Status;

@@ -1,16 +1,17 @@
 'use strict';
 
-var _          = require('underscore');
-var util       = require('util');
-var blessed    = require('blessed');
-var Sequencer  = require('../events/sequencer');
-var Filter     = require('../../domain/model/filter');
-var FilterSet  = require('../../domain/model/filterSet');
-var message    = require('./message');
-var filterView = require('../views/filters');
-var List       = require('./list');
-var prompt     = require('./prompt');
-var promptList = require('./promptList');
+var _            = require('underscore');
+var util         = require('util');
+var blessed      = require('blessed');
+var Sequencer    = require('../events/sequencer');
+var Filter       = require('../../domain/model/filter');
+var FilterSet    = require('../../domain/model/filterSet');
+var message      = require('./message');
+var filterView   = require('../views/filters');
+var reportsList  = require('../views/reports');
+var List         = require('./list');
+var prompt       = require('./prompt');
+var promptList   = require('./promptList');
 var Cancellation = require('../../errors/cancellation');
 
 /**
@@ -40,7 +41,7 @@ function FilterableList(options) {
 
     sequencer
       .on('rs', reportsSave)
-      .on('rl', reportsList);
+      .on('rl', showReportsList);
   };
 
   var showFilters = function() {
@@ -55,7 +56,7 @@ function FilterableList(options) {
     return function() {
       getOptions()
         .then(input.selectFromListWith(message))
-        .then(function(text) { filters.add(new Filter(filter, text)); })
+        .then(function(text) { console.error(text); filters.add(new Filter(filter, text)); })
         .catch(Cancellation, _.noop);
     };
   };
@@ -66,35 +67,8 @@ function FilterableList(options) {
       .catch(Cancellation, _.noop);
   };
 
-  var reportsList = function() {
-    var reportList = promptList(
-      'Reports',
-      _.reject(
-        _.invoke(reports.getReports(), 'getName'),
-        function(r) { return r === 'default'; }
-      ),
-      self.screen
-    );
-
-    reportList.on('select', function(item, i) {
-      if (!item.content) return;
-      var report = reports.get(item.content);
-      activeReport.replaceFilters(report.getFilters());
-    });
-
-    reportList.on(['escape', 'h'], function() {
-      self.screen.remove(reportList);
-      self.screen.render();
-    });
-
-    reportList.key('x', function() {
-      var name = reportList.items[reportList.selected].content;
-      reports.remove(name);
-      reportList.removeItem(reportList.selected);
-      reportList.select(0);
-
-      self.screen.render();
-    });
+  var showReportsList = function() {
+    reportsList(self.parent, options.reports);
   };
 
   setupFiltering();

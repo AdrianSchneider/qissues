@@ -47,7 +47,7 @@ module.exports = function UserInput(parent, keys) {
       list.on('select', function(item, i) {
         parent.remove(list);
         parent.render();
-        respondOrCancel(text, resolve, reject);
+        respondOrCancel(item.content, resolve, reject);
       });
 
       list.key(keys.back, function() {

@@ -153,7 +153,7 @@ function JiraMetadata(client, cache, projectKey) {
     return client.get('/rest/api/2/issue/createmeta')
       .then(function(response) {
         return response.projects.map(function(project) {
-          return new Project(project.key, project.name);
+          return new Project(project.key, project.name, project.id);
         });
       });
   };
@@ -168,11 +168,18 @@ function JiraMetadata(client, cache, projectKey) {
     var cached = cache.get('statuses', invalidate);
     if (cached) return Promise.resolve(cached.map(Status.unserialize));
 
-    return client.get('/rest/api/2/project/' + projectKey, '/status')
-      .then(function(response) {
-        return response.statuses.map(function(status) {
-          return new Status(status.name);
-        });
+    return metadata.getProjects()
+      .map(function(project) {
+        return client.get('/rest/api/2/project/' + project.getInternalId() + '/statuses')
+          .reduce(function(statuses, type) {
+            return _.uniq(statuses.concat(type.statuses), _.property('name'));
+          }, []);
+      })
+      .reduce(function(statuses, statusesPerProject) {
+        return _.uniq(statuses.concat(statusesPerProject), _.property('name'));
+      }, [])
+      .map(function(status) {
+        return new Status(status.name);
       })
       .then(cache.setSerializedThenable('statuses', ttl));
   };
