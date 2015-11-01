@@ -4,6 +4,7 @@ var _              = require('underscore');
 var sprintf        = require('util').format;
 var filterableList = require('../widgets/filterableList');
 var UserInput      = require('../input');
+var editable       = require('./editable');
 
 /**
  * Issues View
@@ -19,6 +20,7 @@ module.exports = function IssueList(parent, app, normalizer, metadata, focus, da
 
   var main = function() {
     var list = createList();
+    editable(list, parent);
     list.issues = [];
 
     data.done(function(issues) {
