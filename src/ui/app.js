@@ -77,7 +77,7 @@ module.exports = function BlessedApplication(screen, app) {
     });
 
     list.key(keys['issue.create.contextual'], function() {
-      ui.createIssue(app.report.getFilters());
+      ui.createIssue(app.getFilters());
     });
     list.key(keys['issue.create'], function() {
       ui.createIssue();
