@@ -47,6 +47,15 @@ module.exports = function Prompt(text, parent) {
     }
   });
 
+  input.on('remove', function() {
+    parent.remove(form);
+  });
+
+  input.remove = function() {
+    parent.remove(form);
+    parent.render();
+  };
+
   parent.render();
-  return form;
+  return input;
 };

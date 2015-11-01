@@ -17,7 +17,6 @@ module.exports = function UserInput(parent, keys) {
   this.ask = function(text) {
     return new Promise(function(resolve, reject) {
       var input = prompt(text, parent);
-
       input.key(keys['input.cancel'], function() {
         parent.remove(input);
         parent.render();
@@ -25,8 +24,7 @@ module.exports = function UserInput(parent, keys) {
       });
 
       input.readInput(function(err, text) {
-        parent.remove(input);
-        parent.render();
+        input.remove();
         respondOrCancel(text, resolve, reject);
       });
 

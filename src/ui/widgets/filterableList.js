@@ -62,7 +62,7 @@ function FilterableList(options) {
   };
 
   var reportsSave = function() {
-    prompt('Save as')
+    input.ask('Save as')
       .then(function(name) { reports.addReport(name, filters); })
       .catch(Cancellation, _.noop);
   };

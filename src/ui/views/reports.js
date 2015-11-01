@@ -18,7 +18,7 @@ module.exports = function ReportList(parent, reports, activeReport) {
     parent.render();
   });
 
-  list.on(['escape', 'h'], function() {
+  list.key(['escape', 'h'], function() {
     parent.remove(list);
     parent.render();
   });

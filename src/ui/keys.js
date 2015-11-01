@@ -17,5 +17,6 @@ module.exports = function(config) {
     'issue.create.contextual' : 'c',
     'issue.comment.inline'    : 'c',
     'issue.comment.external'  : 'S-c',
+    'input.cancel'            : ['C-c', 'escape']
   }, config.keys || {});
 };
