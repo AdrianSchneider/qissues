@@ -68,7 +68,7 @@ function FilterableList(options) {
   };
 
   var showReportsList = function() {
-    reportsList(self.parent, options.reports);
+    reportsList(self.screen, options.reports, options.report);
   };
 
   setupFiltering();
