@@ -2,7 +2,6 @@
 
 var _        = require('underscore');
 var blessed  = require('blessed');
-var editable = require('./editable');
 var sprintf  = require('util').format;
 
 /**
@@ -31,7 +30,6 @@ module.exports = function(parent, app, issue) {
   });
 
   issue.then(function(issue) {
-    editable(box, app);
     box.setContent(renderIssue(issue));
     box.getIssue = function() {
       return issue;
