@@ -28,9 +28,5 @@ module.exports = function(config) {
     'filter.sprint'           : 'fS',
     'reports.list'            : 'rl',
     'reports.save'            : 'rs',
-    'change.title'            : 'ct',
-    'change.assignee'         : 'ca',
-    'change.status'           : 'cs',
-    'change.sprint'           : 'cS'
   }, config.keys || {});
 };
