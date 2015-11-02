@@ -95,6 +95,13 @@ function FilterSet(initialFilters) {
     }));
   };
 
+  this.toValues = function() {
+    return filters.reduce(function(out, filter) {
+      out[filter.getType()] = filter.getValue();
+      return out;
+    }, {});
+  };
+
   /**
    * Convert the filters into JQL
    * @return string

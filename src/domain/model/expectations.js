@@ -23,10 +23,10 @@ module.exports = function Expectations(schemaDefinition) {
    * @return {Object} key/value pairs
    */
   this.getValues = function(overrideValues) {
-    return _.extend(
-      _.mapObject(schemaDefinition, function(v) { return v.default; }),
-      overrideValues || {}
-    );
+    if (!overrideValues) overrideValues = {};
+    return _.mapObject(schemaDefinition, function(field, key) {
+      return overrideValues[key] || field.default;
+    });
   };
 
   /**
