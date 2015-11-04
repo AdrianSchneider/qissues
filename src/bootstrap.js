@@ -3,6 +3,7 @@
 var Container             = require('./services/container');
 var Cache                 = require('./services/cache');
 var Storage               = require('./services/storage');
+var Config                = require('./services/config');
 var keys                  = require('./ui/keys');
 var help                  = require('./ui/help');
 var Browser               = require('./ui/browser');
@@ -24,26 +25,35 @@ module.exports = function(configFile, cacheFile) {
   };
 
   var setupCoreServices = function(container) {
-    var config = require(configFile);
-    container.set('config', config);
-    container.set('storage', new Storage(cacheFile));
-    container.set('cache', new Cache(container.get('storage')));
-    container.set('browser', new Browser(config.browser));
+    container.set('config', new Config(configFile));
+
+    container.registerService('storage', function() {
+      return new Storage(cacheFile);
+    });
+
+    container.registerService('cache', function(storage) {
+      return new Cache(storage);
+    }, ['storage']);
   };
 
   var setupJira = function(container) {
     var config = container.get('config');
 
-    container.set('tracker.jira.client', new JiraClient(
-      config.domain,
-      config.username,
-      config.password
-    ));
+    container.registerService(
+      'tracker.jira.client', 
+      function(config) {
+        return new JiraClient(config.domain, config.username, config.password);
+      },
+      ['config']
+    );
+
+    container.registerService('tracker.jira.metadata', function(client, cache) {
+      return new JiraMetadata(client, cache);
+    }, ['tracker.jira.client', 'cache']);
 
     container.set('tracker.jira.metadata', new JiraMetadata(
       container.get('tracker.jira.client'),
-      container.get('cache'),
-      config.project
+      container.get('cache')
     ));
 
     container.set('tracker.jira.normalizer', new JiraNormalizer(
@@ -78,6 +88,7 @@ module.exports = function(configFile, cacheFile) {
 
     container.set('ui.keys', keys(container.get('config')));
     container.set('ui.help', help('less', ['-c'], 'docs/help.txt'));
+    container.set('ui.browser', new Browser(container.get('config').get('browser')));
   };
 
   return main();

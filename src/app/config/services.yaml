@@ -1,0 +1,41 @@
+services:
+  storage:
+    module: services/storage
+    arguments: %cacheFile%
+
+  cache:
+      module: services/cache
+      arguments:
+        - @storage
+
+  tracker.jira.client:
+    module: domain/backend/jira/client
+    arguments:
+      - %domain%
+      - %username%
+      - %password%
+
+  tracker.jira.metadata:
+    module: domain/backend/jira/metadata
+    arguments:
+      - @tracker.jira.client
+      - @cache
+
+  tracker.jira.normalizer:
+    module: domain/backend/jira/normalizer
+    arguments:
+      - @tracker.jira.metadata
+
+  tracker.jira.repository:
+    module: domain/backend/jira/repository
+    arguments:
+      - @tracker.jira.client
+      - @cache
+      - @normalizer
+
+  tracker.jira:
+    module: domain/backend/tracker
+    arguments:
+      - @tracker.jira.normalizer
+      - @tracker.jira.repository
+      - @tracker.jira.metadata

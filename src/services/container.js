@@ -1,5 +1,7 @@
 'use strict';
 
+var Promise = require("bluebird");
+
 /**
  * Application container for storing services
  *
@@ -7,33 +9,38 @@
  */
 module.exports = function Container(initialServices) {
   var services = initialServices || {};
+  var container = this;
 
   /**
-   * Sets a service
+   * Registers a service
    *
    * @param {String} name
-   * @param {*} service
+   * @param {Promise} promisedService
+   * @param {Array<Promise>} dependencies
    */
-  this.set = function(name, service) {
+  this.registerService = function(name, promisedService, dependencies) {
     if (typeof services[name] !== 'undefined') {
       throw new Error('Cannot replace existing service ' + name);
     }
 
-    services[name] = service;
+    this.services[name] = {
+      promise: promisedService.bind(container),
+      dependencies: dependencies || []
+    };
   };
 
   /**
-   * Gets a service
-   *
-   * @param {String} name
-   * @return {*} - the service
+   * Returns the promise of a service, while resolving the dependency tree
    */
-  this.get = function(name) {
-    if (typeof services[name] === 'undefined') {
-      throw new ReferenceError('Cannot get undefined service ' + name);
+  this.get = function(serviceName) {
+    if (typeof services[serviceName] === 'undefined') {
+      throw new ReferenceError('Cannot get undefined service ' + serviceName);
     }
 
-    return services[name];
+    var service = services[serviceName];
+    return Promise.all(service.dependencies).then(function() {
+      return service.promise;
+    });
   };
 
   /**

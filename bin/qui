@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+'use strict';
 
 var path          = require('path');
 var program       = require('commander');
@@ -12,6 +13,7 @@ var cacheFile     = path.resolve(process.env.HOME, './.qissues-cache.json');
 program
   .version('2.0.0')
   .option('--clear-cache', 'Clears the cache')
+  .option('--init', 'Setup qissues for the first time')
   .option('-v --verbose', 'Verbosity (increase verbosity with more vs)', function(add, level) {
     return level + 1;
   }, 0)
@@ -20,7 +22,7 @@ program
 process.title = 'qissues';
 
 var logger = require('../src/services/logger')(program.verbose || 0);
-var container = bootstrap(configFile);
+var container = bootstrap(configFile, cacheFile);
 container.listServices().forEach(function(service) {
   container.get(service).logger = logger;
 });
@@ -31,6 +33,14 @@ if(program.clearCache) {
 }
 
 var app = new Application(container);
+
+if (program.init) {
+  return app.configure().then(function() {
+    console.log('You are good to go!');
+    process.exit(0);
+  });
+}
+
 
 app.start(
   new UserInterface(process.stdin, process.stdout)

@@ -167,27 +167,30 @@ module.exports = function BlessedApplication(screen, app) {
    */
   ui.createIssue = function(filters, draft, failure) {
     logger.info('Creating new issue' + (draft ? ' with previous content' : ''));
-    showLoading();
 
-    var content;
-    var expectations = trackerNormalizer.getNewIssueRequirements();
-
-    format.seed(expectations, filters, draft, failure)
-      .then(input.editExternally)
-      .then(function(input) { content = input;  return content; })
-      .then(format.parse)
-      .then(expectations.ensureValid)
+    ui.capture(trackerNormalizer.getNewIssueRequirements(), filters, draft, failure)
       .then(createIssue)
       .then(ui.viewIssue)
       .catch(Cancellation, function() {
         message('Cancelled').then(ui.listIssues);
       })
-      .catch(ValidationError, function(error) {
-        ui.createIssue(filters, content, error);
-      })
       .catch(Error, function(error) {
         logger.error('Caught error: ' + error.toString());
         message(error.message, 5000).then(ui.listIssues);
+      });
+  };
+
+  this.capture = function(expectations, defaults, draft, error) {
+    showLoading();
+
+    var content;
+    return format.seed(expectations, defaults, draft, error)
+      .then(input.editExternally)
+      .then(function(input) { content = input;  return content; })
+      .then(format.parse)
+      .then(expectations.ensureValid)
+      .catch(ValidationError, function(e) {
+        return ui.capture(expectations, content, e);
       });
   };
 

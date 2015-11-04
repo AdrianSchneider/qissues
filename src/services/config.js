@@ -1,10 +1,10 @@
 'use strict';
 
 var Promise = require('bluebird');
-var fs = Promise.promisifyAll(require('fs'));
 
-module.exports = function Config(filename) {
+module.exports = function Config(filename, fs) {
   var config;
+  if(!fs) fs = Promise.promisifyAll(require('fs'));
 
   /**
    * Ensures config is loaded, returning expected config
@@ -22,9 +22,6 @@ module.exports = function Config(filename) {
       .then(function(configData) {
         config = configData;
       });
-  };
-
-  var construct = function() {
   };
 
   /**
@@ -55,7 +52,5 @@ module.exports = function Config(filename) {
   this.save = function(options) {
     return fs.writeFileAsync(filename, JSON.stringify(options, null, 4));
   };
-
-  construct();
 
 };
