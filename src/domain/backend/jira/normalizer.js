@@ -2,6 +2,7 @@
 
 var util                = require('util');
 var moment              = require('moment');
+var sprintf             = require('util').format;
 var issueRequirements   = require('./requirements/issue');
 var Issue               = require('../../model/issue');
 var IssuesCollection    = require('../../model/issues');
@@ -127,6 +128,14 @@ function JiraNormalizer(metadata, config) {
    */
   this.toComment = function(response) {
     return new Comment();
+  };
+
+  this.getIssueUrl = function(num, filters) {
+    return sprintf('https://%s/browse/%s?jql=%s', config.domain, num, filters.toJql());
+  };
+
+  this.getQueryUrl = function(filters) {
+    return sprintf('https://%s/issues/?jql=%s', config.domain, filters.toJql());
   };
 
 }

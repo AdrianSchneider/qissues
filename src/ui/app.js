@@ -88,7 +88,7 @@ module.exports = function BlessedApplication(screen, app) {
     });
 
     list.key(keys.web, function() {
-      app.get('browser').open(trackerNormalizer.getIssuesUrl(app.getActiveReport()));
+      app.get('browser').open(trackerNormalizer.getQueryUrl(app.getFilters()));
     });
 
   };
@@ -113,7 +113,7 @@ module.exports = function BlessedApplication(screen, app) {
     view.key(keys.refresh, refreshIssue(num));
 
     view.key(keys.web, function() {
-      app.get('browser').open(trackerNormalizer.getIssueUrl(num, app.getActiveReport()));
+      app.get('browser').open(trackerNormalizer.getIssueUrl(num, app.getFilters()));
     });
 
     view.key(keys['issue.comment.inline'], function() {
