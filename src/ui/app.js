@@ -110,9 +110,7 @@ module.exports = function BlessedApplication(screen, app) {
       ui.listIssues(null, num);
     });
 
-    view.key(keys.refresh, function() {
-      refreshIssue(num);
-    });
+    view.key(keys.refresh, refreshIssue(num));
 
     view.key(keys.web, function() {
       app.get('browser').open(trackerNormalizer.getIssueUrl(num, app.getActiveReport()));
