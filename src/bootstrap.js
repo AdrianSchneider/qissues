@@ -14,7 +14,7 @@ var JiraMetadata          = require('./domain/backend/jira/metadata');
 var YamlFrontMatterParser = require('./util/frontmatter-yaml');
 var YamlFrontMatterFormat = require('./ui/formats/yaml-front-matter');
 
-module.exports = function(configFile) {
+module.exports = function(configFile, cacheFile) {
   var main = function() {
     var container = new Container();
     setupCoreServices(container);
@@ -26,7 +26,7 @@ module.exports = function(configFile) {
   var setupCoreServices = function(container) {
     var config = require(configFile);
     container.set('config', config);
-    container.set('storage', new Storage(configFile));
+    container.set('storage', new Storage(cacheFile));
     container.set('cache', new Cache(container.get('storage')));
     container.set('browser', new Browser(config.browser));
   };
