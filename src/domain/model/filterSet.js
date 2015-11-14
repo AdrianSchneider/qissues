@@ -109,7 +109,7 @@ function FilterSet(initialFilters) {
   this.toJql = function() {
     return self.flatten().map(function(filter) {
       if (filter[0] === 'sprint' && filter[1][0] === 'Active Sprints') {
-        return 'sprint is not empty';
+        return 'sprint in openSprints()';
       }
 
       return filter[0]  +' in (' +
