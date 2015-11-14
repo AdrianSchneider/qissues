@@ -1,8 +1,9 @@
 'use strict';
 
-var _        = require('underscore');
-var blessed  = require('blessed');
-var sprintf  = require('util').format;
+var _       = require('underscore');
+var blessed = require('blessed');
+var Promise = require('bluebird');
+var sprintf = require('util').format;
 
 /**
  * Single Issue View
@@ -11,7 +12,7 @@ var sprintf  = require('util').format;
  * @param {Application} app
  * @param {Promise<Issue>} issue
  */
-module.exports = function(parent, app, issue) {
+module.exports = function(parent, app, promisedIssue, promisedComments) {
   var box = blessed.box({
     parent: parent,
     width: '100%',
@@ -29,25 +30,25 @@ module.exports = function(parent, app, issue) {
     }
   });
 
-  issue.then(function(issue) {
-    box.setContent(renderIssue(issue));
-    box.getIssue = function() {
-      return issue;
-    };
-    parent.append(box);
-    box.focus();
-    parent.render();
-  });
-
+  Promise.all([promisedIssue, promisedComments])
+    .spread(function(issue, comments) {
+      box.setContent(renderIssue(issue, comments));
+      box.getIssue = function() {
+        return issue;
+      };
+      parent.append(box);
+      box.focus();
+      parent.render();
+    });
 
   return box;
 };
 
-function renderIssue(issue) {
+function renderIssue(issue, comments) {
   return buildHeader(issue) + '\n\n' +
     buildMeta(issue) + '\n\n' +
     buildBody(issue) + '\n\n' +
-    buildComments(issue);
+    buildComments(comments);
 }
 
 function buildHeader(issue) {
@@ -92,17 +93,17 @@ function buildBody(issue) {
   );
 }
 
-function buildComments(issue) {
+function buildComments(comments) {
   var out = '{yellow-fg}COMMENTS{/yellow-fg}';
-  if(!issue.get('comments')) return out += '\t\n\n\tNo comments';
+  if(!comments.length) return out += '\t\n\n\tNo comments';
 
-
-  if(!issue.fields.comment.comments.length) return out += '\t\n\n\tNo comments';
-
-  return out + issue.fields.comment.comments.map(function(comment) {
-    return '\n\n\t{blue-fg}' + comment.author.name + '{/blue-fg} ' +
-      'at {blue-fg}' + formatDate(comment.created) + '{/blue-fg}\n\n\t\t' +
-      maintainIndentation(comment.body, 2);
+  return out + comments.map(function(comment) {
+    return sprintf(
+      '\n\n\t{blue-fg}%s{/blue-fg} at {blue-fg}%s{/blue-fg}\n\n\t\t%s',
+      comment.getAuthor(),
+      formatDate(comment.getDate()),
+      maintainIndentation(comment.getMessage(), 2)
+    );
   }).join('');
 }
 

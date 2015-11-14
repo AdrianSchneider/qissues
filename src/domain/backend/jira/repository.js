@@ -63,6 +63,22 @@ function JiraRepository(client, cache, normalizer) {
       .then(normalizer.toIssuesCollection);
   };
 
+  /**
+   * Fetches comments
+   *
+   * @param {String} num
+   * @param {Boolean} invalidate - bypcass cache
+   */
+  this.getComments = function(num, invalidate) {
+    var cacheId = 'comments:' + num;
+    var cached = cache.get(cacheId, invalidate);
+    if (cached) return Promise.resolve(normalizer.toCommentsCollection(cached));
+
+    return client.get('/rest/api/2/issue/' + num + '/comment')
+      .then(cache.setThenable(cacheId))
+      .then(normalizer.toCommentsCollection);
+  };
+
 }
 
 util.inherits(JiraRepository, TrackerRepository);

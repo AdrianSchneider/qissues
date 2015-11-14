@@ -7,6 +7,7 @@ var issueRequirements   = require('./requirements/issue');
 var Issue               = require('../../model/issue');
 var IssuesCollection    = require('../../model/issues');
 var Comment             = require('../../model/comment');
+var CommentsCollection  = require('../../model/comments');
 var NewIssue            = require('../../model/newIssue');
 var NewComment          = require('../../model/newComment');
 var TrackerNormalizer   = require('../../model/trackerNormalizer');
@@ -127,7 +128,15 @@ function JiraNormalizer(metadata, config) {
    * @return {Comment}
    */
   this.toComment = function(response) {
-    return new Comment();
+    return new Comment(
+      response.body,
+      new User(response.author.key),
+      response.created
+    );
+  };
+
+  this.toCommentsCollection = function(response) {
+    return new CommentsCollection(response.comments.map(normalizer.toComment));
   };
 
   this.getIssueUrl = function(num, filters) {

@@ -104,7 +104,12 @@ module.exports = function BlessedApplication(screen, app) {
 
     clearScreen();
     showLoading(invalidate ? 'Refreshing...' : 'Loading ' + num + '...');
-    var view = views.single(screen, app, trackerRepository.lookup(num, invalidate));
+    var view = views.single(
+      screen,
+      app,
+      trackerRepository.lookup(num, invalidate),
+      trackerRepository.getComments(num, invalidate)
+    );
 
     view.key(keys.back, function() {
       ui.listIssues(null, num);
