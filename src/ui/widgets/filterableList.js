@@ -59,10 +59,23 @@ function FilterableList(options) {
 
   var filter = function(getOptions, message, filter) {
     return function() {
+      var view = startLoading();
       getOptions()
+        .then(cancelLoading(view))
         .then(input.selectFromListWith(message))
         .then(function(text) { filters.add(new Filter(filter, text)); })
         .catch(Cancellation, _.noop);
+    };
+  };
+
+  var startLoading = function() {
+    return message(self.screen, 'Loading...', 100);
+  };
+
+  var cancelLoading = function(view) {
+    return function(input) {
+      self.screen.remove(view);
+      return input;
     };
   };
 
