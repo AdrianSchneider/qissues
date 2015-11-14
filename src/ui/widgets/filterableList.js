@@ -44,7 +44,7 @@ function FilterableList(options) {
       .on(keys['filter.project'],  filter(metadata.getProjects, 'Project',  'project'))
       .on(keys['filter.assignee'], filter(metadata.getUsers,    'Assignee', 'assignee'))
       .on(keys['filter.status'],   filter(metadata.getStatuses, 'Status',   'status'))
-      .on(keys['filter.sprint'],   filter(metadata.getSprints,  'Sprint',   'sprint'))
+      .on(keys['filter.sprint'],   filter(prepend(metadata.getSprints,  'Active Sprints'), 'Sprint',   'sprint'))
       .on(keys['reports.save'],    reportsSave)
       .on(keys['reports.list'],    showReportsList);
   };
@@ -70,6 +70,14 @@ function FilterableList(options) {
     input.ask('Save as')
       .then(function(name) { reports.addReport(name, filters); })
       .catch(Cancellation, _.noop);
+  };
+
+  var prepend = function(getOptions, prependedOption) {
+    return function() {
+      return getOptions().then(function(options) {
+        return [prependedOption].concat(options);
+      });
+    };
   };
 
   var showReportsList = function() {

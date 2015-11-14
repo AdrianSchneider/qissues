@@ -18,8 +18,12 @@ program
 
 process.title = 'qissues';
 
+var logger = require('../src/services/logger')(program.verbose || 0);
 var container = bootstrap(configFile);
-container.set('logger', require('../src/services/logger')(program.verbose));
+container.listServices().forEach(function(service) {
+  container.get(service).logger = logger;
+});
+container.set('logger', logger);
 
 if(program.clearCache) {
   container.get('cache').invalidateAll();

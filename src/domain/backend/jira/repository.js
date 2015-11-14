@@ -52,6 +52,8 @@ function JiraRepository(client, cache, normalizer) {
   this.query = function(report, invalidate) {
     var options = { qs: { maxResults: 500, jql: report.getFilters().toJql() } };
 
+    if(this.logger) this.logger.debug('JQL = ' + options.qs.jql);
+
     var cacheId = 'issues:' + options.qs.jql;
     var cached = cache.get(cacheId, invalidate);
     if (cached) return Promise.resolve(normalizer.toIssuesCollection(cached));

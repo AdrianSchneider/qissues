@@ -108,6 +108,10 @@ function FilterSet(initialFilters) {
    */
   this.toJql = function() {
     return self.flatten().map(function(filter) {
+      if (filter[0] === 'sprint' && filter[1][0] === 'Active Sprints') {
+        return 'sprint is not empty';
+      }
+
       return filter[0]  +' in (' +
         filter[1].map(function(item) {
           return "'" + item.replace(/'/g, "\\'") + "'";

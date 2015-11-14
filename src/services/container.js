@@ -36,4 +36,14 @@ module.exports = function Container(initialServices) {
     return services[name];
   };
 
+  /**
+   * Lists all of the services in the container
+   */
+  this.listServices = function(except) {
+    if(!except) except = [];
+    return Object.keys(services).filter(function(name) {
+      return except.indexOf(name) === -1;
+    });
+  };
+
 };
