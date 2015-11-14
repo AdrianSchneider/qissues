@@ -140,11 +140,29 @@ function JiraNormalizer(metadata, config) {
   };
 
   this.getIssueUrl = function(num, filters) {
-    return sprintf('https://%s/browse/%s?jql=%s', config.domain, num, filters.toJql());
+    return sprintf('https://%s/browse/%s?jql=%s', config.domain, num, this.filterSetToJql(filters));
   };
 
   this.getQueryUrl = function(filters) {
-    return sprintf('https://%s/issues/?jql=%s', config.domain, filters.toJql());
+    return sprintf('https://%s/issues/?jql=%s', config.domain, this.filterSetToJql(filters));
+  };
+
+  /**
+   * Convert the filters into JQL
+   * @return string
+   */
+  this.filterSetToJql = function(filterSet) {
+    return filterSet.flatten().map(function(filter) {
+      if (filter[0] === 'sprint' && filter[1][0] === 'Active Sprints') {
+        return 'sprint in openSprints()';
+      }
+
+      return filter[0]  +' in (' +
+        filter[1].map(function(item) {
+          return "'" + item.replace(/'/g, "\\'") + "'";
+        }).join(',') +
+      ')';
+    }).join(' AND ');
   };
 
 }

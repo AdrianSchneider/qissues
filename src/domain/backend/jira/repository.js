@@ -50,7 +50,7 @@ function JiraRepository(client, cache, normalizer) {
    * @return {Promise<IssuesCollection>} - promised array of issues
    */
   this.query = function(report, invalidate) {
-    var options = { qs: { maxResults: 500, jql: report.getFilters().toJql() } };
+    var options = { qs: { maxResults: 500, jql: normalizer.filterSetToJql(report.getFilters()) } };
 
     if(this.logger) this.logger.debug('JQL = ' + options.qs.jql);
 
