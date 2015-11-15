@@ -22,6 +22,7 @@ module.exports = function(text, parent, options) {
     bg: 'lightblack',
     selectedFg: 'black',
     selectedBg: 'yellow',
+    label: '{green-fg}' + text + '{/green-fg}',
     keys: true,
     vi: true,
     border: {
@@ -33,12 +34,6 @@ module.exports = function(text, parent, options) {
   list.select(0);
   list.focus();
   list.render();
-
-  list.prepend(new blessed.Text({
-    left: 2,
-    content: text,
-    fg: 'green'
-  }));
 
   parent.render();
   return list;

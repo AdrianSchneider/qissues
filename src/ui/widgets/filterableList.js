@@ -60,6 +60,7 @@ function FilterableList(options) {
   var filter = function(getOptions, message, filter) {
     return function() {
       var view = startLoading();
+      console.error(message);
       getOptions()
         .then(cancelLoading(view))
         .then(input.selectFromListWith(message))

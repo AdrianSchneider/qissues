@@ -10,6 +10,8 @@ var blessed = require('blessed');
  * @return {blessed.Node}
  */
 module.exports = function Prompt(text, parent) {
+  text = text + ' ';
+
   var form = new blessed.form({
     top: 'center',
     left: 'center',

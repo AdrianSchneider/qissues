@@ -7,8 +7,8 @@ var blessed       = require('blessed');
 var bootstrap     = require('../src/bootstrap');
 var UserInterface = require('../src/ui');
 var Application   = require('../src/app/main');
-var configFile    = path.resolve(process.env.HOME, './.qissues.json');
-var cacheFile     = path.resolve(process.env.HOME, './.qissues-cache.json');
+var configFile    = path.resolve(process.env.HOME, './.qi.json');
+var cacheFile     = path.resolve(process.env.HOME, './.qi-cache.json');
 
 program
   .version('2.0.0')
@@ -26,23 +26,30 @@ var container = bootstrap(configFile, cacheFile);
 container.listServices().forEach(function(service) {
   container.get(service).logger = logger;
 });
-container.set('logger', logger);
+container.registerService('logger', function() {
+  return require('../src/services/logger')(program.verbose || 0);
+});
 
-if(program.clearCache) {
-  container.get('cache').invalidateAll();
-}
-
-var app = new Application(container);
-
-if (program.init) {
-  return app.configure().then(function() {
-    console.log('You are good to go!');
-    process.exit(0);
+container.get('config')
+  .then(function() {
+    if(program.clearCache) {
+      return container.get('cache').then(function(cache) {
+        cache.invalidateAll();
+      });
+    }
+  })
+  .then(function() {
+    return new Application(container);
+  })
+  .then(function(app) {
+    if (program.init) {
+      return app.configure().then(function() {
+        process.exit(0);
+      });
+    }
+    return app;
+  })
+  .then(function(app) {
+    app.start(new UserInterface(process.stdin, process.stdout));
+    app.exit = process.exit;
   });
-}
-
-
-app.start(
-  new UserInterface(process.stdin, process.stdout)
-);
-app.exit = process.exit;

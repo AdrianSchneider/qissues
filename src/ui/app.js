@@ -17,14 +17,13 @@ var ValidationError = require('../errors/validation');
  * @param {blessed.screen} screen
  * @param {Application} application
  */
-module.exports = function BlessedApplication(screen, app) {
+module.exports = function BlessedApplication(screen, app, logger) {
   var ui = this;
-  var trackerNormalizer = app.get('tracker').getNormalizer();
-  var trackerRepository = app.get('tracker').getRepository();
-  var trackerMetadata = app.get('tracker').getMetadata();
   var format = app.get('ui.formats.yaml-frontmatter');
-  var logger = app.get('logger');
-  var keys = app.get('ui.keys');
+  var trackerNormalizer;
+  var trackerRepository;
+  var trackerMetadata;
+  var keys;
   var showHelp = app.get('ui.help');
   var input = new UserInput(screen, keys);
 
@@ -37,15 +36,22 @@ module.exports = function BlessedApplication(screen, app) {
   ui.start = function(action, id) {
     logger.debug('Booting up ui');
 
-    if(!action) action = 'listIssues';
-    ui[action](id);
+    app.getMatching(['tracker', 'ui.keys']).spread(function(tracker, keyConfig) {
+      keys = keyConfig;
+      trackerNormalizer = tracker.getNormalizer();
+      trackerRepository = tracker.getRepository();
+      trackerMetadata   = tracker.getMetadata();
 
-    app.getActiveReport().on('change', function() {
-      ui.listIssues();
+      if(!action) action = 'listIssues';
+      ui[action](id);
+
+      app.getActiveReport().on('change', function() {
+        ui.listIssues();
+      });
+
+      screen.key(keys.help, function() { showHelp(screen); });
+      screen.key(keys.exit, function() { app.exit(0); });
     });
-
-    screen.key(keys.help, function() { showHelp(screen); });
-    screen.key(keys.exit, function() { app.exit(0); });
   };
 
 
@@ -59,14 +65,14 @@ module.exports = function BlessedApplication(screen, app) {
     logger.info('Loading issues');
     showLoading(invalidate ? 'Refreshing...' : 'Loading...');
 
-    var list = views.issueList(
-      screen,
-      app,
-      trackerNormalizer,
-      trackerMetadata,
-      focus,
-      trackerRepository.query(app.getActiveReport(), !!invalidate)
-    );
+    var list = views.issueList(screen, app,{
+      normalizer: trackerNormalizer,
+      metadata: trackerMetadata,
+      logger: logger,
+      focus: focus || null,
+      keys: keys,
+      data: trackerRepository.query(app.getActiveReport(), !!invalidate)
+    });
 
     list.on('select', function(num) {
       ui.viewIssue(list.getSelected());

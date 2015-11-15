@@ -15,7 +15,18 @@ var UserInput      = require('../input');
  *
  * @return {blessed.List}
  */
-module.exports = function IssueList(parent, app, normalizer, metadata, focus, data) {
+module.exports = function IssueList(parent, app, options) {
+  var requiredOptions = ['normalizer', 'metadata', 'focus', 'keys', 'data', 'logger'];
+  requiredOptions.forEach(function(key) {
+    if (!(key in options)) throw new Error('IssueList requires options.' + key);
+  });
+
+  var normalizer = options.normalizer;
+  var metadata = options.metadata;
+  var focus = options.focus;
+  var keys = options.keys;
+  var data = options.data;
+  var logger = options.logger;
 
   var main = function() {
     var list = createList();
@@ -51,8 +62,8 @@ module.exports = function IssueList(parent, app, normalizer, metadata, focus, da
       filters: app.getFilters(),
       report: app.getActiveReport(),
       reports: app.getReports(),
-      input: new UserInput(parent, app.get('ui.keys')),
-      logger: app.get('logger'),
+      input: new UserInput(parent, keys),
+      logger: logger,
       normalizer: normalizer,
       metadata: metadata,
       name: 'issues',
@@ -68,7 +79,7 @@ module.exports = function IssueList(parent, app, normalizer, metadata, focus, da
       selectedFg: 'black',
       selectedBg: 'green',
       keys: true,
-      keyConfig: app.get('ui.keys'),
+      keyConfig: keys,
       vi: true
     });
 

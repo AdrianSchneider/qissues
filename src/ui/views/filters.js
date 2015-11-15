@@ -1,3 +1,5 @@
+'use strict';
+
 var blessed = require('blessed');
 
 module.exports = function(screen, filters) {
@@ -14,6 +16,7 @@ module.exports = function(screen, filters) {
     selectedBg: 'yellow',
     keys: true,
     vi: true,
+    label: '{green-fg}Filters{/green-fg}',
     border: {
       type: 'line'
     }

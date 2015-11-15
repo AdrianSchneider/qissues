@@ -1,5 +1,6 @@
 'use strict';
 
+var _       = require('underscore');
 var Promise = require("bluebird");
 
 /**
@@ -7,8 +8,9 @@ var Promise = require("bluebird");
  *
  * @param {Object} initialServices
  */
-module.exports = function Container(initialServices) {
-  var services = initialServices || {};
+module.exports = function Container() {
+  var registered = {};
+  var readyServices = {};
   var container = this;
 
   /**
@@ -18,29 +20,56 @@ module.exports = function Container(initialServices) {
    * @param {Promise} promisedService
    * @param {Array<Promise>} dependencies
    */
-  this.registerService = function(name, promisedService, dependencies) {
-    if (typeof services[name] !== 'undefined') {
+  this.registerService = function(name, f, dependencies) {
+    if (typeof f !== 'function') throw new TypeError('Service ' + name + 's builder function is not callable');
+
+    if (typeof registered[name] !== 'undefined') {
       throw new Error('Cannot replace existing service ' + name);
     }
 
-    this.services[name] = {
-      promise: promisedService.bind(container),
+    registered[name] = {
+      f: f,
       dependencies: dependencies || []
     };
   };
 
   /**
    * Returns the promise of a service, while resolving the dependency tree
+   *
+   * @param {String} name
+   * @return {Promise} resolved service
    */
   this.get = function(serviceName) {
-    if (typeof services[serviceName] === 'undefined') {
+    if (typeof registered[serviceName] === 'undefined') {
       throw new ReferenceError('Cannot get undefined service ' + serviceName);
     }
+    if (typeof readyServices[serviceName] !== 'undefined') {
+      return Promise.resolve(readyServices[serviceName]);
+    }
 
-    var service = services[serviceName];
-    return Promise.all(service.dependencies).then(function() {
-      return service.promise;
-    });
+    var definition = registered[serviceName];
+    definition.f = _.once(definition.f);
+
+    return Promise
+      .map(definition.dependencies, function(dependency) {
+        return container.get(dependency);
+      })
+      .then(function(dependencies) {
+        return definition.f.apply(definition.f, dependencies);
+      })
+      .then(function(readyService) {
+        readyServices[serviceName] = readyService;
+        return readyService;
+      });
+  };
+
+  /**
+   * Gets mutiple keys at once, as an array
+   * @param {Array<String>} service names
+   * @return {Promise<Array>}
+   */
+  this.getMatching = function(keys) {
+    return Promise.map(keys, this.get);
   };
 
   /**
@@ -48,7 +77,7 @@ module.exports = function Container(initialServices) {
    */
   this.listServices = function(except) {
     if(!except) except = [];
-    return Object.keys(services).filter(function(name) {
+    return Object.keys(registered).filter(function(name) {
       return except.indexOf(name) === -1;
     });
   };

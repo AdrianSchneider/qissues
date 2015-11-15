@@ -7,22 +7,39 @@ var ReportManager = require('../domain/model/reportManager');
 
 module.exports = function Application(container) {
   var exit;
-  var config = container.get('config');
-  var reports = new ReportManager(container.get('storage'));
+  var reports;
+  var conf;
+  var app = this;
 
   this.start = function(ui) {
-    return config.initialize()
-      .catch(NoConfigurationError, function() {
-        return ui.capture(container.get('tracker.normalizer').getRequiredConfig())
-          .then(config.save);
+    return container.get('config').bind(app)
+      .then(function(config) {
+        conf = config;
+        return config.initialize();
+          //.catch(NoConfigurationError, function() {
+          //  console.error('not initialized');
+          //  return container.get('tracker.normalizer')
+          //    .then(function(normalizer) {
+          //      return ui.capture(normalizer.getRequiredConfig());
+          //    })
+          //    .then(conf.save);
+          //});
       })
       .then(function() {
-        return ui.start(this);
+        var services = ['logger', 'domain.report-manager'];
+        return Promise.map(services, function(s) { return container.get(s); })
+          .spread(function(logger, reportManager) {
+            reports = reportManager;
+            return ui.start(app, null, null, logger);
+          });
       });
   };
 
-  this.get = function(name) {
-    return container.get(name);
+  this.get = function(name, def) {
+    return container.get(name, def);
+  };
+  this.getMatching = function(keys) {
+    return container.getMatching(keys);
   };
 
   this.getReports = function() {

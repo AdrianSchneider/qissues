@@ -6,8 +6,10 @@ var Storage               = require('./services/storage');
 var Config                = require('./services/config');
 var keys                  = require('./ui/keys');
 var help                  = require('./ui/help');
+var Promise               = require('bluebird');
 var Browser               = require('./ui/browser');
 var IssueTracker          = require('./domain/model/tracker');
+var ReportManager         = require('./domain/model/reportManager');
 var JiraClient            = require('./domain/backend/jira/client');
 var JiraRepository        = require('./domain/backend/jira/repository');
 var JiraNormalizer        = require('./domain/backend/jira/normalizer');
@@ -16,16 +18,28 @@ var YamlFrontMatterParser = require('./util/frontmatter-yaml');
 var YamlFrontMatterFormat = require('./ui/formats/yaml-front-matter');
 
 module.exports = function(configFile, cacheFile) {
+  /**
+   * Main setup flow
+   */
   var main = function() {
     var container = new Container();
     setupCoreServices(container);
     setupJira(container);
     setupUi(container);
+    setupDomainServices(container);
     return container;
   };
 
+  /**
+   * Registers all of core application services
+   */
   var setupCoreServices = function(container) {
-    container.set('config', new Config(configFile));
+    container.registerService('config', function() {
+      var conf = new Config(configFile);
+      return conf.initialize().then(function() {
+        return conf;
+      });
+    });
 
     container.registerService('storage', function() {
       return new Storage(cacheFile);
@@ -36,59 +50,94 @@ module.exports = function(configFile, cacheFile) {
     }, ['storage']);
   };
 
+  /**
+   * Registers all of the jira services
+   */
   var setupJira = function(container) {
     var config = container.get('config');
 
     container.registerService(
-      'tracker.jira.client', 
+      'tracker.jira.client',
       function(config) {
-        return new JiraClient(config.domain, config.username, config.password);
+        return new JiraClient(config.get('domain'), config.get('username'), config.get('password'));
       },
       ['config']
     );
 
-    container.registerService('tracker.jira.metadata', function(client, cache) {
-      return new JiraMetadata(client, cache);
-    }, ['tracker.jira.client', 'cache']);
+    container.registerService(
+      'tracker.jira.metadata',
+      function(client, cache) { return new JiraMetadata(client, cache); },
+      ['tracker.jira.client', 'cache']
+    );
 
-    container.set('tracker.jira.metadata', new JiraMetadata(
-      container.get('tracker.jira.client'),
-      container.get('cache')
-    ));
+    container.registerService(
+      'tracker.jira.normalizer',
+      function(metadata, config) { return new JiraNormalizer(metadata, config); },
+      ['tracker.jira.metadata', 'config']
+    );
 
-    container.set('tracker.jira.normalizer', new JiraNormalizer(
-      container.get('tracker.jira.metadata'),
-      container.get('config')
-    ));
+    container.registerService(
+      'tracker.jira.repository',
+      function(client, cache, normalizer) { return new JiraRepository(client, cache, normalizer); },
+      ['tracker.jira.client', 'cache', 'tracker.jira.normalizer']
+    );
 
-    container.set('tracker.jira.repository', new JiraRepository(
-      container.get('tracker.jira.client'),
-      container.get('cache'),
-      container.get('tracker.jira.normalizer')
-    ));
+    container.registerService(
+      'tracker.jira',
+      function(normalizer, repository, metadata) { return new IssueTracker(normalizer, repository, metadata); },
+      ['tracker.jira.normalizer', 'tracker.jira.repository', 'tracker.jira.metadata']
+    );
 
-    container.set('tracker.jira', new IssueTracker(
-      container.get('tracker.jira.normalizer'),
-      container.get('tracker.jira.repository'),
-      container.get('tracker.jira.metadata')
-    ));
-
-    container.set('tracker', container.get('tracker.jira'));
+    // TODO alias
+    container.registerService(
+      'tracker',
+      function(tracker) { return Promise.resolve(tracker); },
+      ['tracker.jira']
+    );
   };
 
+  /**
+   * Registers all of the ui services
+   */
   var setupUi = function(container) {
-    container.set('util.yaml-frontmatter', new YamlFrontMatterParser(
-      require('js-yaml')
-    ));
+    container.registerService(
+      'util.yaml-frontmatter',
+      function() { return new YamlFrontMatterParser(require('js-yaml')); }
+    );
 
-    container.set('ui.formats.yaml-frontmatter', new YamlFrontMatterFormat(
-      container.get('util.yaml-frontmatter'),
-      require('js-yaml')
-    ));
+    container.registerService(
+      'ui.formats.yaml-frontmatter',
+      function(yamlFrontMatter) { return new YamlFrontMatterFormat(yamlFrontMatter, require('js-yaml')); },
+      ['util.yaml-frontmatter']
+    );
 
-    container.set('ui.keys', keys(container.get('config')));
-    container.set('ui.help', help('less', ['-c'], 'docs/help.txt'));
-    container.set('ui.browser', new Browser(container.get('config').get('browser')));
+    container.registerService(
+      'ui.keys',
+      function(config) { return keys(config); },
+      ['config']
+    );
+
+    container.registerService(
+      'ui.help',
+      function() { return help('less', ['-c'], 'docs/help.txt'); }
+    );
+
+    container.registerService(
+      'ui.browser',
+      function(config) { return new Browser(config.get('browser', null)); },
+      ['config']
+    );
+  };
+
+  /**
+   * Registers all of the domain services
+   */
+  var setupDomainServices = function(container) {
+    container.registerService(
+      'domain.report-manager',
+      function(storage) { return new ReportManager(storage); },
+      ['storage']
+    );
   };
 
   return main();

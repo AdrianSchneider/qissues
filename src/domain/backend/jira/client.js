@@ -5,10 +5,14 @@ var Promise = require('bluebird');
 var request = require('request');
 var ValidationError = require('../../../errors/validation');
 
-module.exports = function JiraHttpClient(domain, username, password) {
+module.exports = function JiraHttpClient(domain, username, password, logger) {
+  // XXX pass in logger
+  if(!logger) logger = { trace: console.error };
+
 
   this.get = function(path, options) {
     return new Promise(function(resolve, reject) {
+      logger.trace('http request: GET ' + buildUrl(path));
       request.get(buildUrl(path), attachOptions(options), function(err, res, body) {
         if(err) return reject(err);
         if(res.statusCode !== 200) return reject(new Error('Received ' + res.statusCode + ' instead of 200 (url = ' + path + ')'));
@@ -18,6 +22,8 @@ module.exports = function JiraHttpClient(domain, username, password) {
   };
 
   this.post = function(path, data) {
+    logger.trace('http request: POST ' + buildUrl(path));
+
     return new Promise(function(resolve, reject) {
       var opts = attachOptions();
       opts.json = data;
@@ -32,6 +38,8 @@ module.exports = function JiraHttpClient(domain, username, password) {
   };
 
   this.put = function(path, data) {
+    logger.trace('http request: PUT ' + buildUrl(path));
+
     return new Promise(function(resolve, reject) {
       var opts = attachOptions();
       opts.json = data;
@@ -44,6 +52,8 @@ module.exports = function JiraHttpClient(domain, username, password) {
   };
 
   this.del = function(path) {
+    logger.trace('http request: DELETE ' + buildUrl(path));
+
     return new Promise(function(resolve, reject) {
       var opts = attachOptions();
       request.del(buildUrl(path), function(err, res, body) {

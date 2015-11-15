@@ -12,16 +12,18 @@ module.exports = function Config(filename, fs) {
    * @return {Promise<Expectations>}
    */
   this.initialize = function() {
-    return fs.existsAsync(filename)
-      .then(function(exists) {
-        return !exists ? fs.writeFileAsync(filename, '{}') : null;
-      })
-      .then(function() {
-        return require(filename);
-      })
-      .then(function(configData) {
-        config = configData;
+    return (new Promise(function(resolve, reject) {
+      fs.exists(filename, function(exists) {
+        if (exists) return resolve();
+        return fs.writeFileAsync(filename, '{}');
       });
+    }))
+    .then(function() {
+      return require(filename);
+    })
+    .then(function(configData) {
+      config = configData;
+    });
   };
 
   /**
@@ -31,13 +33,16 @@ module.exports = function Config(filename, fs) {
    * @return {*}
    * @throws {ReferenceError}
    */
-  this.get = function(key) {
+  this.get = function(key, def) {
     if (!config) {
       throw new ReferenceError('Config is not loaded yet');
     }
 
     if (typeof config[key] === 'undefined') {
-      throw new ReferenceError('Config key ' + key + ' does not exist');
+      if (typeof def === 'undefined') {
+        throw new ReferenceError('Config key ' + key + ' does not exist');
+      }
+      return def;
     }
 
     return config[key];
