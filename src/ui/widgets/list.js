@@ -15,7 +15,7 @@ function List(options) {
   var list = this;
   var selected = [];
 
-  var dataItems;
+  var dataItem;
   var displayFunc;
 
   /**
@@ -24,8 +24,6 @@ function List(options) {
   var init = function() {
     list.searchResults = [];
     list.resultNumber = -1;
-    list.resultMarker = '{red-fg}*{/red-fg}';
-    list.checkMarker = '{yellow-fg}x{/yellow-fg}';
 
     list.key('/', list.search);
     list.key('n', list.nextResult);
@@ -70,7 +68,7 @@ function List(options) {
       if(!text || !text.length) return;
       activeSearch = text;
 
-      list.items.forEach(function(item) { item.content = redrawItem(item); });
+      list.items.forEach(redraw);
       list.searchResults = list.items.filter(isResult);
       if(!list.searchResults.length) {
         message(list.screen, 'Pattern not found');
@@ -93,12 +91,12 @@ function List(options) {
     list.searchResults = [];
     list.resultNumber = -1;
     activeSearch = '';
-    list.items.forEach(function(item) { item.content = redrawItem(item); });
+    list.items.forEach(redraw);
     list.screen.render();
   };
 
   /**
-   * Skips to the next search result
+   * Skips to the next search result (circular)
    */
   this.nextResult = function() {
     if(!list.searchResults.length) return;
@@ -113,7 +111,7 @@ function List(options) {
   };
 
   /**
-   * Skips to the previous search result
+   * Skips to the previous search result (circular)
    */
   this.prevResult = function() {
     if(!list.searchResults.length) return;
@@ -133,7 +131,6 @@ function List(options) {
   this.toggle = function() {
     var key = list.issues.get(list.selected).getId();
     var index = selected.indexOf(key);
-
     var oldActiveSelection = activeSelection;
 
     if (index === -1) {
@@ -143,53 +140,72 @@ function List(options) {
     }
 
     activeSelection = selected.length > 0;
-
     if(activeSelection != oldActiveSelection) {
-      list.items.forEach(function(item) { item.content = redrawItem(item); });
+      list.items.forEach(redraw);
     } else {
-      list.items[list.selected].content = redrawItem(list.items[list.selected]);
+      redraw(list.items[list.selected]);
     }
 
     list.screen.render();
   };
 
+  /**
+   * Clears the current selection of items
+   */
   this.clearSelection = function() {
     activeSelection = false;
     selected = [];
-    list.items.forEach(function(item) { item.content = redrawItem(item); });
+    list.items.forEach(redraw);
     list.screen.render();
   };
 
+  /**
+   * Checks to see if the item is currently checked
+   *
+   * @param {blessed.Box} item
+   * @return {Boolean} true if checked/toggled
+   */
   var isChecked = function(item) {
     var key = list.issues.get(item.index - 1).getId();
     var index = selected.indexOf(key);
     return index !== -1;
   };
 
+  /**
+   * Checks to see if the item is a search result
+   *
+   * @param {blessed.Box} item
+   * @return {Boolean} true if matching the current search criteria
+   */
   var isResult = function(item) {
-    return activeSearch && item.originalContent.toLowerCase().indexOf(activeSearch.toLowerCase()) !== -1;
+    return (
+      activeSearch &&
+      item.originalContent.toLowerCase().indexOf(activeSearch.toLowerCase()) !== -1
+    );
   };
 
   /**
-   * Redraws an item based on the state
+   * Redraws an item in the list
+   *
+   * @param {blessed.Box}
    */
-  var redrawItem = function(item) {
-    var markers = [{
-      name: 'search',
-      test: isResult,
-      marker: list.resultMarker,
-      activeTest: function() { return !!activeSearch; },
-      activeDecorator: function(text) { return list.resultMarker + ' ' + text; },
-      inactiveDecorator: function(text) { return '  ' + text; }
-    }, {
-      name: 'checked',
-      test: isChecked,
-      activeTest: function() { return selected.length > 0; },
-      activeDecorator: function(text) { return list.checkMarker + ' ' + text; },
-      inactiveDecorator: function(text) { return '  ' + text; }
-    }];
+  var redraw = function(item) {
+    item.content = getDecorated(item);
+  };
 
-    return markers
+  /**
+   * Redraws an item based on the state, decorating with optional markers
+   *
+   * Since markers can either wrap or prefix, we first check to see if any items match the marker
+   * before attempting to draw it
+   *
+   * Then, draw the item, by decorating once for each valid marker
+   *
+   * @param {blessed.Box} item
+   * @return {String} decorated item content
+   */
+  var getDecorated = function(item) {
+    return getMarkers()
       .filter(function(marker) { return marker.activeTest(); })
       .reduce(function(out, marker) {
         if (marker.test(item)) {
@@ -198,6 +214,33 @@ function List(options) {
           return marker.inactiveDecorator(out);
         }
       }, item.originalContent);
+  };
+
+  /**
+   * Returns the configured markers
+   *
+   * name: arbitrary string
+   * test: function see which decorator should be applied
+   * activeTest: function to see if either decorated should be applied at all
+   * activeDecorator: decorator when test is true
+   * inactiveDecorator: decorator when test is false
+   *
+   * @return {Array}
+   */
+  var getMarkers = function() {
+    return [{
+      name: 'search',
+      test: isResult,
+      activeTest: function() { return !!activeSearch; },
+      activeDecorator: function(text) { return '{red-fg}*{/red-fg}' + ' ' + text; },
+      inactiveDecorator: function(text) { return '  ' + text; }
+    }, {
+      name: 'checked',
+      test: isChecked,
+      activeTest: function() { return selected.length > 0; },
+      activeDecorator: function(text) { return '{yellow-fg}x{/yellow-fg}' + ' ' + text; },
+      inactiveDecorator: function(text) { return '  ' + text; }
+    }];
   };
 
   init();
