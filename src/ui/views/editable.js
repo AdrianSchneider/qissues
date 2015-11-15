@@ -6,9 +6,8 @@ var promptList   = require('../widgets/promptList');
 var Sequencer    = require('../events/sequencer');
 var Cancellation = require('../../errors/cancellation');
 
-module.exports = function(view, keys, input) {
+module.exports = function(view, keys, input, metadata) {
   var sequencer = new Sequencer(view, keys.leader);
-  var metadata;
 
   sequencer.on(keys['change.title'], function() {
     input.ask('Title')
@@ -17,7 +16,7 @@ module.exports = function(view, keys, input) {
   });
 
   sequencer.on(keys['change.assignee'], function() {
-    metadata.fetchUsers()
+    metadata.getUsers()
       .then(prepend('Unassigned'))
       .then(input.selectFromListWith('Asignee'))
       .then(emitChanged('assignee'))
@@ -25,7 +24,7 @@ module.exports = function(view, keys, input) {
   });
 
   sequencer.on(keys['change.status'], function() {
-    metadata.fetchStatuses()
+    metadata.getStatuses()
       .then(input.selectFromListWith('Status'))
       // TODO filter by statuses in this project
       .then(emitChanged('status'))
@@ -33,7 +32,7 @@ module.exports = function(view, keys, input) {
   });
 
   sequencer.on(keys['change.sprint'], function() {
-    metadata.fetchSprints()
+    metadata.getSprints()
       .then(prepend('Backlog'))
       .then(input.selectFromListWith('Sprint'))
       .then(emitChanged('sprint'))
@@ -41,7 +40,14 @@ module.exports = function(view, keys, input) {
   });
 
   var emitChanged = function(field) {
+    var repository;
     return function(content) {
+      switch (field) {
+        case 'title': return repository.changeTitle(); 
+        case 'sprint': return repostiory.changeSprint();
+      }
+
+
       var changes = {};
       changes[field] = content;
       view.emit('issue.change', { issue: view.getIssue().key, changes: changes });

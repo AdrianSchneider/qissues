@@ -3,6 +3,7 @@
   "down"                    : ["down", "j"],
   "left"                    : ["left", "h"],
   "right"                   : ["right", "l"],
+  "toggle"                  : "x",
   "help"                    : "?",
   "refresh"                 : "C-r",
   "select"                  : "enter",
