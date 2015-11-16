@@ -4,6 +4,7 @@ var _              = require('underscore');
 var sprintf        = require('util').format;
 var filterableList = require('../widgets/filterableList');
 var UserInput      = require('../input');
+var editable       = require('./editable');
 
 /**
  * Issues View
@@ -30,6 +31,7 @@ module.exports = function IssueList(parent, app, options) {
 
   var main = function() {
     var list = createList();
+    editable(list, app.get('ui.keys'), new UserInput(parent, app.get('ui.keys')), metadata);
     list.issues = [];
 
     data.done(function(issues) {
@@ -67,9 +69,9 @@ module.exports = function IssueList(parent, app, options) {
       normalizer: normalizer,
       metadata: metadata,
       name: 'issues',
-      width: '100%',
+      width: '70%',
       height: '100%',
-      top: 0,
+      right: 0,
       left: 0,
       border: {
         type: 'line',
@@ -96,6 +98,9 @@ module.exports = function IssueList(parent, app, options) {
     parent.children.forEach(function(child) { parent.remove(child); });
     parent.append(list);
     list.setItems(issues.map(renderIssue));
+    list.items.forEach(function(item) {
+      item.originalContent = item.content;
+    });
     list.select(findLastFocused(list, focus));
     list.focus();
     parent.render();

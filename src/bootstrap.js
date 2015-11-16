@@ -1,21 +1,25 @@
 'use strict';
 
-var Container             = require('./services/container');
-var Cache                 = require('./services/cache');
-var Storage               = require('./services/storage');
-var Config                = require('./services/config');
-var keys                  = require('./ui/keys');
-var help                  = require('./ui/help');
-var Promise               = require('bluebird');
-var Browser               = require('./ui/browser');
-var IssueTracker          = require('./domain/model/tracker');
-var ReportManager         = require('./domain/model/reportManager');
-var JiraClient            = require('./domain/backend/jira/client');
-var JiraRepository        = require('./domain/backend/jira/repository');
-var JiraNormalizer        = require('./domain/backend/jira/normalizer');
-var JiraMetadata          = require('./domain/backend/jira/metadata');
-var YamlFrontMatterParser = require('./util/frontmatter-yaml');
-var YamlFrontMatterFormat = require('./ui/formats/yaml-front-matter');
+var Container                = require('./services/container');
+var Cache                    = require('./services/cache');
+var Storage                  = require('./services/storage');
+var Config                   = require('./services/config');
+var keys                     = require('./ui/keys');
+var help                     = require('./ui/help');
+var Promise                  = require('bluebird');
+var Browser                  = require('./ui/browser');
+var IssueTracker             = require('./domain/model/tracker');
+var ReportManager            = require('./domain/model/reportManager');
+var JiraClient               = require('./domain/backend/jira/client');
+var JiraRepository           = require('./domain/backend/jira/repository');
+var JiraNormalizer           = require('./domain/backend/jira/normalizer');
+var JiraMetadata             = require('./domain/backend/jira/metadata');
+var YamlFrontMatterParser    = require('./util/frontmatter-yaml');
+var YamlFrontMatterFormat    = require('./ui/formats/yaml-front-matter');
+var listIssuesController     = require('./ui/controllers/listIssues');
+var createIssueController    = require('./ui/controllers/createIssue');
+var viewIssueController      = require('./ui/controllers/viewIssue');
+var applyChangeSetController = require('./ui/controllers/applyChangeSet');
 
 module.exports = function(configFile, cacheFile) {
   /**
@@ -126,6 +130,30 @@ module.exports = function(configFile, cacheFile) {
       'ui.browser',
       function(config) { return new Browser(config.get('browser', null)); },
       ['config']
+    );
+
+    container.registerService(
+      'ui.controller.listIssues',
+      function(app, ui, tracker) { return listIssuesController(app, ui, tracker); },
+      ['app', 'ui', 'tracker']
+    );
+
+    container.registerService(
+      'ui.controller.createIssue',
+      function(ui, tracker, logger) { return createIssueController(ui, tracker, logger); },
+      ['ui', 'tracker', 'logger']
+    );
+
+    container.registerService(
+      'ui.controller.viewIssue',
+      function(app, ui, tracker, logger) { return viewIssueController(app, ui, tracker, logger); },
+      ['ui', 'tracker', 'logger']
+    );
+
+    container.registerService(
+      'ui.controller.applyChangeSet',
+      function(app, ui, tracker, logger) { return applyChangeSetController(ui, tracker); },
+      ['ui', 'tracker']
     );
   };
 

@@ -2,6 +2,7 @@
 
 var _       = require('underscore');
 var sprintf = require('util').format;
+var Promise = require('bluebird');
 
 module.exports = function(parser, yamlParser, contentField) {
   if(!contentField) contentField = 'description';
@@ -14,7 +15,7 @@ module.exports = function(parser, yamlParser, contentField) {
    * @return {Promise<String>}
    */
   this.seed = function(expectations, values, draft, error) {
-    if (draft) return prependErrorToContent(error, draft);
+    if (draft) return Promise.resolve(prependErrorToContent(error, draft));
 
     var data = expectations.getValues(values);
     var template = sprintf(

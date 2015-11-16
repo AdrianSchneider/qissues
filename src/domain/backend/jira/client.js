@@ -3,7 +3,7 @@
 var _       = require('underscore');
 var Promise = require('bluebird');
 var request = require('request');
-var ValidationError = require('../../../errors/validation');
+var ValidationError = require('../../errors/validation');
 
 module.exports = function JiraHttpClient(domain, username, password, logger) {
   // XXX pass in logger

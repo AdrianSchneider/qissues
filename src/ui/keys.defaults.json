@@ -3,6 +3,7 @@
   "down"                    : ["down", "j"],
   "left"                    : ["left", "h"],
   "right"                   : ["right", "l"],
+  "toggle"                  : "x",
   "help"                    : "?",
   "refresh"                 : "C-r",
   "select"                  : "enter",
@@ -22,5 +23,9 @@
   "filter.status"           : "fs",
   "filter.sprint"           : "fS",
   "reports.list"            : "rl",
-  "reports.save"            : "rs"
+  "reports.save"            : "rs",
+  "change.title"            : "ct",
+  "change.assignee"         : "ca",
+  "change.status"           : "cs",
+  "change.sprint"           : "cS"
 }

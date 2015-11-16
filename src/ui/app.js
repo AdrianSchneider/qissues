@@ -1,15 +1,14 @@
 'use strict';
 
-var _               = require("underscore");
-var Promise         = require('bluebird');
-var sprintf         = require('util').format;
-var views           = require('./views');
-var UserInput       = require('./input');
-var messageWidget   = require('./widgets/message');
-var NewIssue        = require('../domain/model/newIssue');
-var NewComment      = require('../domain/model/newComment');
-var Cancellation    = require('../errors/cancellation');
-var ValidationError = require('../errors/validation');
+var _                = require("underscore");
+var Promise          = require('bluebird');
+var views            = require('./views');
+var UserInput        = require('./input');
+var messageWidget    = require('./widgets/message');
+var NewComment       = require('../domain/model/newComment');
+var Cancellation     = require('../domain/errors/cancellation');
+var ValidationError  = require('../domain/errors/validation');
+var MoreInfoRequired = require('../domain/errors/infoRequired');
 
 /**
  * Main Qissues application
@@ -19,6 +18,13 @@ var ValidationError = require('../errors/validation');
  */
 module.exports = function BlessedApplication(screen, app, logger) {
   var ui = this;
+<<<<<<< HEAD
+=======
+  this.screen = screen;
+  var trackerNormalizer = app.get('tracker').getNormalizer();
+  var trackerRepository = app.get('tracker').getRepository();
+  var trackerMetadata = app.get('tracker').getMetadata();
+>>>>>>> changeIssue
   var format = app.get('ui.formats.yaml-frontmatter');
   var trackerNormalizer;
   var trackerRepository;
@@ -56,11 +62,15 @@ module.exports = function BlessedApplication(screen, app, logger) {
 
 
   /**
-   * Lists all of the issues
+   * Promises input from expectations in a verify/retry loop
    *
-   * @param {Boolean} invalidate - skip cache
-   * @param {String|null} focus - jumps to matching line
+   * @param {Expectations} expectations
+   * @param {Object} defaults
+   * @param {String} last edit attempt
+   * @param {Error} last error
+   * @return {Promise<Object>}
    */
+<<<<<<< HEAD
   ui.listIssues = function(invalidate, focus) {
     logger.info('Loading issues');
     showLoading(invalidate ? 'Refreshing...' : 'Loading...');
@@ -183,6 +193,17 @@ module.exports = function BlessedApplication(screen, app, logger) {
       .catch(Error, function(error) {
         logger.error('Caught error: ' + error.toString());
         message(error.message, 5000).then(ui.listIssues);
+=======
+  var getExpected = function(expectations, defaults, draft, failure) {
+    var data = {};
+    return format.seed(expectations, defaults, draft, failure)
+      .then(input.editExternally)
+      .then(tee(data, 'content'))
+      .then(format.parse)
+      .then(expectations.ensureValid)
+      .catch(ValidationError, function(error) {
+        return getExpected(expectations, defaults, data.content, error);
+>>>>>>> changeIssue
       });
   };
 
@@ -201,28 +222,32 @@ module.exports = function BlessedApplication(screen, app, logger) {
   };
 
   /**
-   * Creates a new issue using the tracker for mapping
+   * Returns a function which copies its input to data[key] before sending it out again
    *
-   * @param {Object} data
-   * @return {Promise<Issue>}
+   * @param {Object} data - object to mutate
+   * @param {String} key - key to mutate in object
+   * @return {Function} to continue promise chain
    */
-  var createIssue = function(data) {
-    return trackerRepository.createIssue(trackerNormalizer.toNewIssue(data));
+  var tee = function(data, key) {
+    return function(input) {
+      data[key] = input;
+      return Promise.resolve(input);
+    };
   };
 
   /**
    * Clears the screen and draws a loading indicator
    * @param {String|null} msg
    */
-  var showLoading = function(msg) {
-    clearScreen();
+  ui.showLoading = function(msg) {
+    ui.clearScreen();
     messageWidget(screen, msg || 'Loading...', Infinity);
   };
 
   /**
    * Clears the screen
    */
-  var clearScreen = function() {
+  ui.clearScreen = function() {
     screen.children.forEach(function(child) { screen.remove(child); });
     screen.render();
   };
@@ -234,7 +259,7 @@ module.exports = function BlessedApplication(screen, app, logger) {
    * @param {Number} delay
    * @return {Promise}
    */
-  var message = function(msg, delay) {
+  ui.message = function(msg, delay) {
     if(!delay) delay = 1000;
     return new Promise(function(resolve, reject) {
       var m = messageWidget(screen, msg, delay);
