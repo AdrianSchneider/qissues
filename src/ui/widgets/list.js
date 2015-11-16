@@ -15,7 +15,7 @@ function List(options) {
   var list = this;
   var selected = [];
 
-  var dataItem;
+  var dataItems;
   var displayFunc;
 
   /**
@@ -87,7 +87,8 @@ function List(options) {
   /**
    * Clears the current search results
    */
-  this.clearSearch = function() {
+  this.clearSearch = function(e) {
+    if(!list.focused) return;
     list.searchResults = [];
     list.resultNumber = -1;
     activeSearch = '';
@@ -241,6 +242,19 @@ function List(options) {
       activeDecorator: function(text) { return '{yellow-fg}x{/yellow-fg}' + ' ' + text; },
       inactiveDecorator: function(text) { return '  ' + text; }
     }];
+  };
+
+  /**
+   * Returns the selected issues for editing
+   *
+   * If a selection was made, those issues will be returned
+   * If nothing is selected, it will pick the item under the cursor
+   *
+   * @return {Array<String>}
+   */
+  list.getSelectedIssues = function() {
+    if (selected.length) return selected;
+    return [list.issues.get(list.selected).getId()];
   };
 
   init();

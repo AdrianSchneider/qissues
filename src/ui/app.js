@@ -1,15 +1,14 @@
 'use strict';
 
-var _               = require("underscore");
-var Promise         = require('bluebird');
-var sprintf         = require('util').format;
-var views           = require('./views');
-var UserInput       = require('./input');
-var messageWidget   = require('./widgets/message');
-var NewIssue        = require('../domain/model/newIssue');
-var NewComment      = require('../domain/model/newComment');
-var Cancellation    = require('../errors/cancellation');
-var ValidationError = require('../errors/validation');
+var _                = require("underscore");
+var Promise          = require('bluebird');
+var views            = require('./views');
+var UserInput        = require('./input');
+var messageWidget    = require('./widgets/message');
+var NewComment       = require('../domain/model/newComment');
+var Cancellation     = require('../domain/errors/cancellation');
+var ValidationError  = require('../domain/errors/validation');
+var MoreInfoRequired = require('../domain/errors/infoRequired');
 
 /**
  * Main Qissues application
@@ -19,6 +18,7 @@ var ValidationError = require('../errors/validation');
  */
 module.exports = function BlessedApplication(screen, app) {
   var ui = this;
+  this.screen = screen;
   var trackerNormalizer = app.get('tracker').getNormalizer();
   var trackerRepository = app.get('tracker').getRepository();
   var trackerMetadata = app.get('tracker').getMetadata();
@@ -50,170 +50,53 @@ module.exports = function BlessedApplication(screen, app) {
 
 
   /**
-   * Lists all of the issues
+   * Promises input from expectations in a verify/retry loop
    *
-   * @param {Boolean} invalidate - skip cache
-   * @param {String|null} focus - jumps to matching line
+   * @param {Expectations} expectations
+   * @param {Object} defaults
+   * @param {String} last edit attempt
+   * @param {Error} last error
+   * @return {Promise<Object>}
    */
-  ui.listIssues = function(invalidate, focus) {
-    logger.info('Loading issues');
-    showLoading(invalidate ? 'Refreshing...' : 'Loading...');
-
-    var list = views.issueList(
-      screen,
-      app,
-      trackerNormalizer,
-      trackerMetadata,
-      focus,
-      trackerRepository.query(app.getActiveReport(), !!invalidate)
-    );
-
-    list.on('select', function(num) {
-      ui.viewIssue(list.getSelected());
-    });
-
-    list.key(keys['issue.lookup'], function() {
-      input.ask('Open Issue', screen).then(ui.viewIssue);
-    });
-
-    list.key(keys['issue.create.contextual'], function() {
-      ui.createIssue(app.getFilters().toValues());
-    });
-    list.key(keys['issue.create'], function() {
-      ui.createIssue();
-    });
-
-    list.key(keys.refresh, function() {
-      ui.listIssues(true, list.getSelected());
-    });
-
-    list.key(keys.web, function() {
-      app.get('browser').open(trackerNormalizer.getQueryUrl(app.getFilters()));
-    });
-
-  };
-
-  /**
-   * View a single issue
-   *
-   * @param {String} num - issue number
-   * @param {Boolean} invalidate
-   */
-  ui.viewIssue = function(num, invalidate) {
-    logger.info('Viewing issue ' + num);
-
-    clearScreen();
-    showLoading(invalidate ? 'Refreshing...' : 'Loading ' + num + '...');
-    var view = views.single(
-      screen,
-      app,
-      trackerRepository.lookup(num, invalidate),
-      trackerRepository.getComments(num, invalidate)
-    );
-
-    view.key(keys.back, function() {
-      ui.listIssues(null, num);
-    });
-
-    view.key(keys.refresh, refreshIssue(num));
-
-    view.key(keys.web, function() {
-      app.get('browser').open(trackerNormalizer.getIssueUrl(num, app.getFilters()));
-    });
-
-    view.key(keys['issue.comment.inline'], function() {
-      input.ask('Comment')
-        .then(postComment(num))
-        .then(refreshIssue(num))
-        .catch(Cancellation, _.noop);
-    });
-
-    view.key(keys['issue.comment.external'], function() {
-      input.editExternally('')
-        .then(postComment(num))
-        .then(refreshIssue(num))
-        .catch(Cancellation, _.noop);
-    });
-  };
-
-  /**
-   * Returns a function that promises the creation of a new comment from text
-   *
-   * @param {String} num - issue number
-   * @return {Function}
-   */
-  var postComment = function(num) {
-    return function(text) {
-      return trackerRepository.create(new NewComment(text, num));
-    };
-  };
-
-  /**
-   * Returns a function that refreshes the UI for a given issue number
-   * @param {String} num - issue number
-   * @return {Function}
-   */
-  var refreshIssue = function(num) {
-    return function() {
-      ui.viewIssue(num, true);
-    };
-  };
-
-  /**
-   * Creates a new issue interactively
-   *
-   * @param {FilterSet|null} filters
-   * @param {String|null} draft - last edit attempt
-   */
-  ui.createIssue = function(filters, draft, failure) {
-    logger.info('Creating new issue' + (draft ? ' with previous content' : ''));
-    showLoading();
-
-    var content;
-    var expectations = trackerNormalizer.getNewIssueRequirements();
-
-    format.seed(expectations, filters, draft, failure)
+  var getExpected = function(expectations, defaults, draft, failure) {
+    var data = {};
+    return format.seed(expectations, defaults, draft, failure)
       .then(input.editExternally)
-      .then(function(input) { content = input;  return content; })
+      .then(tee(data, 'content'))
       .then(format.parse)
       .then(expectations.ensureValid)
-      .then(createIssue)
-      .then(ui.viewIssue)
-      .catch(Cancellation, function() {
-        message('Cancelled').then(ui.listIssues);
-      })
       .catch(ValidationError, function(error) {
-        ui.createIssue(filters, content, error);
-      })
-      .catch(Error, function(error) {
-        logger.error('Caught error: ' + error.toString());
-        message(error.message, 5000).then(ui.listIssues);
+        return getExpected(expectations, defaults, data.content, error);
       });
   };
 
   /**
-   * Creates a new issue using the tracker for mapping
+   * Returns a function which copies its input to data[key] before sending it out again
    *
-   * @param {Object} data
-   * @return {Promise<Issue>}
+   * @param {Object} data - object to mutate
+   * @param {String} key - key to mutate in object
+   * @return {Function} to continue promise chain
    */
-  var createIssue = function(data) {
-    return trackerRepository.createIssue(trackerNormalizer.toNewIssue(data));
+  var tee = function(data, key) {
+    return function(input) {
+      data[key] = input;
+      return Promise.resolve(input);
+    };
   };
 
   /**
    * Clears the screen and draws a loading indicator
    * @param {String|null} msg
    */
-  var showLoading = function(msg) {
-    clearScreen();
+  ui.showLoading = function(msg) {
+    ui.clearScreen();
     messageWidget(screen, msg || 'Loading...', Infinity);
   };
 
   /**
    * Clears the screen
    */
-  var clearScreen = function() {
+  ui.clearScreen = function() {
     screen.children.forEach(function(child) { screen.remove(child); });
     screen.render();
   };
@@ -225,7 +108,7 @@ module.exports = function BlessedApplication(screen, app) {
    * @param {Number} delay
    * @return {Promise}
    */
-  var message = function(msg, delay) {
+  ui.message = function(msg, delay) {
     if(!delay) delay = 1000;
     return new Promise(function(resolve, reject) {
       var m = messageWidget(screen, msg, delay);

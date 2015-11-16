@@ -1,6 +1,6 @@
 'use strict';
 
-var ValidationError = require('../../errors/validation');
+var ValidationError = require('../errors/validation');
 
 module.exports = function NewComment(message, issueNumber) {
   if(!message) throw new ValidationError('Comment must not be empty');

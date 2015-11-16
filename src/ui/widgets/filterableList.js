@@ -12,7 +12,7 @@ var reportsList  = require('../views/reports');
 var Sequencer    = require('../events/sequencer');
 var Filter       = require('../../domain/model/filter');
 var FilterSet    = require('../../domain/model/filterSet');
-var Cancellation = require('../../errors/cancellation');
+var Cancellation = require('../../domain/errors/cancellation');
 
 /**
  * A list with built in filtering mechanisms

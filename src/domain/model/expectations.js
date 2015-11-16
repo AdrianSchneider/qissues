@@ -3,7 +3,7 @@
 var _               = require('underscore');
 var joi             = require('joi');
 var Promise         = require('bluebird');
-var ValidationError = require('../../errors/validation');
+var ValidationError = require('../errors/validation');
 
 /**
  * Defines a tracker's expectations from the user at a given point in time

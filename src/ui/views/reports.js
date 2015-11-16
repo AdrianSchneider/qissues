@@ -19,8 +19,10 @@ module.exports = function ReportList(parent, reports, activeReport) {
   });
 
   list.key(['escape', 'h'], function() {
+    console.error('reports escape/h');
     parent.remove(list);
     parent.render();
+    return false;
   });
 
   list.on('select', function(item) {

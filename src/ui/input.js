@@ -3,7 +3,7 @@
 var Promise      = require('bluebird');
 var prompt       = require('./widgets/prompt');
 var promptList   = require('./widgets/promptList');
-var Cancellation = require('../errors/cancellation');
+var Cancellation = require('../domain/errors/cancellation');
 
 module.exports = function UserInput(parent, keys) {
   var self = this;
@@ -49,6 +49,7 @@ module.exports = function UserInput(parent, keys) {
       });
 
       list.key(keys.back, function() {
+        console.error('going back');
         parent.remove(list);
         parent.render();
         reject(new Cancellation());

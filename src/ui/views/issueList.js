@@ -58,9 +58,9 @@ module.exports = function IssueList(parent, app, normalizer, metadata, focus, da
       normalizer: normalizer,
       metadata: metadata,
       name: 'issues',
-      width: '100%',
+      width: '70%',
       height: '100%',
-      top: 0,
+      right: 0,
       left: 0,
       border: {
         type: 'line',

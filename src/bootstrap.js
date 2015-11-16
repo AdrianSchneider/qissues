@@ -78,6 +78,8 @@ module.exports = function(configFile) {
 
     container.set('ui.keys', keys(container.get('config')));
     container.set('ui.help', help('less', ['-c'], 'docs/help.txt'));
+
+    container.set('ui.
   };
 
   return main();
