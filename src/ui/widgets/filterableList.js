@@ -10,6 +10,7 @@ var promptList   = require('./promptList');
 var filterView   = require('../views/filters');
 var reportsList  = require('../views/reports');
 var Sequencer    = require('../events/sequencer');
+var UserInput    = require('../input');
 var Filter       = require('../../domain/model/filter');
 var FilterSet    = require('../../domain/model/filterSet');
 var Cancellation = require('../../domain/errors/cancellation');
@@ -32,8 +33,8 @@ function FilterableList(options) {
   var metadata = options.metadata;
   var reports = options.reports;
   var activeReport = options.report;
-  var input = options.input;
   var keys = options.keyConfig;
+  var input = new UserInput(this, keys);
 
   /**
    * Sets up the filtering system

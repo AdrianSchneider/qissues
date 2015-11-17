@@ -1,10 +1,12 @@
 'use strict';
 
 var _                = require("underscore");
+var f                = require('../util/f');
 var Promise          = require('bluebird');
 var views            = require('./views');
 var UserInput        = require('./input');
 var messageWidget    = require('./widgets/message');
+var canvas           = require('./views/canvas');
 var NewComment       = require('../domain/model/newComment');
 var Cancellation     = require('../domain/errors/cancellation');
 var ValidationError  = require('../domain/errors/validation');
@@ -16,22 +18,16 @@ var MoreInfoRequired = require('../domain/errors/infoRequired');
  * @param {blessed.screen} screen
  * @param {Application} application
  */
-module.exports = function BlessedApplication(screen, app, logger) {
+module.exports = function BlessedApplication(screen, app, input, logger, format, keys, getDeps) {
   var ui = this;
-<<<<<<< HEAD
-=======
   this.screen = screen;
-  var trackerNormalizer = app.get('tracker').getNormalizer();
-  var trackerRepository = app.get('tracker').getRepository();
-  var trackerMetadata = app.get('tracker').getMetadata();
->>>>>>> changeIssue
-  var format = app.get('ui.formats.yaml-frontmatter');
-  var trackerNormalizer;
-  var trackerRepository;
-  var trackerMetadata;
-  var keys;
-  var showHelp = app.get('ui.help');
-  var input = new UserInput(screen, keys);
+  getDeps().spread(function(controller, views) { 
+    ui.controller = controller; 
+    ui.views = views; 
+  });
+
+
+  //var showHelp = app.get('ui.help');
 
   /**
    * Starts up the user interface
@@ -40,19 +36,19 @@ module.exports = function BlessedApplication(screen, app, logger) {
    * @param {String|null} id
    */
   ui.start = function(action, id) {
-    logger.debug('Booting up ui');
+    getDeps().then(function() {
+      ui.canvas = canvas(screen);
+      screen.append(ui.canvas);
+      screen.render();
 
-    app.getMatching(['tracker', 'ui.keys']).spread(function(tracker, keyConfig) {
-      keys = keyConfig;
-      trackerNormalizer = tracker.getNormalizer();
-      trackerRepository = tracker.getRepository();
-      trackerMetadata   = tracker.getMetadata();
+      logger.debug('Booting up ui');
 
       if(!action) action = 'listIssues';
-      ui[action](id);
+      console.error(action);
+      ui.controller[action](id);
 
       app.getActiveReport().on('change', function() {
-        ui.listIssues();
+        ui.controller.listIssues();
       });
 
       screen.key(keys.help, function() { showHelp(screen); });
@@ -61,178 +57,16 @@ module.exports = function BlessedApplication(screen, app, logger) {
   };
 
 
-  /**
-   * Promises input from expectations in a verify/retry loop
-   *
-   * @param {Expectations} expectations
-   * @param {Object} defaults
-   * @param {String} last edit attempt
-   * @param {Error} last error
-   * @return {Promise<Object>}
-   */
-<<<<<<< HEAD
-  ui.listIssues = function(invalidate, focus) {
-    logger.info('Loading issues');
-    showLoading(invalidate ? 'Refreshing...' : 'Loading...');
-
-    var list = views.issueList(screen, app,{
-      normalizer: trackerNormalizer,
-      metadata: trackerMetadata,
-      logger: logger,
-      focus: focus || null,
-      keys: keys,
-      data: trackerRepository.query(app.getActiveReport(), !!invalidate)
-    });
-
-    list.on('select', function(num) {
-      ui.viewIssue(list.getSelected());
-    });
-
-    list.key(keys['issue.lookup'], function() {
-      input.ask('Open Issue', screen).then(ui.viewIssue);
-    });
-
-    list.key(keys['issue.create.contextual'], function() {
-      ui.createIssue(app.getFilters().toValues());
-    });
-    list.key(keys['issue.create'], function() {
-      ui.createIssue();
-    });
-
-    list.key(keys.refresh, function() {
-      ui.listIssues(true, list.getSelected());
-    });
-
-    list.key(keys.web, function() {
-      app.get('browser').open(trackerNormalizer.getQueryUrl(app.getFilters()));
-    });
-
-  };
-
-  /**
-   * View a single issue
-   *
-   * @param {String} num - issue number
-   * @param {Boolean} invalidate
-   */
-  ui.viewIssue = function(num, invalidate) {
-    logger.info('Viewing issue ' + num);
-
-    clearScreen();
-    showLoading(invalidate ? 'Refreshing...' : 'Loading ' + num + '...');
-    var view = views.single(
-      screen,
-      app,
-      trackerRepository.lookup(num, invalidate),
-      trackerRepository.getComments(num, invalidate)
-    );
-
-    view.key(keys.back, function() {
-      ui.listIssues(null, num);
-    });
-
-    view.key(keys.refresh, refreshIssue(num));
-
-    view.key(keys.web, function() {
-      app.get('browser').open(trackerNormalizer.getIssueUrl(num, app.getFilters()));
-    });
-
-    view.key(keys['issue.comment.inline'], function() {
-      input.ask('Comment')
-        .then(postComment(num))
-        .then(refreshIssue(num))
-        .catch(Cancellation, _.noop);
-    });
-
-    view.key(keys['issue.comment.external'], function() {
-      input.editExternally('')
-        .then(postComment(num))
-        .then(refreshIssue(num))
-        .catch(Cancellation, _.noop);
-    });
-  };
-
-  /**
-   * Returns a function that promises the creation of a new comment from text
-   *
-   * @param {String} num - issue number
-   * @return {Function}
-   */
-  var postComment = function(num) {
-    return function(text) {
-      return trackerRepository.create(new NewComment(text, num));
-    };
-  };
-
-  /**
-   * Returns a function that refreshes the UI for a given issue number
-   * @param {String} num - issue number
-   * @return {Function}
-   */
-  var refreshIssue = function(num) {
-    return function() {
-      ui.viewIssue(num, true);
-    };
-  };
-
-  /**
-   * Creates a new issue interactively
-   *
-   * @param {FilterSet|null} filters
-   * @param {String|null} draft - last edit attempt
-   */
-  ui.createIssue = function(filters, draft, failure) {
-    logger.info('Creating new issue' + (draft ? ' with previous content' : ''));
-
-    ui.capture(trackerNormalizer.getNewIssueRequirements(), filters, draft, failure)
-      .then(createIssue)
-      .then(ui.viewIssue)
-      .catch(Cancellation, function() {
-        message('Cancelled').then(ui.listIssues);
-      })
-      .catch(Error, function(error) {
-        logger.error('Caught error: ' + error.toString());
-        message(error.message, 5000).then(ui.listIssues);
-=======
-  var getExpected = function(expectations, defaults, draft, failure) {
-    var data = {};
-    return format.seed(expectations, defaults, draft, failure)
-      .then(input.editExternally)
-      .then(tee(data, 'content'))
-      .then(format.parse)
-      .then(expectations.ensureValid)
-      .catch(ValidationError, function(error) {
-        return getExpected(expectations, defaults, data.content, error);
->>>>>>> changeIssue
-      });
-  };
-
   this.capture = function(expectations, defaults, draft, error) {
-    showLoading();
-
-    var content;
+    var data = {};
     return format.seed(expectations, defaults, draft, error)
       .then(input.editExternally)
-      .then(function(input) { content = input;  return content; })
+      .then(f.tee(data, 'content'))
       .then(format.parse)
       .then(expectations.ensureValid)
       .catch(ValidationError, function(e) {
-        return ui.capture(expectations, content, e);
+        return ui.capture(expectations, defaults, data.content, error);
       });
-  };
-
-  /**
-   * Returns a function which copies its input to data[key] before sending it out again
-   *
-   * @param {Object} data - object to mutate
-   * @param {String} key - key to mutate in object
-   * @return {Function} to continue promise chain
-   */
-  var tee = function(data, key) {
-    return function(input) {
-      data[key] = input;
-      return Promise.resolve(input);
-    };
   };
 
   /**

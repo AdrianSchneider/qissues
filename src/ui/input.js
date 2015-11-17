@@ -19,7 +19,7 @@ module.exports = function UserInput(parent, keys) {
       var input = prompt(text, parent);
       input.key(keys['input.cancel'], function() {
         parent.remove(input);
-        parent.render();
+        parent.screen.render();
         reject(new Cancellation());
       });
 
@@ -49,9 +49,8 @@ module.exports = function UserInput(parent, keys) {
       });
 
       list.key(keys.back, function() {
-        console.error('going back');
         parent.remove(list);
-        parent.render();
+        parent.screen.render();
         reject(new Cancellation());
       });
     });

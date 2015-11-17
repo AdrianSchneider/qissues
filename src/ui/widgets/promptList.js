@@ -19,14 +19,15 @@ module.exports = function(text, parent, options) {
     top: 'center',
     left: 'center',
     tags: true,
-    bg: 'lightblack',
+    bg: 'grey',
     selectedFg: 'black',
     selectedBg: 'yellow',
     label: '{green-fg}' + text + '{/green-fg}',
     keys: true,
     vi: true,
     border: {
-      type: 'line'
+      type: 'line',
+      fg: 'lightgreen'
     }
   });
 

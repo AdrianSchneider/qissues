@@ -4,7 +4,7 @@ var _      = require('underscore');
 var moment = require('moment');
 var crypto = require('crypto');
 
-module.exports = function Cache(storage) {
+module.exports = function Cache(storage, clear) {
   var cache = this;
   var prefix = 'cache:';
 
@@ -98,4 +98,6 @@ module.exports = function Cache(storage) {
 
     storage.removeMulti(expired);
   };
+
+  if (clear) this.invalidateAll();
 };

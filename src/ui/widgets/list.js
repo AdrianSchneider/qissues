@@ -30,7 +30,10 @@ function List(options) {
     list.key('S-x', list.clearSelection);
     list.key('x', list.toggle);
     list.key('S-n', list.prevResult);
-    list.key(['escape', 'space'], list.clearSearch);
+    list.key(['escape', 'space'], function(el) {
+      if(el !== list) return;
+      list.clearSearch();
+    });
   };
 
   /**

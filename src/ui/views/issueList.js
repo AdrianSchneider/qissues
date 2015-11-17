@@ -7,35 +7,28 @@ var UserInput      = require('../input');
 var editable       = require('./editable');
 
 /**
- * Issues View
- *
- * @param {blessed.Node} parent
- * @param {Application} app
- * @param {String|null} string to re-focus
- * @param {Promise<IssuesCollection>} issues
- *
- * @return {blessed.List}
+ * Dependencies for issue list
  */
-module.exports = function IssueList(parent, app, options) {
-  var requiredOptions = ['normalizer', 'metadata', 'focus', 'keys', 'data', 'logger'];
-  requiredOptions.forEach(function(key) {
-    if (!(key in options)) throw new Error('IssueList requires options.' + key);
-  });
+module.exports = function(app, tracker, input, keys, logger) {
+  var metadata = tracker.getMetadata();
+  var normalizer = tracker.getNormalizer();
 
-  var normalizer = options.normalizer;
-  var metadata = options.metadata;
-  var focus = options.focus;
-  var keys = options.keys;
-  var data = options.data;
-  var logger = options.logger;
-
-  var main = function() {
-    var list = createList();
-    editable(list, app.get('ui.keys'), new UserInput(parent, app.get('ui.keys')), metadata);
+  /**
+   * Returns the list view
+   *
+   * @param {Promise<IssuesCollection>} issues
+   * @param {String|null} focus - text from last selection
+   * @param {blessed.Element} parent
+   *
+   * @return {blessed.List}
+   */
+  var main = function(promisedIssues, focus, parent) {
+    var list = createList(parent);
+    editable(list, keys, input, metadata);
     list.issues = [];
 
-    data.done(function(issues) {
-      updateListContents(list, issues);
+    promisedIssues.done(function(issues) {
+      updateListContents(list, issues, focus, parent);
     });
 
     list.on('select', function() {
@@ -50,6 +43,10 @@ module.exports = function IssueList(parent, app, options) {
       return list.issues.get(list.selected);
     };
 
+    list.render();
+    parent.render();
+    parent.screen.render();
+
     return list;
   };
 
@@ -58,25 +55,21 @@ module.exports = function IssueList(parent, app, options) {
    *
    * @return {filterableList}
    */
-  var createList = function() {
+  var createList = function(parent) {
     return new filterableList({
       parent: parent,
       filters: app.getFilters(),
       report: app.getActiveReport(),
       reports: app.getReports(),
-      input: new UserInput(parent, keys),
+      input: input,
       logger: logger,
       normalizer: normalizer,
       metadata: metadata,
       name: 'issues',
-      width: '70%',
-      height: '100%',
-      right: 0,
+      width: parent.getInnerWidth('100%'),
+      height: parent.getInnerHeight('100%'),
+      top: 0,
       left: 0,
-      border: {
-        type: 'line',
-        fg: 'lightblack'
-      },
       tags: true,
       selectedFg: 'black',
       selectedBg: 'green',
@@ -93,7 +86,7 @@ module.exports = function IssueList(parent, app, options) {
    * @param {IssueList} list
    * @param {IssuesCollection} issues
    */
-  var updateListContents = function(list, issues) {
+  var updateListContents = function(list, issues, focus, parent) {
     list.issues = issues;
     parent.children.forEach(function(child) { parent.remove(child); });
     parent.append(list);
@@ -103,7 +96,8 @@ module.exports = function IssueList(parent, app, options) {
     });
     list.select(findLastFocused(list, focus));
     list.focus();
-    parent.render();
+
+    parent.screen.render();
   };
 
   /**
@@ -134,5 +128,6 @@ module.exports = function IssueList(parent, app, options) {
     );
   };
 
-  return main();
+  return main;
+
 };

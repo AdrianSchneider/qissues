@@ -21,35 +21,17 @@ program
 
 process.title = 'qissues';
 
-var logger = require('../src/services/logger')(program.verbose || 0);
-var container = bootstrap(configFile, cacheFile);
-container.listServices().forEach(function(service) {
-  container.get(service).logger = logger;
-});
-container.registerService('logger', function() {
-  return require('../src/services/logger')(program.verbose || 0);
+var container = bootstrap({
+  configFile : configFile,
+  cacheFile  : cacheFile,
+  logLevel   : program.verbose || 0,
+  clearCache : !!program.clearCache,
+  input      : process.stdin,
+  output     : process.stdout
 });
 
-container.get('config')
-  .then(function() {
-    if(program.clearCache) {
-      return container.get('cache').then(function(cache) {
-        cache.invalidateAll();
-      });
-    }
-  })
-  .then(function() {
-    return new Application(container);
-  })
-  .then(function(app) {
-    if (program.init) {
-      return app.configure().then(function() {
-        process.exit(0);
-      });
-    }
-    return app;
-  })
-  .then(function(app) {
-    app.start(new UserInterface(process.stdin, process.stdout));
+container.getMatching(['app', 'ui'])
+  .spread(function(app, ui) {
+    app.start(ui);
     app.exit = process.exit;
   });
