@@ -1,13 +1,21 @@
 'use strict';
 
-var _       = require('underscore');
-var blessed = require('blessed');
-var Promise = require('bluebird');
+var _        = require('underscore');
+var blessed  = require('blessed');
+var Promise  = require('bluebird');
 var wordwrap = require('wordwrap');
-var sprintf = require('util').format;
+var sprintf  = require('util').format;
 
 module.exports = function(app, keys, logger) {
 
+  /**
+   * Renders a single issue view
+   *
+   * @param {blessed.Element} parent
+   * @param {Promise<Issue>} promisedIssue
+   * @param {Promise<CommentsCollection>} promisedComents
+   * @return {blessed.Element}
+   */
   var main = function(parent, promisedIssue, promisedComments) {
     var box = blessed.box({
       parent: parent,
@@ -19,8 +27,6 @@ module.exports = function(app, keys, logger) {
       scrollable: true,
       alwaysScroll: true
     });
-
-    console.error('box width = ' + box.width);
 
     Promise.all([promisedIssue, promisedComments])
       .spread(function(issue, comments) {
@@ -34,6 +40,14 @@ module.exports = function(app, keys, logger) {
     return box;
   };
 
+  /**
+   * Renders the content for the issue
+   *
+   * @param {Issue} issue
+   * @param {CommentsCollection} comments
+   * @param {Number} width
+   * @return {String} - rendered issue
+   */
   var renderIssue = function(issue, comments, width) {
     return buildHeader(issue, width) + '\n\n' +
       buildMeta(issue, width) + '\n\n' +
@@ -41,6 +55,12 @@ module.exports = function(app, keys, logger) {
       buildComments(comments, width);
   };
 
+  /**
+   * Renders the title of the issue
+   *
+   * @param {Issue} issue
+   * @return {String} - rendered metadata
+   */
   var buildHeader = function(issue) {
     return sprintf(
       '{bold}{yellow-fg}%s{/yellow-fg} - %s{/bold}',
@@ -49,7 +69,14 @@ module.exports = function(app, keys, logger) {
     );
   };
 
-  var buildMeta = function(issue) {
+  /**
+   * Renders the metadata of the issue
+   *
+   * @param {Issue} issue
+   * @param {Number} width
+   * @return {String} - rendered metadata
+   */
+  var buildMeta = function(issue, width) {
     var meta = _.mapObject({
       status      : issue.getStatus(),
       type        : issue.get('type'),
@@ -60,36 +87,57 @@ module.exports = function(app, keys, logger) {
       assignee    : issue.get('assignee')
     }, String);
 
-    return sprintf(
-      '\t{blue-fg}%s{/blue-fg} %s %s %s\n\treported by %s on %s',
-      meta.status,
-      meta.type,
-      getAssigned(meta),
-      meta.priority,
-      meta.reporter,
-      meta.dateCreated
-    );
+    return maintainIndentation(
+      sprintf(
+        '{blue-fg}%s{/blue-fg} %s %s %s\nreported by %s on %s',
+        meta.status,
+        meta.type,
+        getAssigned(meta),
+        meta.priority,
+        meta.reporter,
+        meta.dateCreated
+    ), 1, width);
   };
 
+  /**
+   * Gets the assignee
+   *
+   * @param {Object} meta - metadata
+   * @return {String}
+   */
   var getAssigned = function(meta) {
     if(!meta.assignee) return 'currently unassigned';
     return 'assigned to ' + meta.assignee;
   };
 
+  /**
+   * Renders the Body
+   *
+   * @param {Issue} issue
+   * @param {Number} width - of container
+   * @return {String} - rendered body
+   */
   var buildBody = function(issue, width) {
     return sprintf(
-      '{yellow-fg}DESCRIPTION{/yellow-fg}\n\n\t%s',
-      issue.getDescription() ? maintainIndentation(issue.getDescription(), 1, width) : 'No description'
+      '{yellow-fg}DESCRIPTION{/yellow-fg}\n\n%s',
+      maintainIndentation(issue.getDescription() || 'No description', 1, width)
     );
   };
 
+  /**
+   * Renders the comments
+   *
+   * @param {CommentsCollection} comments
+   * @param {Number} width - of container
+   * @return {String} - rendered comments
+   */
   var buildComments = function(comments, width) {
     var out = '{yellow-fg}COMMENTS{/yellow-fg}';
-    if(!comments.length) return out += '\t\n\n\tNo comments';
+    if(!comments.length) return out += '    \n\n    No comments';
 
     return out + comments.map(function(comment) {
       return sprintf(
-        '\n\n\t{blue-fg}%s{/blue-fg} at {blue-fg}%s{/blue-fg}\n\n%s',
+        '\n\n    {blue-fg}%s{/blue-fg} at {blue-fg}%s{/blue-fg}\n\n%s',
         comment.getAuthor(),
         formatDate(comment.getDate()),
         maintainIndentation(comment.getMessage(), 2, width)
@@ -97,6 +145,14 @@ module.exports = function(app, keys, logger) {
     }).join('');
   };
 
+  /**
+   * Indents a string on each line, while also wrapping words
+   * The need for this goes away when we can wrap each item in a proper box
+   *
+   * @param {String} text
+   * @param {Number} level - indentation level
+   * @param {Number} maxWidth - size of container
+   */
   var maintainIndentation = function(text, level, maxWidth) {
     var indent = '';
     var spacer = '    ';
@@ -110,6 +166,12 @@ module.exports = function(app, keys, logger) {
       .join('\n');
   };
 
+  /**
+   * Formats a date
+   *
+   * @param {Date} date
+   * @return {String}
+   */
   var formatDate = function(date) {
     var d = new Date(date);
     return "" + (1+d.getMonth()) + '-' + d.getDate() + '-' + d.getFullYear();
