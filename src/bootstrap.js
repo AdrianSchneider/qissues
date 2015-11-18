@@ -2,10 +2,10 @@
 
 var blessed                  = require('blessed');
 var Promise                  = require('bluebird');
-var Container                = require('./services/container');
-var Cache                    = require('./services/cache');
-var Storage                  = require('./services/storage');
-var Config                   = require('./services/config');
+var Container                = require('./app/services/container');
+var Cache                    = require('./app/services/cache');
+var Storage                  = require('./app/services/storage');
+var Config                   = require('./app/services/config');
 var IssueTracker             = require('./domain/model/tracker');
 var ReportManager            = require('./domain/model/reportManager');
 var JiraClient               = require('./domain/backend/jira/client');
@@ -44,7 +44,7 @@ module.exports = function(options) {
    */
   builders.push(function setupCoreServices(container) {
     container.registerService('logger', function() {
-      return require('../src/services/logger')(options.logLevel);
+      return require('../src/app/services/logger')(options.logLevel);
     });
 
     container.registerService('config', function() {
