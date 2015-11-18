@@ -69,7 +69,7 @@ module.exports = function BlessedApplication(screen, app, input, logger, format,
       .then(format.parse)
       .then(expectations.ensureValid)
       .catch(ValidationError, function(e) {
-        return ui.capture(expectations, defaults, data.content, error);
+        return ui.capture(expectations, defaults, data.content, e);
       });
   };
 
