@@ -10,7 +10,7 @@ var Cancellation = require('../../domain/errors/cancellation');
  * Responsible for prepping a view single view, and
  * coordinating it with the rest of the app
  */
-module.exports = function(app, ui, tracker, logger) {
+module.exports = function(app, ui, keys, tracker, logger) {
   var repository = tracker.getRepository();
   var normalizer = tracker.getNormalizer();
 
@@ -26,33 +26,32 @@ module.exports = function(app, ui, tracker, logger) {
     ui.clearScreen();
     ui.showLoading(invalidate ? 'Refreshing...' : 'Loading ' + num + '...');
 
-    var view = ui.views.single(
-      num,
-      invalidate,
+    var view = ui.views.singleIssue(
+      ui.canvas,
       repository.lookup(num, invalidate),
       repository.getComments(num, invalidate)
     );
 
-    view.key(ui.keys.back, function() {
-      ui.listIssues(null, num);
+    view.key(keys.back, function() {
+      ui.controller.listIssues(null, num);
     });
 
-    view.key(ui.keys.refresh, refreshIssue(num));
+    view.key(keys.refresh, refreshIssue(num));
 
-    view.key(ui.keys.web, function() {
+    view.key(keys.web, function() {
       app.get('browser').open(
         normalizer.getIssueUrl(num, app.getFilters())
       );
     });
 
-    view.key(ui.keys['issue.comment.inline'], function() {
+    view.key(keys['issue.comment.inline'], function() {
       ui.input.ask('Comment')
         .then(persistComment(num))
         .then(refreshIssue(num))
         .catch(Cancellation, _.noop);
     });
 
-    view.key(ui.keys['issue.comment.external'], function() {
+    view.key(keys['issue.comment.external'], function() {
       ui.input.editExternally('')
         .then(persistComment(num))
         .then(refreshIssue(num))
@@ -61,7 +60,9 @@ module.exports = function(app, ui, tracker, logger) {
   };
 
   var refreshIssue = function(num) {
-    ui.viewIssue(num, true);
+    return function() {
+      ui.controller.viewIssue(num, true);
+    };
   };
 
   var persistComment = function(num) {

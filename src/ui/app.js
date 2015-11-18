@@ -21,13 +21,10 @@ var MoreInfoRequired = require('../domain/errors/infoRequired');
 module.exports = function BlessedApplication(screen, app, input, logger, format, keys, getDeps) {
   var ui = this;
   this.screen = screen;
-  getDeps().spread(function(controller, views) { 
-    ui.controller = controller; 
-    ui.views = views; 
+  getDeps().spread(function(controller, views) {
+    ui.controller = controller;
+    ui.views = views;
   });
-
-
-  //var showHelp = app.get('ui.help');
 
   /**
    * Starts up the user interface
@@ -44,7 +41,6 @@ module.exports = function BlessedApplication(screen, app, input, logger, format,
       logger.debug('Booting up ui');
 
       if(!action) action = 'listIssues';
-      console.error(action);
       ui.controller[action](id);
 
       app.getActiveReport().on('change', function() {
@@ -53,10 +49,22 @@ module.exports = function BlessedApplication(screen, app, input, logger, format,
 
       screen.key(keys.help, function() { showHelp(screen); });
       screen.key(keys.exit, function() { app.exit(0); });
+      screen.key(keys['issue.lookup'], function() {
+        input.ask('Open Issue', ui.canvas)
+          .then(ui.controller.viewIssue)
+          .catch(Cancellation, _.noop);
+      });
     });
   };
 
-
+  /**
+   * Capture expectations from the user
+   *
+   * @param {Expectations} expectations
+   * @param {Object} defaults
+   * @param {String} draft - last editing attempt
+   * @param {Error} error - last error
+   */
   this.capture = function(expectations, defaults, draft, error) {
     var data = {};
     return format.seed(expectations, defaults, draft, error)
@@ -75,14 +83,16 @@ module.exports = function BlessedApplication(screen, app, input, logger, format,
    */
   ui.showLoading = function(msg) {
     ui.clearScreen();
-    messageWidget(screen, msg || 'Loading...', Infinity);
+    var alert = messageWidget(ui.canvas, msg || 'Loading...', Infinity);
+    ui.canvas.append(alert);
+    screen.render();
   };
 
   /**
    * Clears the screen
    */
   ui.clearScreen = function() {
-    screen.children.forEach(function(child) { screen.remove(child); });
+    ui.canvas.children.forEach(function(child) { ui.canvas.remove(child); });
     screen.render();
   };
 
@@ -96,7 +106,7 @@ module.exports = function BlessedApplication(screen, app, input, logger, format,
   ui.message = function(msg, delay) {
     if(!delay) delay = 1000;
     return new Promise(function(resolve, reject) {
-      var m = messageWidget(screen, msg, delay);
+      var m = messageWidget(ui.canvas, msg, delay);
       setTimeout(function() { resolve(); }, delay);
     });
   };

@@ -1,13 +1,13 @@
 var blessed = require('blessed');
 
-module.exports = function(screen, message, timeout) {
+module.exports = function(parent, message, timeout) {
   var alert = new blessed.Message({
     width: '25%',
     height: 5,
     top: 'center',
     left: 'center',
     tags: true,
-    parent: screen,
+    parent: parent,
     fg: 'white',
     bg: 'lightblack',
     padding: 1,

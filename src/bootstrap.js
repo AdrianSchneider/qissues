@@ -24,6 +24,7 @@ var createIssueController    = require('./ui/controllers/createIssue');
 var viewIssueController      = require('./ui/controllers/viewIssue');
 var applyChangeSetController = require('./ui/controllers/applyChangeSet');
 var issueListView            = require('./ui/views/issueList');
+var singleIssueView          = require('./ui/views/single');
 var YamlFrontMatterParser    = require('./util/frontmatter-yaml');
 
 module.exports = function(options) {
@@ -210,8 +211,8 @@ module.exports = function(options) {
 
     container.registerService(
       'ui.controller.viewIssue',
-      function(app, ui, tracker, logger) { return viewIssueController(app, ui, tracker, logger); },
-      ['app', 'ui', 'tracker', 'logger']
+      function(app, ui, keys, tracker, logger) { return viewIssueController(app, ui, keys, tracker, logger); },
+      ['app', 'ui', 'ui.keys', 'tracker', 'logger']
     );
 
     container.registerService(
@@ -228,18 +229,25 @@ module.exports = function(options) {
 
     container.registerService(
       'ui.views',
-      function(issueList) {
+      function(issueList, singleIssue) {
         return {
-          issueList: issueList
+          issueList: issueList,
+          singleIssue: singleIssue
         };
       },
-      ['ui.views.issueList']
+      ['ui.views.issueList', 'ui.views.singleIssue']
     );
 
     container.registerService(
       'ui.views.issueList',
       function(app, tracker, input, keys, logger) { return issueListView(app, tracker, input, keys, logger); },
       ['app', 'tracker', 'ui.input', 'ui.keys', 'logger']
+    );
+
+    container.registerService(
+      'ui.views.singleIssue',
+      function(app, keys, logger) { return singleIssueView(app, keys, logger); },
+      ['app', 'ui.keys', 'logger']
     );
 
   });

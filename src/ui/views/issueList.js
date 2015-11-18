@@ -43,10 +43,6 @@ module.exports = function(app, tracker, input, keys, logger) {
       return list.issues.get(list.selected);
     };
 
-    list.render();
-    parent.render();
-    parent.screen.render();
-
     return list;
   };
 
@@ -68,8 +64,6 @@ module.exports = function(app, tracker, input, keys, logger) {
       name: 'issues',
       width: parent.getInnerWidth('100%'),
       height: parent.getInnerHeight('100%'),
-      top: 0,
-      left: 0,
       tags: true,
       selectedFg: 'black',
       selectedBg: 'green',
