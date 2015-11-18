@@ -169,7 +169,7 @@ function List(options) {
    * @return {Boolean} true if checked/toggled
    */
   var isChecked = function(item) {
-    var key = list.issues.get(item.index - 1).getId();
+    var key = list.issues.get(item.index - 2).getId();
     var index = selected.indexOf(key);
     return index !== -1;
   };
