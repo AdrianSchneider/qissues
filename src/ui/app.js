@@ -1,16 +1,12 @@
 'use strict';
 
 var _                = require("underscore");
-var f                = require('../util/f');
 var Promise          = require('bluebird');
-var views            = require('./views');
-var UserInput        = require('./input');
-var messageWidget    = require('./widgets/message');
+var f                = require('../util/f');
 var canvas           = require('./views/canvas');
-var NewComment       = require('../domain/model/newComment');
+var messageWidget    = require('./widgets/message');
 var Cancellation     = require('../domain/errors/cancellation');
 var ValidationError  = require('../domain/errors/validation');
-var MoreInfoRequired = require('../domain/errors/infoRequired');
 
 /**
  * Main Qissues application
