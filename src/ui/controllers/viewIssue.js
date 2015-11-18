@@ -65,7 +65,7 @@ module.exports = function(app, ui, input, keys, tracker, logger, browser) {
 
   var persistComment = function(num) {
     return function(text) {
-      return repository.create(new NewComment(text, num));
+      return repository.postComment(new NewComment(text, num));
     };
   };
 

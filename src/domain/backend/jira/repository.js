@@ -2,6 +2,7 @@
 
 var util              = require('util');
 var Promise           = require('bluebird');
+var sprintf           = require('util').format;
 var TrackerRepository = require('../../model/trackerRepository');
 
 /**
@@ -77,6 +78,19 @@ function JiraRepository(client, cache, normalizer) {
     return client.get('/rest/api/2/issue/' + num + '/comment')
       .then(cache.setThenable(cacheId))
       .then(normalizer.toCommentsCollection);
+  };
+
+  /**
+   * Posts a comment to an issue
+   *
+   * @param {NewComment} comment
+   * @return {Promise}
+   */
+  this.postComment = function(comment) {
+    return client.post(
+      sprintf('/rest/api/2/issue/%s/comment', comment.getIssue()),
+      normalizer.newCommentToJson(comment)
+    );
   };
 
 }

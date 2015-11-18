@@ -139,6 +139,10 @@ function JiraNormalizer(metadata, config) {
     return new CommentsCollection(response.comments.map(normalizer.toComment));
   };
 
+  this.newCommentToJson = function(newComment) {
+    return { body: newComment.getMessage() };
+  };
+
   this.getIssueUrl = function(num, filters) {
     return sprintf('https://%s/browse/%s?jql=%s', config.get('domain'), num, this.filterSetToJql(filters));
   };
