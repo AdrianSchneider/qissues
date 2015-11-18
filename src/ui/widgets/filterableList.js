@@ -58,14 +58,10 @@ function FilterableList(options) {
     return filterView(self.screen, filters);
   };
 
-  var filter = function(getOptions, message, filter) {
+  var filter = function(getOptions, message, type) {
     return function() {
-      var view = startLoading();
-      console.error(message);
-      getOptions()
-        .then(cancelLoading(view))
-        .then(input.selectFromListWith(message))
-        .then(function(text) { filters.add(new Filter(filter, text)); })
+      input.selectFromCallableList(message, getOptions)
+        .then(Filter.addSelectedTo(filters, type))
         .catch(Cancellation, _.noop);
     };
   };

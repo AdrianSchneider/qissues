@@ -57,6 +57,44 @@ module.exports = function UserInput(parent, keys) {
   };
 
   /**
+   * Asks the user to pick from a list using a data provider
+   * Refreshable
+   *
+   * @param {String} text - question to ask
+   * @param {Array<String> options
+   * @return {Promise<String>}
+   */
+  this.selectFromCallableList = function(text, provider) {
+    return new Promise(function(resolve, reject) {
+      var list = promptList(text, parent, ['Loading...']);
+
+      var setItems = function(options) {
+        list.setItems(options.map(String));
+        parent.screen.render();
+      };
+
+      list.on('select', function(item, i) {
+        parent.remove(list);
+        parent.screen.render();
+        respondOrCancel(item.content, resolve, reject);
+      });
+
+      list.key(keys.back, function() {
+        parent.remove(list);
+        parent.screen.render();
+        reject(new Cancellation());
+      });
+
+      list.key(keys.refresh, function() {
+        setItems(['Loading...']);
+        provider(true).then(setItems);
+      });
+
+      provider().then(setItems);
+    });
+  };
+
+  /**
    * Returns a function which asks a question, with the options as
    * the first argument
    *

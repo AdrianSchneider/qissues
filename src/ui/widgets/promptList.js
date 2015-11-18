@@ -36,6 +36,6 @@ module.exports = function(text, parent, options) {
   list.focus();
   list.render();
 
-  parent.render();
+  parent.screen.render();
   return list;
 };

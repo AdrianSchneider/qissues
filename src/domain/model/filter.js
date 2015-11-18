@@ -31,3 +31,9 @@ function Filter(type, value) {
     };
   };
 }
+
+Filter.addSelectedTo = function(filters, type) {
+  return function(item) {
+    filters.add(new Filter(type, item));
+  };
+};

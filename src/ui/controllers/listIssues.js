@@ -33,7 +33,7 @@ module.exports = function(app, ui, input, keys, tracker, browser) {
       ui.controller.createIssue();
     });
 
-    list.key(keys.refresh, function() {
+    list.key(keys.refresh, function(el) {
       ui.controller.listIssues(true, list.getSelected());
     });
 

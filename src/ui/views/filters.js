@@ -2,11 +2,11 @@
 
 var blessed = require('blessed');
 
-module.exports = function(screen, filters) {
+module.exports = function(parent, filters) {
   var view = new blessed.List({
     name: 'filters',
-    parent: screen,
-    width: '30%',
+    parent: parent,
+    width: '40%',
     height: '20%',
     top: 'center',
     left: 'center',
@@ -18,19 +18,21 @@ module.exports = function(screen, filters) {
     vi: true,
     label: '{green-fg}Filters{/green-fg}',
     border: {
-      type: 'line'
+      type: 'line',
+      fg: 'lightgreen'
     }
   });
 
   view.key(['escape', 'h', 'enter'], function() {
-    screen.remove(view);
-    screen.render();
+    parent.remove(view);
+    parent.screen.render();
   });
 
   view.key(['delete', 'enter', 'x'], function(text, i) {
     filters.remove(view.selected);
     view.removeItem(view.selected);
-    screen.render();
+    parent.remove(view);
+    parent.screen.render();
   });
 
   view.setItems(filters.serialize().map(function(filter) {
@@ -40,5 +42,5 @@ module.exports = function(screen, filters) {
   view.select(0);
   view.focus();
 
-  screen.render();
+  parent.screen.render();
 };
