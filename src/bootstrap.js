@@ -71,10 +71,10 @@ module.exports = function(options) {
 
     container.registerService(
       'tracker.jira.client',
-      function(config) {
-        return new JiraClient(config.get('domain'), config.get('username'), config.get('password'));
+      function(config, logger) {
+        return new JiraClient(config.get('domain'), config.get('username'), config.get('password'), logger);
       },
-      ['config']
+      ['config', 'logger']
     );
 
     container.registerService(

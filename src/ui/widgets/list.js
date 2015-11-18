@@ -80,7 +80,6 @@ function List(options) {
 
       list.resultNumber = -1;
       list.nextResult();
-      console.error('rendering screen...');
       list.screen.render();
     });
 
