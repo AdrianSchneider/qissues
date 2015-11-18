@@ -15,7 +15,6 @@ var JiraMetadata             = require('./domain/backend/jira/metadata');
 var Application              = require('./app/main');
 var BlessedApplication       = require('./ui/app');
 var keys                     = require('./ui/keys');
-var help                     = require('./ui/help');
 var Browser                  = require('./ui/browser');
 var UserInput                = require('./ui/input');
 var YamlFrontMatterFormat    = require('./ui/formats/yaml-front-matter');
@@ -23,6 +22,7 @@ var listIssuesController     = require('./ui/controllers/listIssues');
 var createIssueController    = require('./ui/controllers/createIssue');
 var viewIssueController      = require('./ui/controllers/viewIssue');
 var applyChangeSetController = require('./ui/controllers/applyChangeSet');
+var helpController           = require('./ui/controllers/help');
 var issueListView            = require('./ui/views/issueList');
 var singleIssueView          = require('./ui/views/single');
 var YamlFrontMatterParser    = require('./util/frontmatter-yaml');
@@ -131,11 +131,6 @@ module.exports = function(options) {
     );
 
     container.registerService(
-      'ui.help',
-      function() { return help('less', ['-c'], 'docs/help.txt'); }
-    );
-
-    container.registerService(
       'ui.browser',
       function(config) { return new Browser(config.get('browser', null)); },
       ['config']
@@ -181,19 +176,21 @@ module.exports = function(options) {
   builders.push(function setupUiControllers(container) {
     container.registerService(
       'ui.controller',
-      function(listIssues, createIssue, viewIssue, applyChangeSet) {
+      function(listIssues, createIssue, viewIssue, applyChangeSet, help) {
         return {
           listIssues: listIssues,
           createIssue: createIssue,
           viewIssue: viewIssue,
-          applyChangeSet: applyChangeSet
+          applyChangeSet: applyChangeSet,
+          help: help
         };
       },
       [
         'ui.controller.listIssues',
         'ui.controller.createIssue',
         'ui.controller.viewIssue',
-        'ui.controller.applyChangeSet'
+        'ui.controller.applyChangeSet',
+        'ui.controller.help'
       ]
     );
 
@@ -224,6 +221,12 @@ module.exports = function(options) {
       function(app, ui, tracker, logger) { return applyChangeSetController(ui, tracker); },
       ['ui', 'tracker']
     );
+
+    container.registerService(
+      'ui.controller.help',
+      function() { return helpController('less', ['-c'], 'docs/help.txt'); }
+    );
+
   });
 
   /**

@@ -47,7 +47,7 @@ module.exports = function BlessedApplication(screen, app, input, logger, format,
         ui.controller.listIssues();
       });
 
-      screen.key(keys.help, function() { showHelp(screen); });
+      screen.key(keys.help, _.partial(ui.controller.help, screen));
       screen.key(keys.exit, function() { app.exit(0); });
       screen.key(keys['issue.lookup'], function() {
         input.ask('Open Issue', ui.canvas)
