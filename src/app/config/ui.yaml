@@ -1,6 +1,0 @@
-services:
-  ui.formats.yaml-frontmatter:
-    module: ui/formats/yaml-front-matter
-    arguments:
-      - @util.yaml-frontmatter
-      - #js-yaml
