@@ -7,10 +7,10 @@ Qissues Interface
 
     a) Application Hotkeys
         ?                       Open help
-        Ctrl+C                  Exits qissues
+        Ctrl+C                  Exits qissues, clear input
         Ctrl+R                  Reload current view
         Escape                  Close/cancel popup
-        m                       Reload metadata          *
+        I                       Lookup issue by number
     
     b) Navigation Hotkeys
         j                       Move down one line
@@ -27,6 +27,9 @@ Qissues Interface
         c                       Create issue using filters
         C                       Create new issue
         I                       Open Issue number
+        x                       Toggle selection
+        X                       Clear selection
+        ,c*                     Change selected issues (see section e below)
         ,fl                     Show filters
         ,fa                     Filter by assignee
         ,fs                     Filter by status
