@@ -3,6 +3,7 @@
 var _       = require('underscore');
 var blessed = require('blessed');
 var Promise = require('bluebird');
+var wordwrap = require('wordwrap');
 var sprintf = require('util').format;
 
 module.exports = function(app, keys, logger) {
@@ -19,9 +20,11 @@ module.exports = function(app, keys, logger) {
       alwaysScroll: true
     });
 
+    console.error('box width = ' + box.width);
+
     Promise.all([promisedIssue, promisedComments])
       .spread(function(issue, comments) {
-        box.setContent(renderIssue(issue, comments));
+        box.setContent(renderIssue(issue, comments, box.width));
         box.getIssue = function() { return issue; };
         parent.append(box);
         box.focus();
@@ -31,11 +34,11 @@ module.exports = function(app, keys, logger) {
     return box;
   };
 
-  var renderIssue = function(issue, comments) {
-    return buildHeader(issue) + '\n\n' +
-      buildMeta(issue) + '\n\n' +
-      buildBody(issue) + '\n\n' +
-      buildComments(comments);
+  var renderIssue = function(issue, comments, width) {
+    return buildHeader(issue, width) + '\n\n' +
+      buildMeta(issue, width) + '\n\n' +
+      buildBody(issue, width) + '\n\n' +
+      buildComments(comments, width);
   };
 
   var buildHeader = function(issue) {
@@ -73,35 +76,38 @@ module.exports = function(app, keys, logger) {
     return 'assigned to ' + meta.assignee;
   };
 
-  var buildBody = function(issue) {
+  var buildBody = function(issue, width) {
     return sprintf(
       '{yellow-fg}DESCRIPTION{/yellow-fg}\n\n\t%s',
-      issue.getDescription() ? maintainIndentation(issue.getDescription(), 1) : 'No description'
+      issue.getDescription() ? maintainIndentation(issue.getDescription(), 1, width) : 'No description'
     );
   };
 
-  var buildComments = function(comments) {
+  var buildComments = function(comments, width) {
     var out = '{yellow-fg}COMMENTS{/yellow-fg}';
     if(!comments.length) return out += '\t\n\n\tNo comments';
 
     return out + comments.map(function(comment) {
       return sprintf(
-        '\n\n\t{blue-fg}%s{/blue-fg} at {blue-fg}%s{/blue-fg}\n\n\t\t%s',
+        '\n\n\t{blue-fg}%s{/blue-fg} at {blue-fg}%s{/blue-fg}\n\n%s',
         comment.getAuthor(),
         formatDate(comment.getDate()),
-        maintainIndentation(comment.getMessage(), 2)
+        maintainIndentation(comment.getMessage(), 2, width)
       );
     }).join('');
   };
 
-  var formatCommentText = function(text) {
-    return text.split('\n').join('\n\t\t');
-  };
+  var maintainIndentation = function(text, level, maxWidth) {
+    var indent = '';
+    var spacer = '    ';
+    for (var i = 0; i < level; i++) indent += spacer;
 
-  var maintainIndentation = function(text, level) {
     return text
       .split('\n')
-      .join('\n' + _.range(level).map(_.constant('\t')));
+      .map(function(line) { return wordwrap(maxWidth - (level * spacer.length))(line); })
+      .join('\n').split('\n')
+      .map(function(line) { return indent + line; })
+      .join('\n');
   };
 
   var formatDate = function(date) {
