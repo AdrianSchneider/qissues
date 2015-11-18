@@ -140,11 +140,11 @@ function JiraNormalizer(metadata, config) {
   };
 
   this.getIssueUrl = function(num, filters) {
-    return sprintf('https://%s/browse/%s?jql=%s', config.domain, num, this.filterSetToJql(filters));
+    return sprintf('https://%s/browse/%s?jql=%s', config.get('domain'), num, this.filterSetToJql(filters));
   };
 
   this.getQueryUrl = function(filters) {
-    return sprintf('https://%s/issues/?jql=%s', config.domain, this.filterSetToJql(filters));
+    return sprintf('https://%s/issues/?jql=%s', config.get('domain'), this.filterSetToJql(filters));
   };
 
   /**

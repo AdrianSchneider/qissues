@@ -199,20 +199,24 @@ module.exports = function(options) {
 
     container.registerService(
       'ui.controller.listIssues',
-      function(app, ui, keys, tracker) { return listIssuesController(app, ui, keys, tracker); },
-      ['app', 'ui', 'ui.keys', 'tracker']
+      function(app, ui, input, keys, tracker, browser) {
+        return listIssuesController(app, ui, input, keys, tracker, browser);
+      },
+      ['app', 'ui', 'ui.input', 'ui.keys', 'tracker', 'ui.browser']
+    );
+
+    container.registerService(
+      'ui.controller.viewIssue',
+      function(app, ui, input, keys, tracker, logger, browser) {
+        return viewIssueController(app, ui, input, keys, tracker, logger, browser);
+      },
+      ['app', 'ui', 'ui.input', 'ui.keys', 'tracker', 'logger', 'ui.browser']
     );
 
     container.registerService(
       'ui.controller.createIssue',
       function(ui, tracker, logger) { return createIssueController(ui, tracker, logger); },
       ['ui', 'tracker', 'logger']
-    );
-
-    container.registerService(
-      'ui.controller.viewIssue',
-      function(app, ui, keys, tracker, logger) { return viewIssueController(app, ui, keys, tracker, logger); },
-      ['app', 'ui', 'ui.keys', 'tracker', 'logger']
     );
 
     container.registerService(

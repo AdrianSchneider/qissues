@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = function(app, ui, keys, tracker) {
+module.exports = function(app, ui, input, keys, tracker, browser) {
 
   /**
    * List Issues Controller
@@ -22,7 +22,7 @@ module.exports = function(app, ui, keys, tracker) {
     });
 
     list.key(keys['issue.lookup'], function() {
-      ui.input.ask('Open Issue', ui.screen).then(ui.viewIssue);
+      input.ask('Open Issue', ui.screen).then(ui.viewIssue);
     });
 
     list.key(keys['issue.create.contextual'], function() {
@@ -38,7 +38,7 @@ module.exports = function(app, ui, keys, tracker) {
     });
 
     list.key(keys.web, function() {
-      app.get('browser').open(tracker.getNormalizer().getQueryUrl(app.getFilters()));
+      browser.open(tracker.getNormalizer().getQueryUrl(app.getFilters()));
     });
 
     list.on('changeset', function(changeSet) {

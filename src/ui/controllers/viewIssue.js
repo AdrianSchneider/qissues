@@ -10,7 +10,7 @@ var Cancellation = require('../../domain/errors/cancellation');
  * Responsible for prepping a view single view, and
  * coordinating it with the rest of the app
  */
-module.exports = function(app, ui, keys, tracker, logger) {
+module.exports = function(app, ui, input, keys, tracker, logger, browser) {
   var repository = tracker.getRepository();
   var normalizer = tracker.getNormalizer();
 
@@ -39,20 +39,18 @@ module.exports = function(app, ui, keys, tracker, logger) {
     view.key(keys.refresh, refreshIssue(num));
 
     view.key(keys.web, function() {
-      app.get('browser').open(
-        normalizer.getIssueUrl(num, app.getFilters())
-      );
+      browser.open(normalizer.getIssueUrl(num, app.getFilters()));
     });
 
     view.key(keys['issue.comment.inline'], function() {
-      ui.input.ask('Comment')
+      input.ask('Comment')
         .then(persistComment(num))
         .then(refreshIssue(num))
         .catch(Cancellation, _.noop);
     });
 
     view.key(keys['issue.comment.external'], function() {
-      ui.input.editExternally('')
+      input.editExternally('')
         .then(persistComment(num))
         .then(refreshIssue(num))
         .catch(Cancellation, _.noop);
