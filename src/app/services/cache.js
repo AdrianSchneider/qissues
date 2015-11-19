@@ -4,7 +4,7 @@ var _      = require('underscore');
 var moment = require('moment');
 var crypto = require('crypto');
 
-module.exports = function Cache(storage, clear) {
+module.exports = function Cache(storage, clear, hasher) {
   var cache = this;
   var prefix = 'cache:';
 
@@ -12,7 +12,7 @@ module.exports = function Cache(storage, clear) {
    * Generate a unique ID for a given string
    * @param string str
    */
-  var storageKey = function(str) {
+  var storageKey = hasher || function(str) {
     return crypto.createHash('md5').update(str).digest('hex');
   };
 
@@ -23,9 +23,10 @@ module.exports = function Cache(storage, clear) {
    * @param boolean invalidate
    */
   this.get = function(key, invalidate) {
-    if(invalidate) return;
+    if (invalidate) return;
+
     var entry = storage.get(prefix + storageKey(key));
-    if(entry && new Date(entry.expires) > new Date()) {
+    if (entry && new Date(entry.expires) > new Date()) {
       return entry.data;
     }
   };
@@ -36,7 +37,7 @@ module.exports = function Cache(storage, clear) {
   this.set = function(key, data, ttl) {
     storage.set(prefix + storageKey(key), {
       data: data,
-      expires: moment().add(ttl || 3600, 'seconds')
+      expires: moment().add(ttl || 3600, 'seconds').toDate()
     });
   };
 
