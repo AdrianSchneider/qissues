@@ -91,8 +91,8 @@ module.exports = function(options) {
 
     container.registerService(
       'tracker.jira.repository',
-      function(client, cache, normalizer) { return new JiraRepository(client, cache, normalizer); },
-      ['tracker.jira.client', 'cache', 'tracker.jira.normalizer']
+      function(client, cache, normalizer, metadata) { return new JiraRepository(client, cache, normalizer, metadata); },
+      ['tracker.jira.client', 'cache', 'tracker.jira.normalizer', 'tracker.jira.metadata']
     );
 
     container.registerService(

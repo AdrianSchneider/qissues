@@ -71,12 +71,20 @@ module.exports = function Cache(storage, clear) {
 
   /**
    * Invalidates all cache entries
+   *
+   * @param {Function} predicate
    */
-  this.invalidateAll = function() {
+  this.invalidateAll = function(predicate) {
+    if (!predicate) predicate = _.constant(true);
+
     storage.removeMulti(
-      storage.keys().filter(function(item) {
-        return item.indexOf(prefix) === 0;
-      })
+      storage.keys()
+        .filter(function(item) {
+          return item.indexOf(prefix) === 0;
+        })
+        .filter(function(item) {
+          return predicate(item.substr(prefix.length));
+        })
     );
   };
 

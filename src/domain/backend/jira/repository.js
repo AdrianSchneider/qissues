@@ -1,9 +1,11 @@
 'use strict';
 
+var _                 = require('underscore');
 var util              = require('util');
 var Promise           = require('bluebird');
 var sprintf           = require('util').format;
 var TrackerRepository = require('../../model/trackerRepository');
+var MoreInfoRequired  = require('../../errors/infoRequired');
 
 /**
  * Repository for interacting with Jira data
@@ -12,7 +14,7 @@ var TrackerRepository = require('../../model/trackerRepository');
  * @param {Cache} cache
  * @param {JiraNormalizer} normalizer
  */
-function JiraRepository(client, cache, normalizer) {
+function JiraRepository(client, cache, normalizer, metadata) {
   TrackerRepository.call(this);
 
   /**
@@ -98,10 +100,19 @@ function JiraRepository(client, cache, normalizer) {
    *
    * @param {ChangeSet} changes
    */
-  this.apply = function(changes) {
+  this.apply = function(changes, details) {
+    cache.invalidateAll(function(key) {
+      return key.indexOf('issues:') === 0;
+    });
+    changes.getIssues().forEach(function(num) {
+      cache.invalidate('lookup:' + num);
+    });
+
     var changeFunctions = {
-      title: changeTitle,
-      assignee: changeAssignee
+      title    : changeTitle,
+      assignee : changeAssignee,
+      status   : changeStatus,
+      sprint   : changeSprint
     };
 
     return Promise.each(changes.getChanges(), function(change) {
@@ -113,7 +124,7 @@ function JiraRepository(client, cache, normalizer) {
       }
 
       return Promise.each(changes.getIssues(), function(issue) {
-        return changeFunctions[field](issue, value);
+        return changeFunctions[field](issue, value, details);
       });
     });
   };
@@ -121,25 +132,74 @@ function JiraRepository(client, cache, normalizer) {
   /**
    * Changes a title
    *
-   * @param {String} issue - id
+   * @param {String} num - id
    * @param {String} title
    * @return {Promise}
    */
-  var changeTitle = function(issue, title) {
+  var changeTitle = function(num, title) {
     var data = { fields: { summary: title } };
-    return client.put(getIssueUrl(issue), data);
+    return client.put(getIssueUrl(num), data);
   };
 
   /**
    * Changes the assignee
    *
-   * @param {String} issue - id
+   * @param {String} num - id
    * @param {String} username
    * @return {Promise}
    */
-  var changeAssignee = function(issue, username) {
+  var changeAssignee = function(num, username) {
     var data = { name: username === 'Unassigned' ? null : username };
-    return client.put(getIssueUrl(issue, '/assignee'), data);
+    return client.put(getIssueUrl(num, '/assignee'), data);
+  };
+
+  /**
+   * Changes the status
+   *
+   * @param {String} num
+   * @param {String} status
+   * @param {Object|null} details
+   * @return {Promise}
+   */
+  var changeStatus = function(num, status, details) {
+    return metadata.getIssueTransition(num, status).then(function(transition) {
+      var expectations = metadata.transitionToExpectations(transition);
+      if (expectations.hasRules()) {
+        throw new MoreInfoRequired('Jira expects more', expectations);
+      }
+
+      var data = {
+        transition: { id: transition.id },
+        fields: _.mapObject(details, function(value) {
+          return { name: value };
+        })
+      };
+
+      return client.post(getIssueUrl(num, '/transitions'), data);
+    });
+  };
+
+  /**
+   * Changes the sprint
+   *
+   * @param {String} num
+   * @param {String} sprint
+   * @return {Promise}
+   */
+  var changeSprint = function(num, toSprint) {
+    if (toSprint === 'Backlog') {
+      throw new Error('TODO need to query for current sprint');
+    }
+
+    return metadata.getSprints()
+      .then(function(sprints) {
+        return _.find(sprints, function(sprint) {
+          return sprint.getName() === toSprint;
+        });
+      })
+      .then(function(sprint) {
+
+      });
   };
 
   /**
@@ -150,11 +210,7 @@ function JiraRepository(client, cache, normalizer) {
    * @return {String}
    */
   var getIssueUrl = function(num, append) {
-    return sprintf(
-      '/rest/api/2/issue/%s%s',
-      num,
-      append || ''
-    );
+    return sprintf('/rest/api/2/issue/%s%s', num, append || '');
   };
 
 }

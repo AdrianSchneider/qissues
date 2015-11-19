@@ -3,6 +3,7 @@
 var _               = require('underscore');
 var util            = require('util');
 var Promise         = require('bluebird');
+var Expectations    = require('../../model/expectations');
 var TrackerMetadata = require('../../model/trackerMetadata');
 var Label           = require('../../model/meta/label');
 var User            = require('../../model/meta/user');
@@ -182,6 +183,66 @@ function JiraMetadata(client, cache, projectKey) {
         return new Status(status.name);
       })
       .then(cache.setSerializedThenable('statuses', ttl));
+  };
+
+  /**
+   * Finds all transitions for a ticket
+   *
+   * @param {String} num - issue number
+   * @param {Boolean} invalidate
+   * @return {Promise<Array><Object>}
+   */
+  this.getTransitions = function(num, invalidate) {
+    var cached = cache.get('transitions:' + num, invalidate);
+    if (cached) return Promise.resolve(cached);
+
+    var opts = { qs: { expand: 'transitions.fields' } };
+    return client.get('/rest/api/2/issue/' + num + '/transitions', opts)
+      .then(function(response) { return response.transitions; })
+      .then(cache.setThenable('transitions:' + num, ttl));
+  };
+
+  /**
+   * Gets the transition for a given issue/status
+   *
+   * @param {String} num - issue number
+   * @param {String} status - new status
+   * @return {Promise<Object>} transition
+   * @throws {Error} when a suitable transition could not be found
+   */
+  this.getIssueTransition = function(num, status) {
+    return metadata.getTransitions(num).then(function(transitions) {
+      var transition = _.find(transitions, function(transition) {
+        return status.toLowerCase() === transition.to.name.toLowerCase();
+      });
+
+      if (!transition) throw new Error('Could not find transition for ' + status);
+      return transition;
+    });
+  };
+
+  /**
+   * Converts a transition into an expectations
+   *
+   * @param {Object} transition
+   * @return {Expectations}
+   */
+  this.transitionToExpectations = function(transition) {
+    return new Expectations(
+      _.chain(transition.fields)
+        .keys()
+        .map(function(field) {
+          return {
+            field: field,
+            required: transition.fields[field].required,
+            default: null,
+            choices: transition.fields[field].allowedValues
+          };
+        })
+        .filter(_.property('required'))
+        .indexBy('field')
+        .value()
+    );
   };
 
 }
