@@ -218,7 +218,7 @@ module.exports = function(options) {
 
     container.registerService(
       'ui.controller.applyChangeSet',
-      function(app, ui, tracker, logger) { return applyChangeSetController(ui, tracker); },
+      function(ui, tracker) { return applyChangeSetController(ui, tracker); },
       ['ui', 'tracker']
     );
 

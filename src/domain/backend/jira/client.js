@@ -7,6 +7,13 @@ var ValidationError = require('../../errors/validation');
 
 module.exports = function JiraHttpClient(domain, username, password, logger) {
 
+  /**
+   * Performs a GET request
+   *
+   * @param {String} path
+   * @param {Object} options
+   * @return {Promise}
+   */
   this.get = function(path, options) {
     logger.trace('http request: GET ' + buildUrl(path));
 
@@ -41,8 +48,10 @@ module.exports = function JiraHttpClient(domain, username, password, logger) {
     return new Promise(function(resolve, reject) {
       var opts = attachOptions();
       opts.json = data;
-      request.put(buildUrl(path), data, function(err, res, body) {
+      request.put(buildUrl(path), opts, function(err, res, body) {
         if(err) return reject(err);
+        logger.trace('http response ' + res.statusCode);
+        logger.trace('http payload ' + JSON.stringify(body, null, 4));
         return resolve(body);
       });
     });

@@ -42,7 +42,7 @@ module.exports = function(app, ui, input, keys, tracker, browser) {
     });
 
     list.on('changeset', function(changeSet) {
-      ui.applyChangeset(changeSet);
+      ui.controller.applyChangeSet(changeSet);
     });
 
     return list;

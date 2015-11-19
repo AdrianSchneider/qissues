@@ -18,6 +18,10 @@ function ChangeSet(issues, changes) {
     throw new TypeError('ChangeSet requires an object of changes');
   }
 
+  if (Object.keys(changes).length > 1) {
+    throw new Error('Cannot change multiple properties at once yet');
+  }
+
   /**
    * Returns the issues
    *
@@ -33,7 +37,7 @@ function ChangeSet(issues, changes) {
    * @return {Object}
    */
   this.getChanges = function() {
-    return changes;
+    return _.pairs(changes);
   };
 
 }
