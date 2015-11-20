@@ -85,9 +85,6 @@ module.exports = function(app, tracker, input, keys, logger) {
     parent.children.forEach(function(child) { parent.remove(child); });
     parent.append(list);
     list.setItems(issues.map(renderIssue));
-    list.items.forEach(function(item) {
-      item.originalContent = item.content;
-    });
     list.select(findLastFocused(list, focus));
     list.focus();
 

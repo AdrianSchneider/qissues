@@ -52,6 +52,7 @@ module.exports = function UserInput(parent, keys) {
         parent.remove(list);
         parent.screen.render();
         reject(new Cancellation());
+        return false;
       });
     });
   };
@@ -80,6 +81,7 @@ module.exports = function UserInput(parent, keys) {
       });
 
       list.key(keys.back, function() {
+        console.error('going back from input');
         parent.remove(list);
         parent.screen.render();
         reject(new Cancellation());

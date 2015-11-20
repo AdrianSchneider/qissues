@@ -20,6 +20,7 @@ module.exports = function(text, parent, options) {
     left: 'center',
     tags: true,
     bg: 'grey',
+    name: text,
     selectedFg: 'black',
     selectedBg: 'yellow',
     label: '{green-fg}' + text + '{/green-fg}',

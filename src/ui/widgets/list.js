@@ -30,22 +30,15 @@ function List(options) {
     list.key('S-x', list.clearSelection);
     list.key('x', list.toggle);
     list.key('S-n', list.prevResult);
-    list.key(['escape', 'space'], function(el) {
-      if(el !== list) return;
-      list.clearSearch();
-    });
+    list.key(['escape', 'space'], list.clearSearch);
   };
 
-  /**
-   * Sets the items using a collection and a renderer
-   *
-   * @param array    collection
-   * @param function renderer
-   */
-  this.setCollection = function(collection, renderer) {
-    dataItems = collection;
-    displayFunc = renderer;
-    list.setItems(collection.map(renderer));
+  var setItems = this.setItems;
+  list.setItems = function(items) {
+    setItems.call(list, items);
+    list.items.forEach(function(item) {
+      item.originalContent = item.content;
+    });
   };
 
   /**
@@ -89,8 +82,7 @@ function List(options) {
   /**
    * Clears the current search results
    */
-  this.clearSearch = function(e) {
-    if(!list.focused) return;
+  this.clearSearch = function() {
     list.searchResults = [];
     list.resultNumber = -1;
     activeSearch = '';
@@ -183,6 +175,7 @@ function List(options) {
   var isResult = function(item) {
     return (
       activeSearch &&
+      item.originalContent &&
       item.originalContent.toLowerCase().indexOf(activeSearch.toLowerCase()) !== -1
     );
   };
