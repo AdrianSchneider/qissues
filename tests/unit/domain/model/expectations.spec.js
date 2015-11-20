@@ -2,7 +2,7 @@
 
 var expect          = require('chai').expect;
 var Promise         = require('bluebird');
-var ValidationError = require('../../../../src/errors/validation');
+var ValidationError = require('../../../../src/domain/errors/validation');
 var Expectations    = require('../../../../src/domain/model/expectations');
 
 describe('Expectations', function() {
