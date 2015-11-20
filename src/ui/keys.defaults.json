@@ -20,6 +20,7 @@
   "filter.list"             : "fl",
   "filter.project"          : "fp",
   "filter.assignee"         : "fa",
+  "filter.type"             : "ft",
   "filter.status"           : "fs",
   "filter.sprint"           : "fS",
   "reports.list"            : "rl",

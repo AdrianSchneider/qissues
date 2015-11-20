@@ -44,6 +44,7 @@ function FilterableList(options) {
       .on(keys['filter.list'],     showFilters)
       .on(keys['filter.project'],  filter(metadata.getProjects, 'Project',  'project'))
       .on(keys['filter.assignee'], filter(metadata.getUsers,    'Assignee', 'assignee'))
+      .on(keys['filter.type'],     filter(metadata.getTypes,    'Type',     'type'))
       .on(keys['filter.status'],   filter(metadata.getStatuses, 'Status',   'status'))
       .on(keys['filter.sprint'],   filter(prepend(metadata.getSprints,  'Active Sprints'), 'Sprint',   'sprint'))
       .on(keys['reports.save'],    reportsSave)
