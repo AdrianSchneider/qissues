@@ -253,8 +253,10 @@ module.exports = function(options) {
 
     container.registerService(
       'ui.views.singleIssue',
-      function(app, keys, logger) { return singleIssueView(app, keys, logger); },
-      ['app', 'ui.keys', 'logger']
+      function(app, keys, input, tracker, logger) { 
+        return singleIssueView(app, keys, input, tracker.getMetadata(), logger); 
+      },
+      ['app', 'ui.keys', 'ui.input', 'tracker', 'logger']
     );
 
   });

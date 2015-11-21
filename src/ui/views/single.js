@@ -5,8 +5,9 @@ var blessed  = require('blessed');
 var Promise  = require('bluebird');
 var wordwrap = require('wordwrap');
 var sprintf  = require('util').format;
+var editable = require('./editable');
 
-module.exports = function(app, keys, logger) {
+module.exports = function(app, keys, input, metadata, logger) {
 
   /**
    * Renders a single issue view
@@ -28,8 +29,16 @@ module.exports = function(app, keys, logger) {
       alwaysScroll: true
     });
 
+    editable(box, keys, input, metadata);
+
+    var selected = [];
+    box.getSelectedIssues = function() {
+      return selected;
+    };
+
     Promise.all([promisedIssue, promisedComments])
       .spread(function(issue, comments) {
+        selected = [issue.getId()];
         box.setContent(renderIssue(issue, comments, box.width));
         box.getIssue = function() { return issue; };
         parent.append(box);

@@ -1,5 +1,7 @@
 'use strict';
 
+var _ = require('underscore');
+
 module.exports = function(app, ui, input, keys, tracker, browser) {
   var repository = tracker.getRepository();
 
@@ -43,7 +45,9 @@ module.exports = function(app, ui, input, keys, tracker, browser) {
     });
 
     list.on('changeset', function(changeSet) {
-      ui.controller.applyChangeSet(changeSet);
+      ui.controller.applyChangeSet(changeSet).then(function() {
+        ui.controller.listIssues(true, list.getSelected());
+      });
     });
 
     app.getActiveReport().on('change', function() {

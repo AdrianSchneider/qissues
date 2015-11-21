@@ -14,7 +14,6 @@ module.exports = function(ui, tracker) {
    */
   return function(changeSet, data) {
     return tracker.getRepository().apply(changeSet, data || {})
-      .then(ui.controller.listIssues)
       .catch(MoreInfoRequired, function(e) {
         ui.capture(e.expectations).then(function(moreInfo) {
           return ui.applyChangeSet(changeSet, moreInfo);

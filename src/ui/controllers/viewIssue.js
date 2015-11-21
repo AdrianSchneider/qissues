@@ -55,6 +55,11 @@ module.exports = function(app, ui, input, keys, tracker, logger, browser) {
         .then(refreshIssue(num))
         .catch(Cancellation, _.noop);
     });
+
+    view.on('changeset', function(changeSet) {
+      ui.controller.applyChangeSet(changeSet).then(refreshIssue);
+    });
+
   };
 
   var refreshIssue = function(num) {
