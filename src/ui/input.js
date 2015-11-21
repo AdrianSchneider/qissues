@@ -81,7 +81,6 @@ module.exports = function UserInput(parent, keys) {
       });
 
       list.key(keys.back, function() {
-        console.error('going back from input');
         parent.remove(list);
         parent.screen.render();
         reject(new Cancellation());
@@ -119,9 +118,12 @@ module.exports = function UserInput(parent, keys) {
     return new Promise(function(resolve, reject) {
       parent.readEditor({ value: initial }, function(err, text) {
         if (err) return reject(err);
-        if(text === initial) return reject(new Cancellation());
+        if (text === initial) return reject(new Cancellation());
         respondOrCancel(text, resolve, reject);
       });
+    })
+    .catch({ code: 'ENOENT' }, function() {
+      throw new Cancellation();
     });
   };
 
