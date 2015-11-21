@@ -27,8 +27,13 @@ module.exports = function(app, tracker, input, keys, logger) {
     editable(list, keys, input, metadata);
     list.issues = [];
 
+    promisedIssues.done(list.setIssues);
     promisedIssues.done(function(issues) {
-      updateListContents(list, issues, focus, parent);
+      parent.children.forEach(function(child) { parent.remove(child); });
+      parent.append(list);
+      list.select(findLastFocused(list, focus));
+      list.focus();
+      parent.screen.render();
     });
 
     list.on('select', function() {
@@ -52,7 +57,7 @@ module.exports = function(app, tracker, input, keys, logger) {
    * @return {filterableList}
    */
   var createList = function(parent) {
-    return new filterableList({
+    var list = new filterableList({
       parent: parent,
       filters: app.getFilters(),
       report: app.getActiveReport(),
@@ -72,23 +77,19 @@ module.exports = function(app, tracker, input, keys, logger) {
       vi: true
     });
 
+    list.setIssues = setIssues.bind(list);
+
+    return list;
   };
 
   /**
-   * Redraws the list with the passed in data
+   * Sets a new set of issues for this list
    *
-   * @param {IssueList} list
    * @param {IssuesCollection} issues
    */
-  var updateListContents = function(list, issues, focus, parent) {
-    list.issues = issues;
-    parent.children.forEach(function(child) { parent.remove(child); });
-    parent.append(list);
-    list.setItems(issues.map(renderIssue));
-    list.select(findLastFocused(list, focus));
-    list.focus();
-
-    parent.screen.render();
+  var setIssues = function(issues) {
+    this.issues = issues;
+    this.setItems(issues.map(renderIssue));
   };
 
   /**

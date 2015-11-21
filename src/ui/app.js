@@ -40,6 +40,7 @@ module.exports = function BlessedApplication(screen, app, input, logger, format,
       ui.controller[action](id);
 
       app.getActiveReport().on('change', function() {
+        logger.debug('Changing filters');
         ui.controller.listIssues();
       });
 
@@ -78,6 +79,7 @@ module.exports = function BlessedApplication(screen, app, input, logger, format,
    * @param {String|null} msg
    */
   ui.showLoading = function(msg) {
+    logger.trace('#showLoading');
     ui.clearScreen();
     var alert = messageWidget(ui.canvas, msg || 'Loading...', Infinity);
     ui.canvas.append(alert);
@@ -88,6 +90,7 @@ module.exports = function BlessedApplication(screen, app, input, logger, format,
    * Clears the screen
    */
   ui.clearScreen = function() {
+    logger.trace('#clearScreen');
     ui.canvas.children.forEach(function(child) { ui.canvas.remove(child); });
     screen.render();
   };

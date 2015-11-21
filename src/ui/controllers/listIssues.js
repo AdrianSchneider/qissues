@@ -1,6 +1,7 @@
 'use strict';
 
 module.exports = function(app, ui, input, keys, tracker, browser) {
+  var repository = tracker.getRepository();
 
   /**
    * List Issues Controller
@@ -12,7 +13,7 @@ module.exports = function(app, ui, input, keys, tracker, browser) {
     ui.showLoading();
 
     var list = ui.views.issueList(
-      tracker.getRepository().query(app.getActiveReport(), invalidate),
+      repository.query(app.getActiveReport(), invalidate),
       focus,
       ui.canvas
     );
@@ -43,6 +44,11 @@ module.exports = function(app, ui, input, keys, tracker, browser) {
 
     list.on('changeset', function(changeSet) {
       ui.controller.applyChangeSet(changeSet);
+    });
+
+    app.getActiveReport().on('change', function() {
+      ui.showLoading();
+      repository.query(app.getActiveReport()).then(list.setIssues);
     });
 
     return list;
