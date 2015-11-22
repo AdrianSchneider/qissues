@@ -5,7 +5,9 @@ var Promise = require('bluebird');
 var request = require('request');
 var ValidationError = require('../../errors/validation');
 
-module.exports = function JiraHttpClient(domain, username, password, logger) {
+module.exports = function JiraHttpClient(config, logger) {
+
+  var configured = false;
 
   /**
    * Performs a GET request
@@ -71,13 +73,13 @@ module.exports = function JiraHttpClient(domain, username, password, logger) {
   };
 
   var buildUrl = function(path) {
-    return "https://" + domain + path;
+    return "https://" + config.get('domain') + path;
   };
 
   var attachOptions = function(options) {
     var opts = _.clone(options || {});
     opts.json = true;
-    opts.auth = { username: username, password: password };
+    opts.auth = { username: config.get('username'), password: config.get('password') };
 
     return opts;
   };

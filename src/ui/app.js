@@ -7,6 +7,7 @@ var canvas           = require('./views/canvas');
 var messageWidget    = require('./widgets/message');
 var Cancellation     = require('../domain/errors/cancellation');
 var ValidationError  = require('../domain/errors/validation');
+var MoreInfoRequired  = require('../domain/errors/infoRequired');
 
 /**
  * Main Qissues application
@@ -14,13 +15,9 @@ var ValidationError  = require('../domain/errors/validation');
  * @param {blessed.screen} screen
  * @param {Application} application
  */
-module.exports = function BlessedApplication(screen, app, input, logger, format, keys, getDeps) {
+module.exports = function BlessedApplication(screen, app, tracker, config, input, logger, format, keys, getDeps) {
   var ui = this;
   this.screen = screen;
-  getDeps().spread(function(controller, views) {
-    ui.controller = controller;
-    ui.views = views;
-  });
 
   /**
    * Starts up the user interface
@@ -29,29 +26,39 @@ module.exports = function BlessedApplication(screen, app, input, logger, format,
    * @param {String|null} id
    */
   ui.start = function(action, id) {
-    getDeps().then(function() {
-      ui.canvas = canvas(screen);
-      screen.append(ui.canvas);
-      screen.render();
+    logger.debug('Booting up ui');
+    ui.canvas = canvas(screen);
+    screen.append(ui.canvas);
+    screen.render();
 
-      logger.debug('Booting up ui');
+    tracker.assertConfigured(config.serialize())
+      .catch(MoreInfoRequired, function(e) {
+        return ui.capture(e.expectations, {}, '', null).then(config.save);
+      })
+      .catch(Cancellation, function() {
+        return ui.message('Needs config to run.').then(function() { app.exit(1); });
+      })
+      .then(getDeps)
+      .spread(function(controller, views) {
+        ui.controller = controller;
+        ui.views = views;
 
-      if(!action) action = 'listIssues';
-      ui.controller[action](id);
+        if(!action) action = 'listIssues';
+        ui.controller[action](id);
 
-      app.getActiveReport().on('change', function() {
-        logger.debug('Changing filters');
-        ui.controller.listIssues();
+        app.getActiveReport().on('change', function() {
+          logger.debug('Changing filters');
+          ui.controller.listIssues();
+        });
+
+        screen.key(keys.help, _.partial(ui.controller.help, screen));
+        screen.key(keys.exit, function() { app.exit(0); });
+        screen.key(keys['issue.lookup'], function() {
+          input.ask('Open Issue', ui.canvas)
+            .then(ui.controller.viewIssue)
+            .catch(Cancellation, _.noop);
+        });
       });
-
-      screen.key(keys.help, _.partial(ui.controller.help, screen));
-      screen.key(keys.exit, function() { app.exit(0); });
-      screen.key(keys['issue.lookup'], function() {
-        input.ask('Open Issue', ui.canvas)
-          .then(ui.controller.viewIssue)
-          .catch(Cancellation, _.noop);
-      });
-    });
   };
 
   /**

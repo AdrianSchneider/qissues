@@ -21,7 +21,7 @@ module.exports = function(parser, yamlParser, contentField) {
     var template = sprintf(
       "---\n%s---\n%s",
       buildYaml(data),
-      data[contentField]
+      data[contentField] || ""
     );
 
     return expectations.getSuggestions()

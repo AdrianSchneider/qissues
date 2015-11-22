@@ -4,7 +4,13 @@ Qissues is an interactive cli for JIRA and other bug tracking systems. With vim-
 
 ## Getting Started
 
-Work in progress.
+Install via npm:
+
+```
+npm install -g qissues
+```
+
+Run `qissues` to open the app. The first time loading the app will prompt you for the necessary configuration.
 
 ## Documentation
 

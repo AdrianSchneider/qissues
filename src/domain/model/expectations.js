@@ -60,9 +60,9 @@ module.exports = function Expectations(schemaDefinition) {
   this.ensureValid = function(data) {
     return objectSchemaToJoi(schemaDefinition)
       .then(function(schema) {
-        var result = joi.validate(data, schema);
+        var result = joi.validate(data, schema, { stripUnknown: true });
         if (result.error) throw new ValidationError(result.error.message);
-        return data;
+        return result.value;
       });
   };
 

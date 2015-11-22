@@ -61,4 +61,18 @@ module.exports = function Config(filename, fs) {
     return fs.writeFileAsync(filename, JSON.stringify(options, null, 4));
   };
 
+  /**
+   * Exports the raw config values
+   *
+   * @return {Object}
+   * @throws {ReferenceError} when thrown before its loaded
+   */
+  this.serialize = function() {
+    if (!config) {
+      throw new ReferenceError('Config is not loaded yet');
+    }
+
+    return config;
+  };
+
 };

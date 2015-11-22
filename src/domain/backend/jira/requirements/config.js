@@ -2,12 +2,8 @@
 
 var Expectations = require('../../../model/expectations');
 
-module.exports = {
-  initialize: function() {
-    return new Expectations({
-      domain:   { type: 'string', required: true },
-      username: { type: 'string', required: true },
-      password: { type: 'string', required: true }
-    });
-  }
-};
+module.exports = new Expectations({
+  domain:   { type: 'string', required: true, default: '' },
+  username: { type: 'string', required: true, default: '' },
+  password: { type: 'string', required: true, default: '' }
+});

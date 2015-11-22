@@ -12,6 +12,7 @@ var JiraClient               = require('./domain/backend/jira/client');
 var JiraRepository           = require('./domain/backend/jira/repository');
 var JiraNormalizer           = require('./domain/backend/jira/normalizer');
 var JiraMetadata             = require('./domain/backend/jira/metadata');
+var jiraExpectations         = require('./domain/backend/jira/requirements/config');
 var Application              = require('./app/main');
 var BlessedApplication       = require('./ui/app');
 var keys                     = require('./ui/keys');
@@ -72,7 +73,7 @@ module.exports = function(options) {
     container.registerService(
       'tracker.jira.client',
       function(config, logger) {
-        return new JiraClient(config.get('domain'), config.get('username'), config.get('password'), logger);
+        return new JiraClient(config, logger);
       },
       ['config', 'logger']
     );
@@ -97,7 +98,7 @@ module.exports = function(options) {
 
     container.registerService(
       'tracker.jira',
-      function(normalizer, repository, metadata) { return new IssueTracker(normalizer, repository, metadata); },
+      function(normalizer, repository, metadata) { return new IssueTracker(normalizer, repository, metadata, jiraExpectations); },
       ['tracker.jira.normalizer', 'tracker.jira.repository', 'tracker.jira.metadata']
     );
 
@@ -153,10 +154,12 @@ module.exports = function(options) {
 
     container.registerService(
       'ui',
-      function(screen, app, input, logger, format, keys) {
+      function(screen, app, tracker, config, input, logger, format, keys) {
         return new BlessedApplication(
           screen,
           app,
+          tracker,
+          config,
           input,
           logger,
           format,
@@ -166,7 +169,7 @@ module.exports = function(options) {
           }
         );
       },
-      ['ui.screen', 'app', 'ui.input', 'logger', 'ui.formats.yaml-frontmatter', 'ui.keys']
+      ['ui.screen', 'app', 'tracker', 'config', 'ui.input', 'logger', 'ui.formats.yaml-frontmatter', 'ui.keys']
     );
   });
 
