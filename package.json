@@ -1,4 +1,28 @@
 {
+  "name": "qissues",
+  "version": "2.0.0-alpha",
+  "description": "An interactive command-line for JIRA and other issue tracking systems.",
+  "keywords": [
+    "qissues",
+    "jira",
+    "cli",
+    "issues"
+  ],
+  "bin": {
+    "qissues": "./bin/qissues"
+  },
+  "author": {
+    "name": "Adrian Schneider",
+    "email": "adrian@compiledintent.com",
+    "url": "http://adrianschneider.ca/"
+  },
+  "scripts": {
+    "test": "make test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AdrianSchneider/Qissues-Interactive.git"
+  },
   "dependencies": {
     "async": "^0.9.0",
     "blessed": "^0.1.81",
@@ -18,5 +42,6 @@
     "istanbul": "^0.3.17",
     "mocha": "^2.2.5",
     "nodemock": "^0.3.4"
-  }
+  },
+  "preferGlobal": true
 }

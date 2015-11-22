@@ -9,9 +9,10 @@ var UserInterface = require('../src/ui');
 var Application   = require('../src/app/main');
 var configFile    = path.resolve(process.env.HOME, './.qi.json');
 var cacheFile     = path.resolve(process.env.HOME, './.qi-cache.json');
+var packageInfo   = require('../package.json');
 
 program
-  .version('2.0.0')
+  .version(packageInfo.version)
   .option('--clear-cache', 'Clears the cache')
   .option('--init', 'Setup qissues for the first time')
   .option('-v --verbose', 'Verbosity (increase verbosity with more vs)', function(add, level) {
