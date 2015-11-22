@@ -2,7 +2,7 @@ var blessed = require('blessed');
 
 module.exports = function(parent, message, timeout) {
   var alert = new blessed.Message({
-    width: '25%',
+    width: '35%',
     height: 5,
     top: 'center',
     left: 'center',

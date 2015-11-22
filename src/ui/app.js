@@ -30,7 +30,6 @@ module.exports = function BlessedApplication(screen, app, tracker, config, input
     ui.canvas = canvas(screen);
     screen.append(ui.canvas);
     screen.render();
-
     tracker.assertConfigured(config.serialize())
       .catch(MoreInfoRequired, function(e) {
         return ui.capture(e.expectations, {}, '', null).then(config.save);
@@ -38,6 +37,7 @@ module.exports = function BlessedApplication(screen, app, tracker, config, input
       .catch(Cancellation, function() {
         return ui.message('Needs config to run.').then(function() { app.exit(1); });
       })
+      .then(_.partial(ui.message, 'Loading Qissues. ? for Help', 2000))
       .then(getDeps)
       .spread(function(controller, views) {
         ui.controller = controller;
