@@ -15,7 +15,10 @@ module.exports = function Config(filename, fs) {
     return (new Promise(function(resolve, reject) {
       fs.exists(filename, function(exists) {
         if (exists) return resolve();
-        return fs.writeFileAsync(filename, '{}');
+        fs.writeFile(filename, '{}', function(err) {
+          if (err) return reject(err);
+          resolve();
+        });
       });
     }))
     .then(function() {
