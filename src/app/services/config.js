@@ -58,6 +58,7 @@ module.exports = function Config(filename, fs) {
    * @return {Promise}
    */
   this.save = function(options) {
+    config = options;
     return fs.writeFileAsync(filename, JSON.stringify(options, null, 4));
   };
 
