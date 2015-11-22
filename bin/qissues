@@ -7,8 +7,8 @@ var blessed       = require('blessed');
 var bootstrap     = require('../src/bootstrap');
 var UserInterface = require('../src/ui');
 var Application   = require('../src/app/main');
-var configFile    = path.resolve(process.env.HOME, './.qi.json');
-var cacheFile     = path.resolve(process.env.HOME, './.qi-cache.json');
+var configFile    = path.resolve(process.env.HOME, './.qissues.json');
+var cacheFile     = path.resolve(process.env.HOME, './.qissues-cache.json');
 var packageInfo   = require('../package.json');
 
 program
