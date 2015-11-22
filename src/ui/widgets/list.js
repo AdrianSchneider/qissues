@@ -46,7 +46,7 @@ function List(options) {
    */
   this.search = function() {
     var input = new blessed.Textbox({
-      parent: list.screen,
+      parent: this,
       bottom: 0,
       right: 0,
       width: 50,
@@ -58,7 +58,7 @@ function List(options) {
     });
 
     input.readInput(function(err, text) {
-      list.screen.remove(input);
+      list.remove(input);
       list.screen.render();
 
       if(!text || !text.length) return;
