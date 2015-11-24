@@ -12,13 +12,15 @@ module.exports = function(ui, tracker) {
    * @param {Object|undefined} data
    * @return {Promise}
    */
-  return function(changeSet, data) {
+  var applyChangeSet = function(changeSet, data) {
     return tracker.getRepository().apply(changeSet, data || {})
       .catch(MoreInfoRequired, function(e) {
-        ui.capture(e.expectations).then(function(moreInfo) {
-          return ui.applyChangeSet(changeSet, moreInfo);
+        return ui.capture(e.expectations).then(function(moreInfo) {
+          return applyChangeSet(changeSet, moreInfo);
         });
       });
   };
+
+  return applyChangeSet;
 
 };
