@@ -72,14 +72,4 @@ module.exports = function Container() {
     return Promise.map(keys, this.get);
   };
 
-  /**
-   * Lists all of the services in the container
-   */
-  this.listServices = function(except) {
-    if(!except) except = [];
-    return Object.keys(registered).filter(function(name) {
-      return except.indexOf(name) === -1;
-    });
-  };
-
 };

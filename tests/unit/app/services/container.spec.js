@@ -76,4 +76,22 @@ describe('Container', function() {
     expect(f).to.throw(ReferenceError);
   });
 
+  it('Throws an error trying to register a non-callable service', function() {
+    var f = function() { this.container.registerService('name', {}); }.bind(this);
+    expect(f).to.throw(TypeError, 'is not callable');
+  });
+
+  it('#getMatching fetches multiple keys at once', function() {
+    this.container.registerService('a', function() { return Promise.resolve(1); });
+    this.container.registerService('b', function() { return Promise.resolve(2); });
+    this.container.registerService('test', function(a, b) {
+      return Promise.resolve(a + b);
+    }, ['a', 'b']);
+
+    return this.container.getMatching(['a', 'test']).spread(function(a, test) {
+      expect(a).to.equal(1);
+      expect(test).to.equal(3);
+    });
+  });
+
 });
