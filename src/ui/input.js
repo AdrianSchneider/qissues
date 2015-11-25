@@ -45,7 +45,7 @@ module.exports = function UserInput(parent, keys) {
       list.on('select', function(item, i) {
         parent.remove(list);
         parent.render();
-        respondOrCancel(item.content, resolve, reject);
+        respondOrCancel(item.originalContent, resolve, reject);
       });
 
       list.key(keys.back, function() {
@@ -77,7 +77,7 @@ module.exports = function UserInput(parent, keys) {
       list.on('select', function(item, i) {
         parent.remove(list);
         parent.screen.render();
-        respondOrCancel(item.content, resolve, reject);
+        respondOrCancel(item.originalContent, resolve, reject);
       });
 
       list.key(keys.back, function() {
