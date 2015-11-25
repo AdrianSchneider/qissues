@@ -17,6 +17,7 @@ function List(options) {
 
   var dataItems;
   var displayFunc;
+  var parentElement = options.searchParent || options.parent;
 
   /**
    * Set up custom keys bindings
@@ -46,7 +47,7 @@ function List(options) {
    */
   this.search = function() {
     var input = new blessed.Textbox({
-      parent: this,
+      parent: parentElement,
       bottom: 0,
       right: 0,
       width: 50,
@@ -58,7 +59,7 @@ function List(options) {
     });
 
     input.readInput(function(err, text) {
-      list.remove(input);
+      parentElement.remove(input);
       list.screen.render();
 
       if(!text || !text.length) return;

@@ -11,9 +11,10 @@ var List    = require('./list');
  * @param {Array<String>} options
  * @return {blessed.Node}
  */
-module.exports = function(text, parent, options) {
+module.exports = function(text, parent, options, searchParent) {
   var list = new List({
     parent: parent,
+    searchParent: searchParent || parent,
     width: '40%',
     height: '20%',
     top: 'center',

@@ -5,8 +5,9 @@ var prompt       = require('./widgets/prompt');
 var promptList   = require('./widgets/promptList');
 var Cancellation = require('../domain/errors/cancellation');
 
-module.exports = function UserInput(parent, keys) {
+module.exports = function UserInput(parent, keys, logger) {
   var self = this;
+  var loadingMessage = 'Loading...';
 
   /**
    * Asks the user a question and returns the promise of an answer
@@ -43,12 +44,14 @@ module.exports = function UserInput(parent, keys) {
       var list = promptList(text, parent, options);
 
       list.on('select', function(item, i) {
+        logger.debug('Selected ' + item.originalContent);
         parent.remove(list);
         parent.render();
         respondOrCancel(item.originalContent, resolve, reject);
       });
 
       list.key(keys.back, function() {
+        logger.debug('Back; closing promptList');
         parent.remove(list);
         parent.screen.render();
         reject(new Cancellation());
@@ -67,7 +70,7 @@ module.exports = function UserInput(parent, keys) {
    */
   this.selectFromCallableList = function(text, provider) {
     return new Promise(function(resolve, reject) {
-      var list = promptList(text, parent, ['Loading...']);
+      var list = promptList(text, parent, [loadingMessage], parent);
 
       var setItems = function(options) {
         list.setItems(options.map(String));
@@ -75,19 +78,22 @@ module.exports = function UserInput(parent, keys) {
       };
 
       list.on('select', function(item, i) {
+        logger.debug('Selected ' + item.originalContent);
         parent.remove(list);
         parent.screen.render();
         respondOrCancel(item.originalContent, resolve, reject);
       });
 
       list.key(keys.back, function() {
+        logger.debug('Back; closing promptList');
         parent.remove(list);
         parent.screen.render();
         reject(new Cancellation());
       });
 
       list.key(keys.refresh, function() {
-        setItems(['Loading...']);
+        logger.debug('Refreshing promptList');
+        setItems([loadingMessage]);
         provider(true).then(setItems);
       });
 
@@ -136,7 +142,7 @@ module.exports = function UserInput(parent, keys) {
    * @param {Function} resolve
    */
   var respondOrCancel = function(text, resolve, reject) {
-    if (text) {
+    if (text && text !== loadingMessage) {
       resolve(text);
     } else {
       reject(new Cancellation());

@@ -34,7 +34,7 @@ function FilterableList(options) {
   var reports = options.reports;
   var activeReport = options.report;
   var keys = options.keyConfig;
-  var input = new UserInput(this, keys);
+  var input = options.input;
 
   /**
    * Sets up the filtering system
@@ -53,10 +53,10 @@ function FilterableList(options) {
 
   var showFilters = function() {
     if (!filters.serialize().length) {
-      return message(this.screen, 'No filters defined');
+      return message(options.parent, 'No filters defined');
     }
 
-    return filterView(self.screen, filters);
+    return filterView(options.parent, filters);
   };
 
   var filter = function(getOptions, message, type) {
@@ -68,14 +68,7 @@ function FilterableList(options) {
   };
 
   var startLoading = function() {
-    return message(self.screen, 'Loading...', 100);
-  };
-
-  var cancelLoading = function(view) {
-    return function(input) {
-      self.screen.remove(view);
-      return input;
-    };
+    return message(options.parent, 'Loading...', 100);
   };
 
   var reportsSave = function() {
@@ -93,7 +86,7 @@ function FilterableList(options) {
   };
 
   var showReportsList = function() {
-    reportsList(self.screen, options.reports, options.report);
+    reportsList(options.parent, options.reports, options.report);
   };
 
   construct();
