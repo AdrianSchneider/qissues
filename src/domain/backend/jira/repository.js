@@ -14,7 +14,7 @@ var MoreInfoRequired  = require('../../errors/infoRequired');
  * @param {Cache} cache
  * @param {JiraNormalizer} normalizer
  */
-function JiraRepository(client, cache, normalizer, metadata) {
+function JiraRepository(client, cache, normalizer, metadata, logger) {
   TrackerRepository.call(this);
 
   /**
@@ -55,7 +55,7 @@ function JiraRepository(client, cache, normalizer, metadata) {
   this.query = function(report, invalidate) {
     var options = { qs: { maxResults: 500, jql: normalizer.filterSetToJql(report.getFilters()) } };
 
-    if(this.logger) this.logger.debug('JQL = ' + options.qs.jql);
+    logger.trace('JQL = ' + options.qs.jql);
 
     var cacheId = 'issues:' + options.qs.jql;
     var cached = cache.get(cacheId, invalidate);

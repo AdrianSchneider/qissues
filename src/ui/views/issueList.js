@@ -3,7 +3,6 @@
 var _              = require('underscore');
 var sprintf        = require('util').format;
 var filterableList = require('../widgets/filterableList');
-var UserInput      = require('../input');
 var editable       = require('./editable');
 
 /**

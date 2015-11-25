@@ -18,5 +18,6 @@ module.exports = function(parent, message, timeout) {
   });
 
   alert.log(message, timeout);
+  parent.screen.render();
   return alert;
 };

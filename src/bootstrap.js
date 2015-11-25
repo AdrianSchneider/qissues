@@ -92,8 +92,8 @@ module.exports = function(options) {
 
     container.registerService(
       'tracker.jira.repository',
-      function(client, cache, normalizer, metadata) { return new JiraRepository(client, cache, normalizer, metadata); },
-      ['tracker.jira.client', 'cache', 'tracker.jira.normalizer', 'tracker.jira.metadata']
+      function(client, cache, normalizer, metadata, logger) { return new JiraRepository(client, cache, normalizer, metadata, logger); },
+      ['tracker.jira.client', 'cache', 'tracker.jira.normalizer', 'tracker.jira.metadata', 'logger']
     );
 
     container.registerService(
@@ -139,10 +139,10 @@ module.exports = function(options) {
 
     container.registerService(
       'ui.input',
-      function(screen, keys) {
-        return new UserInput(screen, keys);
+      function(screen, keys, logger) {
+        return new UserInput(screen, keys, logger);
       },
-      ['ui.screen', 'ui.keys']
+      ['ui.screen', 'ui.keys', 'logger']
     );
 
     container.registerService(
@@ -256,8 +256,8 @@ module.exports = function(options) {
 
     container.registerService(
       'ui.views.singleIssue',
-      function(app, keys, input, tracker, logger) { 
-        return singleIssueView(app, keys, input, tracker.getMetadata(), logger); 
+      function(app, keys, input, tracker, logger) {
+        return singleIssueView(app, keys, input, tracker.getMetadata(), logger);
       },
       ['app', 'ui.keys', 'ui.input', 'tracker', 'logger']
     );
