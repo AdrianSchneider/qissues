@@ -57,7 +57,7 @@ module.exports = function(app, ui, input, keys, tracker, logger, browser) {
     });
 
     view.on('changeset', function(changeSet) {
-      ui.controller.applyChangeSet(changeSet).then(refreshIssue);
+      ui.controller.applyChangeSet(changeSet).then(refreshIssue(num));
     });
 
   };
