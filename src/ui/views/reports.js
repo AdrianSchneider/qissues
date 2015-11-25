@@ -25,7 +25,7 @@ module.exports = function ReportList(parent, reports, activeReport) {
   });
 
   list.on('select', function(item) {
-    var report = reports.get(item.content);
+    var report = reports.get(item.originalContent);
     activeReport.replaceFilters(report.getFilters());
 
     parent.remove(list);
