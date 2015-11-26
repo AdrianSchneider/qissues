@@ -20,6 +20,9 @@ var Status              = require('../../model/meta/status');
 var Project             = require('../../model/meta/project');
 
 /**
+ * In-memory normalizer
+ * Basic transformations to showcase a generic tracker model
+ *
  * @param {InMemoryMetadata} metadata
  * @param {Object} config
  */
@@ -136,11 +139,11 @@ function InMemoryNormalizer(metadata, config) {
   };
 
   this.toCommentsCollection = function(response) {
-    return new CommentsCollection(response.comments.map(normalizer.toComment));
+    return new CommentsCollection(response.map(normalizer.toComment));
   };
 
   this.newCommentToJson = function(newComment) {
-    return { body: newComment.getMessage() };
+    return { message: newComment.getMessage() };
   };
 
   this.getIssueUrl = function(num, filters) {
@@ -151,22 +154,10 @@ function InMemoryNormalizer(metadata, config) {
     return sprintf('https://%s/issues/?jql=%s', config.get('domain'), this.filterSetToJql(filters));
   };
 
-  /**
-   * Convert the filters into JQL
-   * @return string
-   */
-  this.filterSetToJql = function(filterSet) {
-    return filterSet.flatten().map(function(filter) {
-      if (filter[0] === 'sprint' && filter[1][0] === 'Active Sprints') {
-        return 'sprint in openSprints()';
-      }
-
-      return filter[0]  +' in (' +
-        filter[1].map(function(item) {
-          return "'" + item.replace(/'/g, "\\'") + "'";
-        }).join(',') +
-      ')';
-    }).join(' AND ');
+  this.filterIssues = function(report) {
+    return function(issue) {
+      return true;
+    };
   };
 
 }
