@@ -1,6 +1,6 @@
 Feature: Reports
   In order to quickly apply or jump between multiple filters
-  As a user
+  As a developer
   I can save my searches for quick recollection
 
   Background:

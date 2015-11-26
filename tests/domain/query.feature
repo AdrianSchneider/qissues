@@ -1,6 +1,6 @@
 Feature: Query Issues
   In order to find relevant issues
-  As a user
+  As a developer
   I can apply filters to narrow down the issue list
 
   Background:
