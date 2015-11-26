@@ -16,6 +16,12 @@ function InMemoryRepository(normalizer) {
   var issues = [];
   var comments = {};
 
+  this.empty = function() {
+    issues = [];
+    comments = {};
+    lastId = 0;
+  };
+
   /**
    * Creates a new issue in memory
    *
