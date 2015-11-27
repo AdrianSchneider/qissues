@@ -53,8 +53,10 @@ function InMemoryRepository(normalizer) {
    * @param {Boolean} invalidate - ignored
    */
   this.query = function(report, invalidate) {
-    return normalizer.toIssuesCollection(
-      issues.filter(normalizer.filterIssues(report))
+    return Promise.resolve(
+      normalizer.toIssuesCollection(
+        issues.filter(normalizer.filterIssues(report))
+      )
     );
   };
 

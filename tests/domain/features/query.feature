@@ -31,7 +31,7 @@ Feature: Query Issues
      Then I should get issues [1] back
 
   Scenario: Filter by multiple values - logical OR
-    Given I filter "type" by "adrian"
+    Given I filter "type" by "bug"
       And I filter "type" by "request"
      When I query issues
      Then I should get issues [1,2,3] back

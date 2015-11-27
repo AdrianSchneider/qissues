@@ -21,6 +21,12 @@ function IssuesCollection(issues) {
   this.get = function(i) {
     return issues[i];
   };
+
+  this.getIds = function() {
+    return issues.map(function(issue) {
+      return issue.getId();
+    });
+  };
 }
 
 util.inherits(IssuesCollection, Array);

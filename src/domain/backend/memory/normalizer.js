@@ -1,9 +1,10 @@
 'use strict';
 
+var _ = require('underscore');
 var util                = require('util');
 var moment              = require('moment');
 var sprintf             = require('util').format;
-var issueRequirements   = require('./requirements/issue');
+//var issueRequirements   = require('./requirements/issue');
 var Issue               = require('../../model/issue');
 var IssuesCollection    = require('../../model/issues');
 var Comment             = require('../../model/comment');
@@ -55,6 +56,7 @@ function InMemoryNormalizer(metadata, config) {
       if (data.sprint)   meta.sprint   = new Sprint(null, data.sprint);
       if (data.priority) meta.priority = new Priority(data.priority);
       if (data.project)  meta.project  = new Project(data.project);
+      if (data.status)   meta.status   = new Status(data.status);
 
       return meta;
     })());
@@ -67,20 +69,17 @@ function InMemoryNormalizer(metadata, config) {
    * @return {Object}
    */
   this.newIssueToJson = function(newIssue) {
-    var json = {
-      fields: {
-        project: { key: newIssue.get('project').getId() },
-        summary: newIssue.getTitle(),
-        description: newIssue.getDescription(),
-        issuetype: { name: newIssue.get('type').getType() }
-      }
-    };
-
-    if (newIssue.has('assignee')) {
-      json.fields.assignee = { name: newIssue.get('assignee').getAccount() };
-    }
-
-    return json;
+    return ['assignee', 'project', 'type', 'status']
+      .filter(function(field) { return newIssue.has(field); })
+      .reduce(function(json, field) {
+        json[field] = newIssue.get(field);
+        return json;
+    }, {
+      title: newIssue.getTitle(),
+      description: newIssue.getDescription(),
+      created: new Date(),
+      updated: new Date()
+    });
   };
 
   /**
@@ -91,19 +90,19 @@ function InMemoryNormalizer(metadata, config) {
    */
   this.toIssue = function(response) {
     return new Issue(
-      response.key,
+      response.id,
       response.title,
       response.description,
       new Status(response.status),
       (function() {
         var meta = {};
 
-        if (response.fields.created)       meta.dateCreated = moment(response.fields.created).toDate();
-        if (response.fields.updated)       meta.dateUpdated = moment(response.fields.updated).toDate();
-        if (response.fields.assignee)      meta.assignee    = new User(response.fields.assignee.name);
-        if (response.fields.reporter)      meta.reporter    = new User(response.fields.reporter.name);
-        if (response.fields.priority)      meta.priority    = new Priority(response.fields.priority.id, response.fields.priority.name);
-        if (response.fields.issuetype)     meta.type        = new Type(response.fields.issuetype.name);
+        if (response.created)       meta.dateCreated = moment(response.created).toDate();
+        if (response.updated)       meta.dateUpdated = moment(response.updated).toDate();
+        if (response.assignee)      meta.assignee    = new User(response.assignee.name);
+        if (response.reporter)      meta.reporter    = new User(response.reporter.name);
+        if (response.priority)      meta.priority    = new Priority(response.priority.id, response.priority.name);
+        if (response.issuetype)     meta.type        = new Type(response.type.name);
 
         return meta;
       })()
@@ -121,7 +120,7 @@ function InMemoryNormalizer(metadata, config) {
    * @return {IssuesCollection}
    */
   this.toIssuesCollection = function(response) {
-    return new IssuesCollection(response.issues.map(normalizer.toIssue));
+    return new IssuesCollection(response.map(normalizer.toIssue));
   };
 
   /**
@@ -155,8 +154,21 @@ function InMemoryNormalizer(metadata, config) {
   };
 
   this.filterIssues = function(report) {
+    var filters = _.values(
+      report.getFilters().serialize().reduce(function(filters, filter) {
+        if (typeof filters[filter.type] === 'undefined') {
+          filters[filter.type] = { type: filter.type, values: [] };
+        }
+        filters[filter.type].values.push(filter.value);
+        return filters;
+      }, {})
+    );
+
     return function(issue) {
-      return true;
+      return _.every(filters, function(filter) {
+        var value = issue[filter.type] || '';
+        return filter.values.indexOf(value.toString()) !== -1;
+      });
     };
   };
 
