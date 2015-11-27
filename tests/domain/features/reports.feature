@@ -11,7 +11,7 @@ Feature: Reports
       | 3   | Windows support | Windows 3 support? | Closed      | adrian   | request |
 
      And I have the following reports:
-      | name | field    | value       |
+      | name | type     | value       |
       | todo | status   | To Do       |
       | mine | assignee | adrian      |
       | open | status   | To Do       |
@@ -29,8 +29,7 @@ Feature: Reports
   Scenario: Save report
     Given I filter "assignee" by "joey"
       And I save the report as "joeys stuff"
-     When I list reports
-     Then I should see "joeys stuff" in the list
+     Then "joeys stuff" should be in my list of reports
 
   Scenario: Modifying an existing report doesn't change it
     Given I activate the "todo" report

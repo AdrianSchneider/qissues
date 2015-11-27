@@ -3,8 +3,8 @@
 var _  = require('underscore');
 var fs = require('fs');
 
-module.exports = function MemoryStorage() {
-  var data = {};
+module.exports = function MemoryStorage(initialData) {
+  var data = initialData || {};
 
   /**
    * Get a value from local storage
