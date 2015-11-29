@@ -9,7 +9,7 @@ var ReportManager = require('../../../src/domain/model/reportManager');
 function DomainSetup() {
   this.normalizer = new Normalizer();
   this.repository = new Repository(this.normalizer);
-  this.metadata = new Metadata();
+  this.metadata   = new Metadata();
 
   this.getNewReportManager = function(data) {
     return new ReportManager(new Storage({ reports: data }));
