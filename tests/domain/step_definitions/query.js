@@ -1,9 +1,9 @@
 'use strict';
 
-var _      = require('underscore');
-var expect = require('chai').expect;
+var _       = require('underscore');
+var expect  = require('chai').expect;
 var Promise = require('bluebird');
-var Filter = require('../../../src/domain/model/filter');
+var Filter  = require('../../../src/domain/model/filter');
 
 module.exports = function() {
 
@@ -108,7 +108,7 @@ module.exports = function() {
 
   this.Given(/^I save the report as "([^"]*)"$/, function(reportName) {
     this.reportManager.addReport(
-      reportName, 
+      reportName,
       this.reportManager.getDefault().getFilters()
     );
   });
