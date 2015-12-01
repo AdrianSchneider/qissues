@@ -1,15 +1,13 @@
 'use strict';
 
 var _       = require('underscore');
-var expect  = require('chai').expect;
+var assert  = require('chai').assert;
 var Promise = require('bluebird');
+var f       = require('../../../src/util/f');
 var Filter  = require('../../../src/domain/model/filter');
 
 module.exports = function() {
 
-  /**
-   * Empties the repository and adds new issues
-   */
   this.Given(/^the following issues\:/, function(table) {
     var context = this;
     this.repository.empty();
@@ -37,12 +35,8 @@ module.exports = function() {
   });
 
   this.When(/^I query issues$/, function() {
-    var context = this;
-    var report = this.reportManager.getDefault();
-    return this.repository.query(report).then(function(issues) {
-      context.issues = issues;
-      return issues;
-    });
+    return this.repository.query(this.reportManager.getDefault())
+      .then(f.tee(this, 'issues'));
   });
 
   this.When(/^I activate the "([a-z]+)" report$/, function(reportName) {
@@ -51,29 +45,20 @@ module.exports = function() {
     );
   });
 
-  this.Then(/^I should get issues \[([, 0-9]+)\] back$/, function(issues) {
-    var expected = issues.replace(/ /g, '').split(',').sort();
-    var found = this.issues.getIds().sort();
-    expect(found).to.deep.equal(expected);
-  });
-
   this.Given(/^no issues$/, function() {
     this.repository.empty();
   });
 
   this.Given(/^the following users: ([ ,a-z]+)$/, function(users) {
-    var trim = function(s) { return s.trim(); };
-    this.metadata.setUsers(users.split(',').map(trim));
+    this.metadata.setUsers(toList(users));
   });
 
   this.Given(/^the following types: ([ ,a-z]+)$/i,function(types) {
-    var trim = function(s) { return s.trim(); };
-    this.metadata.setTypes(types.split(',').map(trim));
+    this.metadata.setTypes(toList(types));
   });
 
   this.Given(/^the following projects: ([ ,a-z]+)$/i, function(projects) {
-    var trim = function(s) { return s.trim(); };
-    this.metadata.setProjects(projects.split(',').map(trim));
+    this.metadata.setProjects(toList(projects));
   });
 
   this.When(/^I go to create an issue$/, function (callback) {
@@ -113,13 +98,32 @@ module.exports = function() {
     );
   });
 
+  this.Then(/^I should get issues \[([, 0-9]+)\] back$/, function(issues) {
+    assert.deepEqual(
+      this.issues.getIds().sort(),
+      issues.replace(/ /g, '').split(',').sort()
+    );
+  });
+
   this.Then(/^"([^"]*)" should be in my list of reports$/, function(reportName) {
-    expect(_.invoke(this.reportManager.getReports(), 'getName')).to.contain(reportName);
+    assert.include(
+      _.invoke(this.reportManager.getReports(), 'getName'),
+      reportName
+    );
   });
 
   this.Then(/^I should not get issues \[(\d+)\] back$/, function(issues) {
-    var expected = issues.replace(/ /g, '').split(',').sort();
-    var found = this.issues.getIds().sort();
-    expect(this.issues.getIds()).to.not.contain(expected);
+    assert.notInclude(
+      this.issues.getIds(),
+      issues.replace(/ /g, '').split(',')
+    );
   });
 };
+
+function toList(items) {
+  return items.split(',').map(trim);
+}
+
+function trim(str) {
+  return str.trim();
+}
