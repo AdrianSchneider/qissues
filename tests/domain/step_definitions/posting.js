@@ -2,9 +2,7 @@
 
 var _       = require('underscore');
 var assert  = require('chai').assert;
-var Promise = require('bluebird');
 var f       = require('../../../src/util/f');
-var Filter  = require('../../../src/domain/model/filter');
 
 module.exports = function() {
 
