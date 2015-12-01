@@ -61,36 +61,6 @@ module.exports = function() {
     this.metadata.setProjects(toList(projects));
   });
 
-  this.When(/^I go to create an issue$/, function (callback) {
-    // Write code here that turns the phrase above into concrete actions
-    callback.pending();
-  });
-
-  this.Then(/^I should get prompted for:$/, function (table, callback) {
-    // Write code here that turns the phrase above into concrete actions
-    callback.pending();
-  });
-
-  this.When(/^I submit the following issue:$/, function (table, callback) {
-    // Write code here that turns the phrase above into concrete actions
-    callback.pending();
-  });
-
-  this.Then(/^the issue should be persisted$/, function (callback) {
-    // Write code here that turns the phrase above into concrete actions
-    callback.pending();
-  });
-
-  this.Then(/^the "([^"]*)" should equal "([^"]*)"$/, function (arg1, arg2, callback) {
-    // Write code here that turns the phrase above into concrete actions
-    callback.pending();
-  });
-
-  this.Then(/^the issue should fail to post$/, function (callback) {
-    // Write code here that turns the phrase above into concrete actions
-    callback.pending();
-  });
-
   this.Given(/^I save the report as "([^"]*)"$/, function(reportName) {
     this.reportManager.addReport(
       reportName,

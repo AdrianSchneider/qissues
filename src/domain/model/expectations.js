@@ -16,6 +16,10 @@ var ValidationError = require('../errors/validation');
  */
 module.exports = function Expectations(schemaDefinition) {
 
+  this.serialize = function() {
+    return schemaDefinition;
+  };
+
   this.hasRules = function() {
     return Object.keys(schemaDefinition).length > 0;
   };

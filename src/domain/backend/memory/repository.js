@@ -43,7 +43,11 @@ function InMemoryRepository(normalizer) {
    * @return {Promise<Issue>} - promised array of issues
    */
   this.lookup = function(num, invalidate) {
-    return Promise.resolve(_.findWhere(issues, { id: num }));
+    return Promise.resolve(
+      normalizer.toIssue(
+        _.findWhere(issues, { id: num })
+      )
+    );
   };
 
   /**

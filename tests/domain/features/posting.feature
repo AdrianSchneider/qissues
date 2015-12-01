@@ -23,7 +23,7 @@ Feature: Posting Issues
        | project  | DEV         |
        | type     | bug         |
      Then the issue should be persisted
-      And the "project" should equal "DEV"
+     Then the "project" should equal "DEV"
       And the "assignee" should equal ""
       And the "type" should equal "bug"
 

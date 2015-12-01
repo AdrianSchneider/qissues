@@ -4,7 +4,7 @@ var _ = require('underscore');
 var util                = require('util');
 var moment              = require('moment');
 var sprintf             = require('util').format;
-//var issueRequirements   = require('./requirements/issue');
+var issueRequirements   = require('./requirements/issue');
 var Issue               = require('../../model/issue');
 var IssuesCollection    = require('../../model/issues');
 var Comment             = require('../../model/comment');
@@ -97,12 +97,13 @@ function InMemoryNormalizer(metadata, config) {
       (function() {
         var meta = {};
 
-        if (response.created)       meta.dateCreated = moment(response.created).toDate();
-        if (response.updated)       meta.dateUpdated = moment(response.updated).toDate();
-        if (response.assignee)      meta.assignee    = new User(response.assignee.name);
-        if (response.reporter)      meta.reporter    = new User(response.reporter.name);
-        if (response.priority)      meta.priority    = new Priority(response.priority.id, response.priority.name);
-        if (response.issuetype)     meta.type        = new Type(response.type.name);
+        if (response.created)  meta.dateCreated = moment(response.created).toDate();
+        if (response.updated)  meta.dateUpdated = moment(response.updated).toDate();
+        if (response.assignee) meta.assignee    = new User(response.assignee);
+        if (response.reporter) meta.reporter    = new User(response.reporter);
+        if (response.priority) meta.priority    = new Priority(response.priority.id, response.priority.name);
+        if (response.type)     meta.type        = new Type(response.type);
+        if (response.project)  meta.project     = new Project(response.project);
 
         return meta;
       })()
