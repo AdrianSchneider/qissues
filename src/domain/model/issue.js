@@ -65,7 +65,7 @@ module.exports = function Issue(id, title, description, status, attributes, comm
   };
 
   var setProject = function(project) {
-    if(!(project instanceof Project)) throw new ProjectError('project must be a valid Project');
+    if(!(project instanceof Project)) throw new TypeError('project must be a valid Project');
     attributes.project = project;
   };
 
