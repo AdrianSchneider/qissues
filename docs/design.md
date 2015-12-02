@@ -26,6 +26,8 @@ This is sort of a living document of the current design philosophies and rules. 
 
 **Consistency**: Every widget should use the same hotkeys. Every widget should be searchable. Every widget should be have the same way. Don't introduce a change/feature in one place only.
 
+**Editing**: Let the user fill in complex forms or data in their tool of choice.
+
 ## Visuals
 
 **Content First**: The UI should get out of the way. Obviousy with text-only this is easier, but no permanent menus should be shown. Color code important things.
