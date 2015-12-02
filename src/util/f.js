@@ -16,6 +16,21 @@ module.exports = {
       data[key] = input;
       return Promise.resolve(input);
     };
+  },
+
+  /**
+   * Prepends text before a list of options once they resolve
+   *
+   * @param {Function} getOptions - returns promise of options
+   * @param {String} prependedOption
+   * @return {Function} - returning {Promise<Array>}
+   */
+  prepend: function(getOptions, prependedOption) {
+    return function() {
+      return getOptions().then(function(options) {
+        return [prependedOption].concat(options);
+      });
+    };
   }
 
 };

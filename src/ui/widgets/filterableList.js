@@ -2,15 +2,12 @@
 
 var _            = require('underscore');
 var util         = require('util');
-var blessed      = require('blessed');
 var message      = require('./message');
 var List         = require('./list');
-var prompt       = require('./prompt');
-var promptList   = require('./promptList');
 var filterView   = require('../views/filters');
 var reportsList  = require('../views/reports');
 var Sequencer    = require('../events/sequencer');
-var UserInput    = require('../input');
+var f            = require('../../util/f');
 var Filter       = require('../../domain/model/filter');
 var FilterSet    = require('../../domain/model/filterSet');
 var Cancellation = require('../../domain/errors/cancellation');
@@ -46,7 +43,7 @@ function FilterableList(options) {
       .on(keys['filter.assignee'], filter(metadata.getUsers,    'Assignee', 'assignee'))
       .on(keys['filter.type'],     filter(metadata.getTypes,    'Type',     'type'))
       .on(keys['filter.status'],   filter(metadata.getStatuses, 'Status',   'status'))
-      .on(keys['filter.sprint'],   filter(prepend(metadata.getSprints,  'Active Sprints'), 'Sprint',   'sprint'))
+      .on(keys['filter.sprint'],   filter(f.prepend(metadata.getSprints,  'Active Sprints'), 'Sprint',   'sprint'))
       .on(keys['reports.save'],    reportsSave)
       .on(keys['reports.list'],    showReportsList);
   };
@@ -67,22 +64,10 @@ function FilterableList(options) {
     };
   };
 
-  var startLoading = function() {
-    return message(options.parent, 'Loading...', 100);
-  };
-
   var reportsSave = function() {
     input.ask('Save as')
       .then(function(name) { reports.addReport(name, filters); })
       .catch(Cancellation, _.noop);
-  };
-
-  var prepend = function(getOptions, prependedOption) {
-    return function() {
-      return getOptions().then(function(options) {
-        return [prependedOption].concat(options);
-      });
-    };
   };
 
   var showReportsList = function() {
