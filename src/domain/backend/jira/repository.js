@@ -33,7 +33,7 @@ function JiraRepository(client, cache, normalizer, metadata, logger) {
    *
    * @param {String} num
    * @param {Boolean} invalidate - bypass cache
-   * @return {Promise<Issue>} - promised array of issues
+   * @return {Promise<Issue>} - promised issue
    */
   this.lookup = function(num, invalidate) {
     var cacheId = 'lookup:' + num;

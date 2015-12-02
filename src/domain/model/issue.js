@@ -4,6 +4,7 @@ var User     = require('./meta/user');
 var Label    = require('./meta/label');
 var Priority = require('./meta/priority');
 var Sprint   = require('./meta/sprint');
+var Project  = require('./meta/project');
 var Type     = require('./meta/type');
 
 /**
@@ -24,7 +25,8 @@ module.exports = function Issue(id, title, description, status, attributes, comm
       priority: setPriority,
       reporter: setReporter,
       dateCreated: setDateCreated,
-      dateUpdated: setDateUpdated
+      dateUpdated: setDateUpdated,
+      project: setProject,
     };
 
     Object.keys(attributes).forEach(function(attribute) {
@@ -60,6 +62,11 @@ module.exports = function Issue(id, title, description, status, attributes, comm
   var setType = function(type) {
     if(!(type instanceof Type)) throw new TypeError('type must be a valid Type');
     attributes.type = type;
+  };
+
+  var setProject = function(project) {
+    if(!(project instanceof Project)) throw new TypeError('project must be a valid Project');
+    attributes.project = project;
   };
 
   var setDateCreated = function(date) {

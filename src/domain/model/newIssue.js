@@ -6,6 +6,7 @@ var Priority = require('./meta/priority');
 var Sprint   = require('./meta/sprint');
 var Type     = require('./meta/type');
 var Project  = require('./meta/project');
+var Status   = require('./meta/status');
 
 /**
  * Represents a new issue being persisted to a 3rd party issue tracker
@@ -22,7 +23,8 @@ module.exports = function NewIssue(title, description, attributes) {
       sprint: setSprint,
       type: setType,
       priority: setPriority,
-      project: setProject
+      project: setProject,
+      status: setStatus
     };
 
     Object.keys(attributes).forEach(function(attribute) {
@@ -59,6 +61,13 @@ module.exports = function NewIssue(title, description, attributes) {
     if(!(project instanceof Project)) throw new TypeError('project must be a valid Project');
     attributes.project = project;
   };
+
+  var setStatus = function(status) {
+    if(!(status instanceof Status)) throw new TypeError('status must be a valid Status');
+    attributes.status = status;
+  };
+
+
 
 
   this.getTitle = function() {

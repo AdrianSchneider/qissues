@@ -1,12 +1,10 @@
+'use strict';
+
 var _  = require('underscore');
 var fs = require('fs');
 
-module.exports = function Storage(filename) {
-  if(!fs.existsSync(filename)) {
-    fs.writeFileSync(filename, '{}');
-  }
-
-  var data = require(filename);
+module.exports = function MemoryStorage(initialData) {
+  var data = initialData || {};
 
   /**
    * Get a value from local storage
@@ -29,8 +27,6 @@ module.exports = function Storage(filename) {
     } else {
       data[key] = value;
     }
-
-    writeToDisc();
   };
 
   /**
@@ -39,7 +35,6 @@ module.exports = function Storage(filename) {
    */
   this.remove = function(key) {
     delete data[key];
-    writeToDisc();
   };
 
   /**
@@ -48,7 +43,6 @@ module.exports = function Storage(filename) {
    */
   this.removeMulti = function(keys) {
     _.each(keys, function(key) { delete data[key]; });
-    if(keys.length) writeToDisc();
   };
 
   this.keys = function() {
@@ -57,13 +51,6 @@ module.exports = function Storage(filename) {
 
   this.serialize = function() {
     return data;
-  };
-
-  /**
-   * Writes in-memory data to disc
-   */
-  var writeToDisc = function() {
-    fs.writeFileSync(filename, JSON.stringify(data, null, 2));
   };
 
   /**
@@ -80,7 +67,5 @@ module.exports = function Storage(filename) {
         }
       }
     });
-
-    writeToDisc();
   };
 };

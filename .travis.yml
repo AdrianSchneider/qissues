@@ -7,7 +7,17 @@ node_js:
   - "0.10"
 before_install:
   - npm install -g npm
+install:
+  - if [[ $TRAVIS_OS_NAME == "linux" ]]; then export CXX=g++-4.8; fi
+  - $CXX --version
+  - npm install
 before_script:
   - npm install 
 notifications:
   email: false
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    packages:
+    - g++-4.8
