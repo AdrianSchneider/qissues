@@ -55,15 +55,16 @@ module.exports = function(keys, input, metadata) {
   /**
    * Prompts the user for text with message, then emits field was changed
    *
+   * @param {blessed.Node} view
    * @param {Function} getOptions - function returning promise of options
    * @param {String} message - to show user
    * @param {String} field - to notify change of
    * @return {Function}
    */
-  var changeList = function(getOptions, message, field) {
+  var changeList = function(view, getOptions, message, field) {
     return function() {
       input.selectFromCallableList(message, getOptions)
-        .then(emitChanged(field))
+        .then(emitChanged(view, field))
         .catch(Cancellation, _.noop);
     };
   };
