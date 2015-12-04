@@ -6,35 +6,60 @@ var f            = require('../../util/f');
 var ChangeSet    = require('../../domain/model/changeSet');
 var Cancellation = require('../../domain/errors/cancellation');
 
-module.exports = function(view, keys, input, metadata) {
-  var construct = function() {
-    (new Sequencer(view, keys.leader))
-      .on(keys['change.title'], changeText('Title', 'title'))
+module.exports = function(keys, input, metadata) {
+
+  /**
+   * Sets up listeners on view to allow changes
+   *
+   * @param {blessed.Node} view
+   */
+  var register = function(view) {
+    Sequencer.attach(view, keys.leader)
+      .on(keys['change.title'], changeText(view, 'Title', 'title'))
       .on(keys['change.assignee'], changeList(
+        view,
         f.prepend(metadata.getUsers, 'Unassigned'),
         'Assignee',
         'assignee'
       ))
       .on(keys['change.status'], changeList(
+        view,
         metadata.getStatuses,
         'Status',
         'status'
       ))
       .on(keys['change.sprint'], changeList(
+        view,
         f.prepend(metadata.getSprints, 'Backlog'),
         'Sprint',
         'sprint'
       ));
   };
 
-  var changeText = function(message, field) {
+  /**
+   * Prompts the user for text with message, then emits field was changed
+   *
+   * @param {blessed.Node} view
+   * @param {String} message - to show user
+   * @param {String} field - to notify change of
+   * @return {Function}
+   */
+  var changeText = function(view, message, field) {
     return function() {
       input.ask(message)
-        .then(emitChanged('title'))
+        .then(emitChanged(view, 'title'))
         .catch(Cancellation, _.noop);
     };
   };
 
+  /**
+   * Prompts the user for text with message, then emits field was changed
+   *
+   * @param {Function} getOptions - function returning promise of options
+   * @param {String} message - to show user
+   * @param {String} field - to notify change of
+   * @return {Function}
+   */
   var changeList = function(getOptions, message, field) {
     return function() {
       input.selectFromCallableList(message, getOptions)
@@ -43,7 +68,14 @@ module.exports = function(view, keys, input, metadata) {
     };
   };
 
-  var emitChanged = function(field) {
+  /**
+   * Notifies the view to change every selected issue for this field
+   *
+   * @param {blessed.Node} view
+   * @param {String} field
+   * @return {Function} - accepting changed content
+   */
+  var emitChanged = function(view, field) {
     return function(content) {
       view.emit('changeset', ChangeSet.create()
         .addIssues(view.getSelectedIssues())
@@ -53,6 +85,6 @@ module.exports = function(view, keys, input, metadata) {
     };
   };
 
-  construct();
+  return register;
 
 };

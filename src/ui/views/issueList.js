@@ -3,12 +3,11 @@
 var _              = require('underscore');
 var sprintf        = require('util').format;
 var filterableList = require('../widgets/filterableList');
-var editable       = require('./editable');
 
 /**
  * Dependencies for issue list
  */
-module.exports = function(app, tracker, input, keys, logger) {
+module.exports = function(app, tracker, input, keys, behaviors, logger) {
   var metadata = tracker.getMetadata();
   var normalizer = tracker.getNormalizer();
 
@@ -23,8 +22,9 @@ module.exports = function(app, tracker, input, keys, logger) {
    */
   var main = function(promisedIssues, focus, parent) {
     var list = createList(parent);
-    editable(list, keys, input, metadata);
     list.issues = [];
+
+    behaviors.forEach(function(behavior) { behavior(list); });
 
     promisedIssues.done(list.setIssues);
     promisedIssues.done(function(issues) {
@@ -45,6 +45,10 @@ module.exports = function(app, tracker, input, keys, logger) {
 
     list.getIssue = function() {
       return list.issues.get(list.selected);
+    };
+
+    list.getIssues = function() {
+      return list.issues.findByIds(list.getSelectedIssues());
     };
 
     return list;

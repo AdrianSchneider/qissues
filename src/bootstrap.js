@@ -18,6 +18,9 @@ var BlessedApplication       = require('./ui/app');
 var keys                     = require('./ui/keys');
 var Browser                  = require('./ui/browser');
 var UserInput                = require('./ui/input');
+var clipboard                = require('./ui/clipboard');
+var editable                 = require('./ui/behaviors/editable');
+var yankable                 = require('./ui/behaviors/yankable');
 var YamlFrontMatterFormat    = require('./ui/formats/yaml-front-matter');
 var listIssuesController     = require('./ui/controllers/listIssues');
 var createIssueController    = require('./ui/controllers/createIssue');
@@ -138,6 +141,11 @@ module.exports = function(options) {
     );
 
     container.registerService(
+      'ui.clipboard',
+      function() { return clipboard; }
+    );
+
+    container.registerService(
       'ui.input',
       function(screen, keys, logger) {
         return new UserInput(screen, keys, logger);
@@ -250,19 +258,43 @@ module.exports = function(options) {
 
     container.registerService(
       'ui.views.issueList',
-      function(app, tracker, input, keys, logger) { return issueListView(app, tracker, input, keys, logger); },
-      ['app', 'tracker', 'ui.input', 'ui.keys', 'logger']
+      function(app, tracker, input, keys, editable, yankable, logger) { 
+        return issueListView(app, tracker, input, keys, [editable, yankable], logger); 
+      },
+      ['app', 'tracker', 'ui.input', 'ui.keys', 'ui.behaviors.editable', 'ui.behaviors.yankable', 'logger']
     );
 
     container.registerService(
       'ui.views.singleIssue',
-      function(app, keys, input, tracker, logger) {
-        return singleIssueView(app, keys, input, tracker.getMetadata(), logger);
+      function(app, keys, input, tracker, editable, yankable, logger) {
+        return singleIssueView(app, keys, input, tracker.getMetadata(), [editable, yankable], logger);
       },
-      ['app', 'ui.keys', 'ui.input', 'tracker', 'logger']
+      ['app', 'ui.keys', 'ui.input', 'tracker', 'ui.behaviors.editable', 'ui.behaviors.yankable', 'logger']
     );
 
   });
+
+  /**
+   * Registers all of the ui behaviours
+   */
+  builders.push(function setupUiBehaviours(container) {
+    container.registerService(
+      'ui.behaviors.editable',
+      function(keys, input, tracker) {
+        return editable(keys, input, tracker.getMetadata());
+      },
+      ['ui.keys', 'ui.input', 'tracker']
+    );
+
+    container.registerService(
+      'ui.behaviors.yankable',
+      function(keys, clipboard) {
+        return yankable(keys, clipboard);
+      },
+      ['ui.keys', 'ui.clipboard']
+    );
+  });
+
 
   /**
    * Registers all of the domain services

@@ -28,5 +28,9 @@
   "change.title"            : "ct",
   "change.assignee"         : "ca",
   "change.status"           : "cs",
-  "change.sprint"           : "cS"
+  "change.sprint"           : "cS",
+  "yank.title"              : "yt",
+  "yank.id"                 : "yi",
+  "yank.body"               : "yb",
+  "yank.url"                : "yu"
 }

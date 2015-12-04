@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * Assists a node with sequential key combinations
  *
@@ -5,10 +7,11 @@
  * @param string       leader ex (',')
  * @param number       timeout in ms
  */
-module.exports = function Sequencer(node, leader, timeout) {
+function Sequencer(node, leader, timeout) {
   timeout = timeout || 500;
   leader  = leader || ',';
 
+  var recording = false;
   node.sequence = '';
   node.sequences = node.sequences || {};
   node.disabledListeners = node.disabledListeners || [];
@@ -26,7 +29,7 @@ module.exports = function Sequencer(node, leader, timeout) {
    * Removes a sequenced event listener
    */
   this.remove = function(keys) {
-    delete sequences[keys];
+    delete node.sequences[keys];
     return this;
   };
 
@@ -66,6 +69,8 @@ module.exports = function Sequencer(node, leader, timeout) {
    * Enables recording of all keys to build sequences
    */
   var enableRecording = function() {
+    if (recording) return;
+
     node.disabledListeners = {
       keypress: node.listeners('keypress')
     };
@@ -79,12 +84,14 @@ module.exports = function Sequencer(node, leader, timeout) {
     });
 
     node.on('keypress', catchAll);
+    recording = true;
   };
 
   /**
    * Disables recording, restting the standard event behaviour
    */
   var disableRecording = function() {
+    if (!recording) return;
     node.removeListener('keypress', catchAll);
 
     Object.keys(node.disabledListeners).forEach(function(disabledEvent) {
@@ -94,6 +101,7 @@ module.exports = function Sequencer(node, leader, timeout) {
     });
 
     node.screen.render();
+    recording = false;
   };
 
   var getLetters = function() {
@@ -103,4 +111,11 @@ module.exports = function Sequencer(node, leader, timeout) {
     }
     return letters;
   };
+}
+
+Sequencer.attach = function(view, leader, timeout) {
+  return new Sequencer(view, leader, timeout);
 };
+
+module.exports = Sequencer;
+

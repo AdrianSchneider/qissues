@@ -28,6 +28,7 @@
     "blessed": "^0.1.81",
     "bluebird": "^3.0.2",
     "commander": "^2.3.0",
+    "copy-paste": "^1.1.4",
     "joi": "^6.9.0",
     "js-yaml": "^3.4.3",
     "moment": "^2.8.3",

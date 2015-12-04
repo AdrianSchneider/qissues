@@ -38,6 +38,13 @@ module.exports = function Issue(id, title, description, status, attributes, comm
     });
   };
 
+  var builtIns = {
+    id: id,
+    title: title,
+    description: description,
+    status: status
+  };
+
   var setAssignee = function(user) {
     if(!(user instanceof User)) throw new TypeError('assignee must be a valid User');
     attributes.assignee = user;
@@ -96,6 +103,10 @@ module.exports = function Issue(id, title, description, status, attributes, comm
   };
 
   this.get = function(name) {
+    if (typeof builtIns[name] !== 'undefined') {
+      return builtIns[name];
+    }
+
     return attributes[name];
   };
 

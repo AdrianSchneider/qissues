@@ -1,5 +1,6 @@
 'use strict';
 
+var _         = require('underscore');
 var util      = require('util');
 var Issue     = require('./issue');
 var allTypeOf = require('../../util/types').allTypeOf;
@@ -25,6 +26,26 @@ function IssuesCollection(issues) {
   this.getIds = function() {
     return issues.map(function(issue) {
       return issue.getId();
+    });
+  };
+
+  this.find = function(id) {
+    return _.find(issues, function(issue) {
+      return issue.getId() === id;
+    });
+  };
+
+  this.findByIds = function(ids) {
+    return new IssuesCollection(
+        ids
+        .map(this.find)
+        .filter(function(i) { return i; })
+    );
+  };
+
+  this.getField = function(field) {
+    return issues.map(function(issue) {
+      return issue.get(field);
     });
   };
 }

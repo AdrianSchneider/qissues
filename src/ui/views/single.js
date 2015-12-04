@@ -1,13 +1,14 @@
 'use strict';
 
-var _        = require('underscore');
-var blessed  = require('blessed');
-var Promise  = require('bluebird');
-var wordwrap = require('wordwrap');
-var sprintf  = require('util').format;
-var editable = require('./editable');
+var _                = require('underscore');
+var blessed          = require('blessed');
+var Promise          = require('bluebird');
+var wordwrap         = require('wordwrap');
+var sprintf          = require('util').format;
+var Sequencer        = require('../events/sequencer');
+var IssuesCollection = require('../../domain/model/issues');
 
-module.exports = function(app, keys, input, metadata, logger) {
+module.exports = function(app, keys, input, metadata, behaviors, logger) {
 
   /**
    * Renders a single issue view
@@ -29,18 +30,20 @@ module.exports = function(app, keys, input, metadata, logger) {
       alwaysScroll: true
     });
 
-    editable(box, keys, input, metadata);
+    behaviors.forEach(function(behavior) { behavior(box); });
 
     var selected = [];
-    box.getSelectedIssues = function() {
-      return selected;
-    };
+    box.getSelectedIssues = function() { return selected; };
+    box.getIssues = function() { return []; };
+    box.clearSelection = _.noop;
 
     Promise.all([promisedIssue, promisedComments])
       .spread(function(issue, comments) {
         selected = [issue.getId()];
         box.setContent(renderIssue(issue, comments, box.width));
         box.getIssue = function() { return issue; };
+        box.getIssues = function() { return new IssuesCollection([issue]); };
+
         parent.append(box);
         box.focus();
         parent.screen.render();
