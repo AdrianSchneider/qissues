@@ -13,10 +13,8 @@ module.exports = function(ui, tracker) {
    * @return {Promise}
    */
   var applyChangeSet = function(changeSet, data) {
-    console.error('data = ' + JSON.stringify(data, null, 4));
     return tracker.getRepository().apply(changeSet, data || {})
       .catch(MoreInfoRequired, function(e) {
-        console.error('more?');
         return ui.capture(e.expectations).then(function(moreInfo) {
           return applyChangeSet(changeSet, moreInfo);
         });
