@@ -234,12 +234,17 @@ function JiraMetadata(client, cache, projectKey) {
         .map(function(field) {
           return {
             field: field,
+            type: 'string',
             required: transition.fields[field].required,
             default: null,
-            choices: transition.fields[field].allowedValues
+            choices: Promise.resolve(transition.fields[field].allowedValues)
           };
         })
         .filter(_.property('required'))
+        .map(function(field) {
+          field.choices = field.choices.map(function(f) { return f.name; });
+          return field;
+        })
         .indexBy('field')
         .value()
     );
