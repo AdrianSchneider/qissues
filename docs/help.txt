@@ -49,6 +49,10 @@ Qissues Interface
         ,ca                    Change assignee
         ,cs                    Change status
         ,cS                    Change sprint
+
+    f) Clipboard
+      ,yi                      Yank id(s) to clipboard
+      ,yt                      Yank title(s) to clipboard
     
 
 2. GENERAL INFORMATION
