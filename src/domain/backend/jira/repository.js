@@ -164,7 +164,7 @@ function JiraRepository(client, cache, normalizer, metadata, logger) {
   var changeStatus = function(num, status, details) {
     return metadata.getIssueTransition(num, status).then(function(transition) {
       var expectations = metadata.transitionToExpectations(transition);
-      if (expectations.hasRules()) {
+      if (expectations.hasRules() && !Object.keys(details).length) {
         throw new MoreInfoRequired('Jira expects more', expectations);
       }
 
