@@ -5,6 +5,12 @@ var Promise = require('bluebird');
 var request = require('request');
 var ValidationError = require('../../errors/validation');
 
+/**
+ * Interacts with Jira's REST API
+ *
+ * @param {Config} config
+ * @param {winston.Logger} logger
+ */
 module.exports = function JiraHttpClient(config, logger) {
 
   var configured = false;
@@ -14,7 +20,7 @@ module.exports = function JiraHttpClient(config, logger) {
    *
    * @param {String} path
    * @param {Object} options
-   * @return {Promise}
+   * @return {Promise<Object>}
    */
   this.get = function(path, options) {
     logger.trace('http request: GET ' + buildUrl(path));
@@ -28,6 +34,13 @@ module.exports = function JiraHttpClient(config, logger) {
     });
   };
 
+  /**
+   * Performs a POST request
+   *
+   * @param {String} path
+   * @param {Object} data
+   * @return {Promise<Object>}
+   */
   this.post = function(path, data) {
     logger.trace('http request: POST ' + buildUrl(path));
 
@@ -44,6 +57,13 @@ module.exports = function JiraHttpClient(config, logger) {
     });
   };
 
+  /**
+   * Performs a PUT request
+   *
+   * @param {String} path
+   * @param {Object} data
+   * @return {Promise<Object>}
+   */
   this.put = function(path, data) {
     logger.trace('http request: PUT ' + buildUrl(path));
 
@@ -60,6 +80,11 @@ module.exports = function JiraHttpClient(config, logger) {
 
   };
 
+  /**
+   * Performs a DELETE request
+   * @param {String} path
+   * @return {Promise}
+   */
   this.del = function(path) {
     logger.trace('http request: DELETE ' + buildUrl(path));
 
@@ -72,10 +97,19 @@ module.exports = function JiraHttpClient(config, logger) {
     });
   };
 
+  /**
+   * Constructs a fully qualified URL
+   */
   var buildUrl = function(path) {
     return "https://" + config.get('domain') + path;
   };
 
+  /**
+   * Constructs the authentication to the options object for the request
+   *
+   * @param {Object} options
+   * @return {Object}
+   */
   var attachOptions = function(options) {
     var opts = _.clone(options || {});
     opts.json = true;
