@@ -6,7 +6,7 @@ var ChangeSet = require('../../../../src/domain/model/changeSet');
 describe('ChangeSet', function() {
 
   describe('#constructor', function() {
-    
+
     it('Throws TypeError when not issue ids', function() {
       var badInputs = [ [0], [0, 'a'], 'string', {} ];
       badInputs.forEach(function(input) {
@@ -23,6 +23,15 @@ describe('ChangeSet', function() {
 
     it('Constructs with an array of strings', function() {
       new ChangeSet(['a', 'b'], { a: 1 });
+    });
+
+  });
+
+  describe('#getIssue', function() {
+
+    it('Returns the array of issue ids', function() {
+      var changeset = new ChangeSet(['a', 'b'], { a: 1 });
+      expect(changeset.getIssues()).to.deep.equal(['a', 'b']);
     });
 
   });
