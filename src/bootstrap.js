@@ -46,26 +46,6 @@ module.exports = function(options) {
   /**
    * Registers all of core application services
    */
-  builders.push(function setupCoreServices(container) {
-    container.registerService('logger', function() {
-      return require('../src/app/services/logger')(options.logLevel);
-    });
-
-    container.registerService('config', function() {
-      var conf = new Config(options.configFile);
-      return conf.initialize().then(function() {
-        return conf;
-      });
-    });
-
-    container.registerService('storage', function() {
-      return new Storage(options.cacheFile);
-    });
-
-    container.registerService('cache', function(storage) {
-      return new Cache(storage, options.clearCache);
-    }, ['storage']);
-  });
 
   /**
    * Registers all of the jira services

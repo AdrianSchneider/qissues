@@ -170,7 +170,3 @@ function JiraNormalizer(metadata, config) {
   };
 
 }
-
-util.inherits(JiraNormalizer, TrackerNormalizer);
-
-module.exports = JiraNormalizer;

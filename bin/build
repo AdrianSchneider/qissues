@@ -1,0 +1,14 @@
+#!/bin/bash
+rm -fr build/*
+
+find src -name "*.js" | sed 's/^src\///' | while read line; do
+  mkdir -p "build/$(dirname $line)"
+  cp "src/$line" "build/$line"
+done;
+
+find src -name "*.json" | sed 's/^src\///' | while read line; do
+  mkdir -p "build/$(dirname $line)"
+  cp "src/$line" "build/$line"
+done;
+
+tsc -p tsconfig.json

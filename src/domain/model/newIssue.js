@@ -15,7 +15,7 @@ var Status   = require('./meta/status');
  * @param {String} description
  * @param {Object} attributes
  */
-module.exports = function NewIssue(title, description, attributes) {
+function NewIssue(title, description, attributes) {
   if(!attributes) attributes = {};
   var construct = function() {
     var attributeFunctions = {
@@ -98,3 +98,5 @@ module.exports = function NewIssue(title, description, attributes) {
   construct();
 
 };
+
+export default NewIssue;

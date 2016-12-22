@@ -24,6 +24,11 @@
     "url": "https://github.com/AdrianSchneider/qissues.git"
   },
   "dependencies": {
+    "@types/es6-promise": "0.0.32",
+    "@types/es6-shim": "0.31.32",
+    "@types/joi": "^10.0.0",
+    "@types/node": "^6.0.52",
+    "@types/request": "0.0.36",
     "async": "^0.9.0",
     "blessed": "^0.1.81",
     "bluebird": "^3.0.2",
