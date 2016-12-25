@@ -4,14 +4,14 @@ import Promise         from 'bluebird';
 import ValidationError from '../errors/validation';
 
 interface SchemaDefinition {
-
+  [key: string]: SchemaFieldDefinition
 }
 
 interface SchemaFieldDefinition {
   type: string,
   required: boolean,
   default: any,
-  choices: Promise<string[]>
+  choices?: Promise<string[]>
 }
 
 export default class Expectations {

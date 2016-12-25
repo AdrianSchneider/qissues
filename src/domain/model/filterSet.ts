@@ -8,6 +8,7 @@ export default class FilterSet extends EventEmitter {
 
   constructor(filters: Filter[]) {
     super();
+    this.filters = [];
     filters.forEach(filter => this.add(filter));
   }
 

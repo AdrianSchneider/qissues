@@ -4,9 +4,7 @@
 var path          = require('path');
 var program       = require('commander');
 var blessed       = require('blessed');
-var bootstrap     = require('../build/bootstrap');
-var UserInterface = require('../build/ui');
-var Application   = require('../build/app/main');
+var bootstrap     = require('../build/app/bootstrap/builder').default;
 var configFile    = path.resolve(process.env.HOME, './.qissues.json');
 var cacheFile     = path.resolve(process.env.HOME, './.qissues-cache.json');
 var packageInfo   = require('../package.json');

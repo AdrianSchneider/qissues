@@ -6,6 +6,15 @@ import Type     from './meta/type';
 import Project  from './meta/project';
 import Status   from './meta/status';
 
+export interface NewIssueAttributes {
+  status?: Status,
+  type?: Type,
+  priority?: Priority,
+  sprint?: Sprint,
+  project?: Project,
+  assignee?: User
+}
+
 export default class NewIssue {
   public readonly title: string;
   public readonly description: string;
@@ -31,10 +40,7 @@ export default class NewIssue {
 
 }
 
-interface NewIssueAttributes {
-}
-
-interface SerializedNewIssue {
+export interface SerializedNewIssue {
   title: string,
   description: string
 }

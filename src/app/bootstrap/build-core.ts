@@ -1,17 +1,19 @@
-import * as fs      from 'fs';
-import * as Config  from '../services/config';
-import * as Cache   from '../services/cache';
-import * as Storage from '../services/storage/disk';
-import * as logger  from '../services/logger';
+import * as fs     from 'fs';
+import Config      from '../services/config';
+import Cache       from '../services/cache';
+import Storage     from '../services/storage/disk';
+import * as logger from '../services/logger';
+import Container from '../services/container';
 
 interface Options {
   configFile: string,
   logLevel: "debug" | "warn" | "info" | "error",
   cacheFile: string,
-  clearCache: boolean
+  clearCache: boolean,
+  cachePrefix: string
 }
 
-export default function buildCore(container, options: Options) {
+export default function buildCore(container: Container, options: Options) {
   container.registerService(
     'logger',
     () => logger(options.logLevel)
@@ -21,7 +23,7 @@ export default function buildCore(container, options: Options) {
     'config',
     () => {
       const conf = new Config(options.configFile, fs);
-      return conf.initialize().then(() => conf);
+      return conf.initialize();
     }
   );
 
@@ -32,7 +34,13 @@ export default function buildCore(container, options: Options) {
 
   container.registerService(
     'cache',
-    (storage: Storage) => new Cache(storage, options.clearCache, null),
+    (storage: Storage) => {
+      const cache = new Cache(storage, options.cachePrefix);
+      if (options.clearCache) cache.invalidateAll();
+      return cache;
+    },
     ['storage']
   );
+
+  return container;
 };

@@ -2,9 +2,9 @@ export default class Priority {
   public readonly priority: number;
   public readonly name: string;
 
-  constructor(priority: number, name: string) {
-    this.priority = priority;
-    this.name = name;
+  constructor(priority: number | string, name?: string) {
+    this.priority = parseInt("" + priority, 10);
+    this.name = name || '';
   }
 
   public toString(): string {

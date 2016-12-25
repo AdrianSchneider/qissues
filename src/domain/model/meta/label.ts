@@ -1,9 +1,9 @@
 export default class Label {
-  public readonly id: string | number;
+  public readonly id: string;
   public readonly name: string;
 
   constructor(id: string | number, name: string) {
-    this.id = id;
+    this.id = id.toString();
     this.name = name;
   }
 
@@ -24,6 +24,6 @@ export default class Label {
 }
 
 interface SerializedLabel {
-  id: string | number,
+  id: string,
   name: string
 }

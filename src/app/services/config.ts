@@ -1,97 +1,56 @@
-import Promise from 'bluebird';
+import * as Promise from 'bluebird';
 declare function require(moduleName: string): any;
 
 export default class Config {
   private readonly filename;
   private readonly fs;
-  private config;
+  private config: Object;
 
   constructor(filename: string, fs: Object) {
     this.filename = filename;
     this.fs = fs;
   }
 
-  public initialize(): Promise {
-    return (new Promise(function(resolve, reject) {
-      this.fs.exists(this.filename, function(exists) {
+  public initialize(): Promise<Config> {
+    return (new Promise((resolve, reject) => {
+      this.fs.exists(this.filename, exists => {
         if (exists) return resolve();
-        this.fs.writeFile(this.filename, '{}', function(err) {
+        this.fs.writeFile(this.filename, '{}', err => {
           if (err) return reject(err);
-          resolve();
+          resolve(this);
         });
       });
     }))
-    .then(function() {
-      return require(this.filename);
-    })
-    .then(function(configData) {
-      this.config = configData;
-    });
+    .then(() => Promise.resolve(require(this.filename)))
+    .tap(configData => this.config = configData)
+    .then(() => this);
   }
 
-}
-
-'use strict';
-
-var Promise = require('bluebird');
-
-module.exports = function Config(filename, fs) {
-  var config;
-  if(!fs) fs = Promise.promisifyAll(require('fs'));
-
-  /**
-   * Ensures config is loaded, returning expected config
-   *
-   * @return {Promise<Expectations>}
-   */
-  this.initialize = function() {
-  };
-
-  /**
-   * Fetches a config option
-   *
-   * @param {String} key
-   * @return {*}
-   * @throws {ReferenceError}
-   */
-  this.get = function(key, def) {
-    if (!config) {
+  public get(key: string, def?: any): any {
+    if (!this.config) {
       throw new ReferenceError('Config is not loaded yet');
     }
 
-    if (typeof config[key] === 'undefined') {
+    if (typeof this.config[key] === 'undefined') {
       if (typeof def === 'undefined') {
         throw new ReferenceError('Config key ' + key + ' does not exist');
       }
       return def;
     }
 
-    return config[key];
-  };
+    return this.config[key];
+  }
 
-  /**
-   * Updates the config
-   *
-   * @param {Object} options - new config values
-   * @return {Promise}
-   */
-  this.save = function(options) {
-    config = options;
-    return fs.writeFileAsync(filename, JSON.stringify(options, null, 4));
-  };
+  public save(options: Object) {
+    this.config = options;
+    return this.fs.writeFileAsync(this.filename, JSON.stringify(options, null, 4));
+  }
 
-  /**
-   * Exports the raw config values
-   *
-   * @return {Object}
-   * @throws {ReferenceError} when thrown before its loaded
-   */
-  this.serialize = function() {
-    if (!config) {
+  public serialize() {
+    if (!this.config) {
       throw new ReferenceError('Config is not loaded yet');
     }
 
-    return config;
-  };
-
-};
+    return this.config;
+  }
+}

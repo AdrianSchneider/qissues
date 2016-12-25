@@ -1,7 +1,11 @@
-import Id               from './id';
-import Issue            from './issue';
-import NewIssue         from './newIssue';
-import IssuesCollection from './issues';
+import Id                 from './id';
+import Issue              from './issue';
+import NewIssue           from './newIssue';
+import Comment            from './comment';
+import NewComment         from './newComment';
+import IssuesCollection   from './issues';
+import CommentsCollection from './comments';
+import { ChangeSet }      from './changeSet';
 
 interface TrackerRepository {
   /**
@@ -18,6 +22,21 @@ interface TrackerRepository {
    * Queries the repository for issues
    */
   query: (report, options?: Object) => Promise<IssuesCollection>;
+
+  /**
+   * Fetches comments for an issue
+   */
+  getComments: (num: Id, options?: Object) => Promise<CommentsCollection>;
+
+  /**
+   * Persists a new comment
+   */
+  postComment: (data: NewComment) => Promise<Comment>;
+
+  /**
+   * Applies a changeset to the repository
+   */
+  applyChanges: (changes: ChangeSet, moreInfo: Object) => Promise<void>;
 }
 
 export default TrackerRepository;

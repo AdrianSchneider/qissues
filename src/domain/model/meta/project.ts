@@ -3,10 +3,10 @@ export default class Project {
   public readonly name: string;
   public readonly internalId: string;
 
-  constructor(id: string | number, name: string, internalId?: string) {
+  constructor(id: string | number, name?: string, internalId?: string) {
     this.id = id;
-    this.name = name;
-    this.internalId = internalId;
+    this.name = name || '';
+    this.internalId = internalId || '';
   }
 
   public serialize(): SerializedProject {

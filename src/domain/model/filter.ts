@@ -1,3 +1,5 @@
+import FilterSet from './filterset';
+
 export interface SerializedFilter {
   type: string,
   value: string
@@ -23,7 +25,7 @@ export default class Filter {
     return new Filter(data.type, data.value);
   }
 
-  public static addSelectedTo(filters, type: string) {
+  public static addSelectedTo(filters: FilterSet, type: string) {
     return item => filters.add(new Filter(type, item));
   }
 }

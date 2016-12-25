@@ -1,5 +1,5 @@
 import _               from 'underscore';
-import Promise         from 'bluebird';
+import * as Promise    from 'bluebird';
 import * as request    from 'request';
 import ValidationError from '../../errors/validation';
 
@@ -17,7 +17,7 @@ export default class JiraHttpClient {
     this.config = config;
   }
 
-  public get(path: string, options: QueryOptions) {
+  public get(path: string, options?: QueryOptions) {
     this.logger.trace('http request: GET ' + this.buildUrl(path));
 
     return new Promise(function(resolve, reject) {

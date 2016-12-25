@@ -1,6 +1,7 @@
 import _                  from 'underscore';
 import Promise            from 'bluebird';
 import { format }         from 'util';
+import JiraClient         from './client';
 import Id                 from '../../model/id';
 import TrackerRepository  from '../../model/trackerRepository';
 import Issue              from '../../model/issue';
@@ -9,23 +10,25 @@ import CommentsCollection from '../../model/issues';
 import NewIssue           from '../../model/newIssue';
 import NewComment         from '../../model/newComment';
 import MoreInfoRequired   from '../../errors/infoRequired';
+import Cache              from '../../../app/services/cache';
 
 interface QueryOptions {
   invalidate: boolean
 }
 
 class JiraRepository implements TrackerRepository {
-  private client;
-  private cache;
+  private client: JiraClient;
+  private cache: Cache;
   private normalizer;
   private logger;
   private metadata;
 
+  /**
+   * Creates a new issue in JIRA
+   */
   public createIssue(data: NewIssue): Promise<Issue> {
-    return this.client.post(
-      '/rest/api/2/issue',
-      this.normalizer.toNewIssueJson(data)
-    ).then(this.normalizer.toNum);
+    return this.client.post('/rest/api/2/issue', this.normalizer.toNewIssueJson(data))
+      .then(this.normalizer.toNum);
   }
 
   /**
@@ -37,10 +40,13 @@ class JiraRepository implements TrackerRepository {
     if (cached) return Promise.resolve(this.normalizer.toIssue(cached));
 
     return this.client.get(this.getIssueUrl(num))
-      .then(this.cache.setThenable(cacheId))
+      .tap(data => this.cache.set(cacheId, data))
       .then(this.normalizer.toIssue);
   }
 
+  /**
+   * Queries JIRA by generating JQL from the report
+   */
   public query(report, options: QueryOptions): Promise<IssuesCollection> {
     const requestOpts = { qs: {
       maxResults: 500,
@@ -49,25 +55,31 @@ class JiraRepository implements TrackerRepository {
 
     this.logger.trace('JQL = ' + requestOpts.qs.jql);
 
-    var cacheId = 'issues:' + requestOpts.qs.jql;
-    var cached = this.cache.get(cacheId, options.invalidate);
+    const cacheId = `issues:${requestOpts.qs.jql}`;
+    const cached = this.cache.get(cacheId, options.invalidate);
     if (cached) return Promise.resolve(this.normalizer.toIssuesCollection(cached));
 
     return this.client.get('/rest/api/2/search', options)
-      .then(this.cache.setThenable(cacheId))
+      .tap(data => this.cache.set(cacheId, data))
       .then(this.normalizer.toIssuesCollection);
   }
 
+  /**
+   * Gets the comments from an issue
+   */
   public getComments(num: Id, options: QueryOptions): Promise<CommentsCollection> {
     const cacheId = 'comments:' + num;
     const cached = this.cache.get(cacheId, options.invalidate);
     if (cached) return Promise.resolve(this.normalizer.toCommentsCollection(cached));
 
     return this.client.get(this.getIssueUrl(num, '/comment'))
-      .then(this.cache.setThenable(cacheId))
+      .tap(data => this.cache.set(cacheId, data))
       .then(this.normalizer.toCommentsCollection);
   }
 
+  /**
+   * Posts a new Comment
+   */
   public postComment(data: NewComment): Promise<Comment> {
     return this.client.post(
       this.getIssueUrl(data.issue, '/comment'),
@@ -75,6 +87,9 @@ class JiraRepository implements TrackerRepository {
     );
   }
 
+  /**
+   * Applies a changeset
+   */
   public apply(changes, details): Promise<void> {
     this.cache.invalidateAll(key => key.indexOf('issues:') === 0);
     changes.getIssues().forEach(num => this.cache.invalidate('lookup:' + num));
@@ -119,7 +134,7 @@ class JiraRepository implements TrackerRepository {
         throw new MoreInfoRequired('Jira expects more', expectations);
       }
 
-      var data = {
+      const data = {
         transition: { id: transition.id },
         fields: _.mapObject(details, function(value) {
           return { name: value };
@@ -142,3 +157,5 @@ class JiraRepository implements TrackerRepository {
       });
   };
 }
+
+export default JiraRepository;

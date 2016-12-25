@@ -1,7 +1,12 @@
-import _       from 'underscore'
-import Promise from 'bluebird'
+import { once } from 'underscore'
+import * as BPromise from 'bluebird'
 
-export class Container {
+interface Definition {
+  f: Function,
+  dependencies: Array<any>
+}
+
+export default class Container {
   private registered: Object = {};
   private readyServices: Object = {};
 
@@ -12,12 +17,15 @@ export class Container {
    * @param f the function returning the service
    * @param depenencies the services this service depends on
    */
-  public registerService(name: string, f: Function, dependencies: Promise[]) {
+  public registerService(name: string, f: Function, dependencies?: string[]) {
     if (this.isRegistered(name)) {
       throw new Error(`Cannot replace existing service ${name}`);
     }
 
-    this.registered[name] = { f: _.once(f), dependencies };
+    this.registered[name] = {
+      f: once(f),
+      dependencies: dependencies || []
+    };
   }
 
   /**
@@ -26,7 +34,7 @@ export class Container {
    * @param serviceName the service to get
    * @return promise fulfilling the service
    */
-  public get(serviceName: string): Promise {
+  public get(serviceName: string): Promise<any> {
     if (!this.isRegistered(serviceName)) {
       throw new ReferenceError(`Cannot get undefined service ${serviceName}`);
     }
@@ -45,8 +53,8 @@ export class Container {
    * @param definition
    * @return promised service
    */
-  private getServiceFromDefinition(definition: Definition): Promise {
-    return Promise
+  private getServiceFromDefinition(definition: Definition): BPromise {
+    return BPromise
       .map(definition.dependencies, dependency => this.get(dependency))
       .then(dependencies => definition.f.apply(definition.f, dependencies));
   }
@@ -57,8 +65,8 @@ export class Container {
    * @param services - service names
    * @return promised services
    */
-  public getMatching(services: string[]): Promise[] {
-    return Promise.map(services, this.get);
+  public getMatching(services: string[]): Promise<any>[] {
+    return BPromise.map(services, name => this.get(name));
   }
 
   /**
@@ -70,9 +78,4 @@ export class Container {
   private isRegistered(name: string): Boolean {
     return typeof this.registered[name] !== 'undefined'
   }
-}
-
-interface Definition {
-  f: Function,
-  dependencies: Array<any>
 }

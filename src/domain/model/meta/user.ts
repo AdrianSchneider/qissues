@@ -3,10 +3,10 @@ export default class User {
   public readonly name: string;
   public readonly id: string;
 
-  constructor(account: string, name: string, id?: string) {
+  constructor(account: string, name?: string, id?: string) {
     this.account = account;
-    this.name = name;
-    this.id = id;
+    this.name = name || '';
+    this.id = id || '';
   }
 
   public serialize(): SerializedUser {

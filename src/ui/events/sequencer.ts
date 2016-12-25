@@ -33,7 +33,7 @@ class Sequencer {
    */
   private setupSequenceHandler() {
     var listeners = this.node.listeners('key ' + this.leader);
-    if(!listeners.length) {
+    if (!listeners.length) {
       this.node.on('key ' + this.leader, this.onLeader);
     }
   };

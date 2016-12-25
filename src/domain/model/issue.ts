@@ -7,6 +7,18 @@ import Project  from './meta/project';
 import Status   from './meta/status';
 import Type     from './meta/type';
 
+export interface IssueAttributes {
+  status?: Status,
+  type?: Type,
+  priority?: Priority,
+  sprint?: Sprint,
+  project?: Project,
+  assignee?: User,
+  reporter?: User,
+  dateCreated?: Date,
+  dateUpdated?: Date
+}
+
 /**
  * Represents an issue from a 3rd party issue tracking system
  */
@@ -16,7 +28,7 @@ export default class Issue {
   public readonly description: string;
   public readonly status: Status;
 
-  constructor(id: Id, title: string, description: string, status: Status, attributes: Object, commentCount: number) {
+  constructor(id: Id, title: string, description: string, status: Status, attributes: Object, commentCount?: number) {
 
   }
 
