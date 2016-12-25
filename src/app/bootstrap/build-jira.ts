@@ -2,7 +2,7 @@ import Cache               from '../services/cache';
 import Config              from '../services/config';
 import Container           from '../services/container';
 import JiraClient          from '../../domain/backend/jira/client';
-import * as JiraMetadata   from '../../domain/backend/jira/metadata';
+import JiraMetadata        from '../../domain/backend/jira/metadata';
 import * as JiraRepository from '../../domain/backend/jira/repository';
 import * as expectations   from '../../domain/backend/jira/requirements/issue';
 import JiraNormalizer      from '../../domain/backend/jira/normalizer';

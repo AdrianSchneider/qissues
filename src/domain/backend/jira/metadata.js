@@ -93,7 +93,7 @@ function JiraMetadata(client, cache, projectKey) {
 
     return client.get('/rest/greenhopper/1.0/rapidview')
       .then(function(response) { return response.views; })
-      .then(cache.setThenable('views', ttl));
+      .tap(data => cache.set('views', ttl));
   };
 
   /**
@@ -199,7 +199,7 @@ function JiraMetadata(client, cache, projectKey) {
     var opts = { qs: { expand: 'transitions.fields' } };
     return client.get('/rest/api/2/issue/' + num + '/transitions', opts)
       .then(function(response) { return response.transitions; })
-      .then(cache.setThenable('transitions:' + num, ttl));
+      .tap(data => cache.set(`transitions:${num}`, ttl));
   };
 
   /**
