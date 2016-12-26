@@ -23,6 +23,14 @@ class JiraRepository implements TrackerRepository {
   private logger;
   private metadata;
 
+  public constructor(client: JiraClient, cache: Cache, normalizer, logger, metadata) {
+    this.client = client;
+    this.cache = cache;
+    this.normalizer = normalizer;
+    this.logger = logger;
+    this.metadata = metadata;
+  }
+
   /**
    * Creates a new issue in JIRA
    */
@@ -90,7 +98,7 @@ class JiraRepository implements TrackerRepository {
   /**
    * Applies a changeset
    */
-  public apply(changes, details): Promise<void> {
+  public applyChanges(changes, details): Promise<void> {
     this.cache.invalidateAll(key => key.indexOf('issues:') === 0);
     changes.getIssues().forEach(num => this.cache.invalidate('lookup:' + num));
 

@@ -2,10 +2,9 @@
   "compileOnSave": true,
   "compilerOptions": {
     "module": "CommonJS",
-    "moduleResolution": "node",
     "rootDir": "src/",
-    "outDir": "build/",
     "allowJs": true,
+    "outDir": "build/",
     "target": "es5"
   },
   "include": [
@@ -13,6 +12,6 @@
   ],
   "exclude": [
     "build",
-    "node_modules"
+    "node_modules/"
   ]
 }

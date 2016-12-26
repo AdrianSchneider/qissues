@@ -1,3 +1,4 @@
+import Promise         from 'bluebird';
 import { uniq, chain } from 'underscore';
 import JiraHttpClient  from './client';
 import Cache           from '../../../app/services/cache';
@@ -15,7 +16,13 @@ export default class JiraMetadata implements TrackerMetadata{
 
   private client: JiraHttpClient;
   private cache: Cache;
-  private ttl: number = 86400;
+  private ttl: number;
+
+  constructor(client: JiraHttpClient, cache: Cache) {
+    this.client = client;
+    this.cache = cache;
+    this.ttl = 86400;
+  }
 
   /**
    * Fetches the available types in Jira
@@ -67,7 +74,7 @@ export default class JiraMetadata implements TrackerMetadata{
     const cached = this.cache.get('sprints', invalidate);
     if (cached) return Promise.resolve(cached.map(Sprint.unserialize));
 
-    return this.metadata.getViews()
+    return this.getViews()
       .map(view => {
         const opts = { qs: { rapidViewId: view.id } };
         return this.client.get('/rest/greenhopper/1.0/xboard/plan/backlog/data.json', opts)
@@ -86,6 +93,9 @@ export default class JiraMetadata implements TrackerMetadata{
       .tap(this.cacheResultsAs('labels'));
   }
 
+  /**
+   * Fetches all of the projects the user has access to
+   */
   public getProjects(invalidate?: boolean): Promise<Project[]> {
     const cached = this.cache.get('projects', invalidate);
     if (cached) return Promise.resolve(cached.map(Project.unserialize));
@@ -152,7 +162,7 @@ export default class JiraMetadata implements TrackerMetadata{
   private cacheResultsAs(name: string): (result) => void {
     return result => this.cache.set(
       name,
-      result.map(result => result.serialize ? result.serializie() : result),
+      result.map(result => result.serialize ? result.serialize() : result),
       this.ttl
     );
   }

@@ -4,7 +4,7 @@ import {
   JiraCommentResponse,
   JiraCommentsResponse
 }                             from './types';
-import moment                 from 'moment';
+import * as moment            from 'moment';
 import { format }             from 'util';
 import Id                     from '../../model/id';
 import Issue                  from '../../model/issue';

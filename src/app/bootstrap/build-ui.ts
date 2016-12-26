@@ -2,7 +2,7 @@ import * as blessed               from 'blessed';
 import jsYaml                     from 'js-yaml';
 import Container                  from '../services/container';
 import BlessedApplication         from '../../ui/app';
-import * as keys                  from '../../ui/keys';
+import keys                       from '../../ui/keys';
 import Browser                    from '../../ui/browser';
 import UserInput                  from '../../ui/input';
 import * as clipboard             from '../../ui/clipboard';

@@ -3,9 +3,10 @@ import Config              from '../services/config';
 import Container           from '../services/container';
 import JiraClient          from '../../domain/backend/jira/client';
 import JiraMetadata        from '../../domain/backend/jira/metadata';
-import * as JiraRepository from '../../domain/backend/jira/repository';
+import JiraRepository      from '../../domain/backend/jira/repository';
 import * as expectations   from '../../domain/backend/jira/requirements/issue';
 import JiraNormalizer      from '../../domain/backend/jira/normalizer';
+import IssueTracker        from '../../domain/model/tracker';
 
 export default function buildJira(container: Container, config: Object): Container {
   container.registerService(
