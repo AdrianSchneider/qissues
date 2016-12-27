@@ -1,4 +1,4 @@
-import { once } from 'underscore'
+import { once }      from 'underscore'
 import * as BPromise from 'bluebird'
 
 interface Definition {
@@ -6,8 +6,12 @@ interface Definition {
   dependencies: Array<any>
 }
 
+interface DefinitionMap {
+  [key: string]: Definition
+}
+
 export default class Container {
-  private registered: Object = {};
+  private registered: DefinitionMap = {};
   private readyServices: Object = {};
 
   /**
@@ -34,16 +38,17 @@ export default class Container {
    * @param serviceName the service to get
    * @return promise fulfilling the service
    */
-  public get(serviceName: string): Promise<any> {
+  public get(serviceName: string, satisfying?: string): Promise<any> {
     if (!this.isRegistered(serviceName)) {
-      throw new ReferenceError(`Cannot get undefined service ${serviceName}`);
+      const suffix = satisfying ? ` for ${satisfying}` : '';
+      throw new ReferenceError(`Cannot get undefined service ${serviceName}${suffix}`);
     }
 
     if (typeof this.readyServices[serviceName] !== 'undefined') {
       return Promise.resolve(this.readyServices[serviceName]);
     }
 
-    return this.getServiceFromDefinition(this.registered[serviceName])
+    return this.getServiceFromDefinition(this.registered[serviceName], serviceName)
       .tap(service => this.readyServices[serviceName] = service)
   }
 
@@ -53,9 +58,9 @@ export default class Container {
    * @param definition
    * @return promised service
    */
-  private getServiceFromDefinition(definition: Definition): BPromise {
+  private getServiceFromDefinition(definition: Definition, satisfying: string): BPromise {
     return BPromise
-      .map(definition.dependencies, dependency => this.get(dependency))
+      .map(definition.dependencies, dependency => this.get(dependency, satisfying))
       .then(dependencies => definition.f.apply(definition.f, dependencies));
   }
 

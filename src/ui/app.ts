@@ -1,7 +1,7 @@
 'use strict';
 
-import _                from "underscore";
-import Promise          from 'bluebird';
+import * as _           from 'underscore';
+import * as Promise     from 'bluebird';
 import canvas           from './views/canvas';
 import messageWidget    from './widgets/message';
 import Cancellation     from '../domain/errors/cancellation';
@@ -41,34 +41,34 @@ export default class BlessedApplication {
    */
   public start(action?: string, id?: string) {
     this.logger.debug('Booting up ui');
-    this.ui.canvas = canvas(screen);
+    this.ui.canvas = canvas(this.screen);
     this.screen.append(this.ui.canvas);
     this.screen.render();
 
     this.tracker.assertConfigured(this.config.serialize())
       .catch(MoreInfoRequired, e => {
-        return this.ui.capture(e.expectations, {}, '', null).then(this.config.save);
+        return this.capture(e.expectations, {}, '', null).then(this.config.save);
       })
       .catch(Cancellation, () => {
-        return this.ui.message('Needs config to run.').then(() => this.app.exit(1));
+        return this.message('Needs config to run.').then(() => this.app.exit(1));
       })
-      .then(_.partial(this.ui.message, 'Loading Qissues. ? for Help', 2000))
+      .then(() => this.message('Loading Qissues. ? for Help', 2000))
       .then(this.getDeps)
-      .spread(function(controller, views) {
+      .spread((controller, views) => {
         this.ui.controller = controller;
         this.ui.views = views;
 
         if(!action) action = 'listIssues';
         this.ui.controller[action](id);
 
-        this.app.getActiveReport().on('change', function() {
+        this.app.getActiveReport().on('change', () => {
           this.logger.debug('Changing filters');
           this.ui.controller.listIssues();
         });
 
         this.screen.key(this.keys.help, _.partial(this.ui.controller.help, screen));
-        this.screen.key(this.keys.exit, function() { this.app.exit(0); });
-        this.screen.key(this.keys['issue.lookup'], function() {
+        this.screen.key(this.keys.exit, () => this.app.exit(0));
+        this.screen.key(this.keys['issue.lookup'], () => {
           this.input.ask('Open Issue', this.ui.canvas)
             .then(this.ui.controller.viewIssue)
             .catch(Cancellation, _.noop);
@@ -91,7 +91,7 @@ export default class BlessedApplication {
       .tap(content => data['content'] = content)
       .then(this.format.parse)
       .then(expectations.ensureValid)
-      .catch(ValidationError, function(e) {
+      .catch(ValidationError, e => {
         return this.ui.capture(expectations, defaults, data['content'], e);
       });
   };
@@ -103,8 +103,9 @@ export default class BlessedApplication {
   showLoading(msg?: string) {
     this.logger.trace('#showLoading');
     this.ui.clearScreen();
-    var alert = messageWidget(this.ui.canvas, msg || 'Loading...', Infinity);
-    this.ui.canvas.append(alert);
+    this.ui.canvas.append(
+      messageWidget(this.ui.canvas, msg || 'Loading...', Infinity)
+    );
     this.screen.render();
   };
 

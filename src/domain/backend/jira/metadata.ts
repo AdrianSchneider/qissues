@@ -109,7 +109,7 @@ export default class JiraMetadata implements TrackerMetadata{
     const cached = this.cache.get('statuses', invalidate);
     if (cached) return Promise.resolve(cached.map(Status.unserialize));
 
-    return this.metadata.getProjects()
+    return this.getProjects()
       .map((project) => {
         return this.client.get('/rest/api/2/project/' + project.getInternalId() + '/statuses')
           .reduce((statuses, type) => uniq(statuses.concat(type.statuses), row => row.name), [])
@@ -130,7 +130,7 @@ export default class JiraMetadata implements TrackerMetadata{
   }
 
   public getIssueTransition(num: string, status: string) {
-    return this.metadata.getTransitions(num).then(transitions => {
+    return this.getTransitions(num).then(transitions => {
       const transition: JiraTransition = transitions.find(transition => {
         return transition.to.name.toLowerCase() === status.toLowerCase();
       });

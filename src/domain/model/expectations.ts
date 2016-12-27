@@ -1,6 +1,6 @@
-import _               from 'underscore';
+import * as _          from 'underscore';
 import * as joi        from 'joi';
-import Promise         from 'bluebird';
+import * as Promise    from 'bluebird';
 import ValidationError from '../errors/validation';
 
 interface SchemaDefinition {
@@ -42,13 +42,13 @@ export default class Expectations {
       .filter(Object.keys(this.schema), field => {
         return !!this.schema[field].choices;
       })
-      .map(field => this.schema[field].choices.then(function(choices) {
+      .map(field => this.schema[field].choices.then((choices) => {
         return [field, choices];
       }));
   }
 
   public ensureValid(data: Object) {
-    return this.objectSchemaToJoi(this.schema).then(function(schema) {
+    return this.objectSchemaToJoi(this.schema).then((schema) => {
       var result = joi.validate(data, schema, { stripUnknown: true });
       if (result.error) throw new ValidationError(result.error.message);
       return result.value;
@@ -57,7 +57,7 @@ export default class Expectations {
 
   private objectSchemaToJoi(schema) {
     return Promise
-      .map(Object.keys(schema), this.fieldSchemaToJoi)
+      .map(Object.keys(schema), field => this.fieldSchemaToJoi(field))
       .reduce((out, [key, value]) => {
         out[key] = value;
         return out;
@@ -80,7 +80,7 @@ export default class Expectations {
     }
 
     if (field.choices) {
-      return field.choices.then(function(choices) {
+      return field.choices.then((choices) => {
         node = node.valid(choices.map(String));
         return [fieldName, node];
       });

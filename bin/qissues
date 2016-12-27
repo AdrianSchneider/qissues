@@ -18,6 +18,12 @@ program
   }, 0)
   .parse(process.argv);
 
+const Promise = require('bluebird');
+Promise.config({
+  longStackTraces: program.verbose
+});
+
+
 process.title = 'qissues';
 
 var container = bootstrap({

@@ -1,8 +1,8 @@
 'use strict';
 
-import _ from 'underscore';
-import { format }  from 'util';
-import Promise from 'bluebird';
+import * as _     from 'underscore';
+import { format } from 'util';
+import Promise    from 'bluebird';
 
 export default class YamlFrontMatterFormat { 
   private readonly parser;

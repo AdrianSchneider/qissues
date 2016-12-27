@@ -1,13 +1,14 @@
-import * as fs     from 'fs';
-import Config      from '../services/config';
-import Cache       from '../services/cache';
-import Storage     from '../services/storage/disk';
-import * as logger from '../services/logger';
-import Container from '../services/container';
+import * as fs                 from 'fs';
+import Config                  from '../services/config';
+import Cache                   from '../services/cache';
+import Storage                 from '../services/storage/disk';
+import Logger                  from '../services/logger';
+import { getLogger }           from '../services/logger';
+import Container               from '../services/container';
 
 interface Options {
   configFile: string,
-  logLevel: "debug" | "warn" | "info" | "error",
+  logLevel: number,
   cacheFile: string,
   clearCache: boolean,
   cachePrefix: string
@@ -16,7 +17,7 @@ interface Options {
 export default function buildCore(container: Container, options: Options) {
   container.registerService(
     'logger',
-    () => logger(options.logLevel)
+    () => getLogger(options.logLevel)
   );
 
   container.registerService(

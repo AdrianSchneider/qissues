@@ -1,4 +1,4 @@
-import _                  from 'underscore';
+import * as _             from 'underscore';
 import Promise            from 'bluebird';
 import { format }         from 'util';
 import JiraClient         from './client';
