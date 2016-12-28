@@ -1,14 +1,14 @@
-import * as blessed               from 'blessed';
-import jsYaml                     from 'js-yaml';
-import Container                  from '../services/container';
-import BootstrapParams            from '../config/bootstrap';
-import BlessedApplication         from '../../ui/app';
-import BlessedInterface           from '../../ui/interface';
-import keys                       from '../../ui/keys';
-import Browser                    from '../../ui/browser';
-import * as clipboard             from '../../ui/clipboard';
-import YamlFrontMatterFormat      from '../../ui/formats/yaml-front-matter';
-import * as YamlFrontMatterParser from '../../util/frontmatter-yaml';
+import * as blessed          from 'blessed';
+import jsYaml                from 'js-yaml';
+import Container             from '../services/container';
+import BootstrapParams       from '../config/bootstrap';
+import BlessedApplication    from '../../ui/app';
+import BlessedInterface      from '../../ui/interface';
+import keys                  from '../../ui/keys';
+import Browser               from '../../ui/browser';
+import * as clipboard        from '../../ui/clipboard';
+import YamlFrontMatterFormat from '../../ui/formats/yaml-front-matter';
+import YamlFrontMatterParser from '../../util/frontmatter-yaml';
 
 export default function buildUi(container: Container, config: BootstrapParams): Container {
   container.registerService(

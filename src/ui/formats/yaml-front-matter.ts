@@ -1,12 +1,12 @@
 'use strict';
 
-import * as _     from 'underscore';
+import { omit }   from 'underscore';
 import { format } from 'util';
 
 export default class YamlFrontMatterFormat {
   private readonly parser;
   private readonly yamlParser;
-  private readonly contentField;
+  private readonly contentField: string;
 
   constructor(parser, yamlParser, contentField?: string) {
     this.parser = parser;
@@ -52,7 +52,7 @@ export default class YamlFrontMatterFormat {
    * @param {String} content
    */
   private prependErrorToContent(error: Error, content: string) {
-    var pos = content.indexOf('---');
+    const pos = content.indexOf('---');
     return format(
       '# Error: %s\n%s',
       error.message,
@@ -77,6 +77,6 @@ export default class YamlFrontMatterFormat {
    * @return {String}
    */
   private buildYaml(data: Object): string {
-    return this.yamlParser.safeDump(_.omit(data, this.contentField));
+    return this.yamlParser.safeDump(omit(data, this.contentField));
   }
 }

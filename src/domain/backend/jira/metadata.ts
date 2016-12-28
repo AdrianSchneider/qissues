@@ -119,7 +119,7 @@ export default class JiraMetadata implements TrackerMetadata{
       .tap(this.cacheResultsAs('statuses'));
   }
 
-  public getTransitions(num: string, invalidate: boolean): Promise<JiraTransition[]> {
+  public getTransitions(num: string, invalidate?: boolean): Promise<JiraTransition[]> {
     const cached = this.cache.get(`transitions:${num}`, invalidate);
     if (cached) return Promise.resolve(cached);
 

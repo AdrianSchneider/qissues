@@ -1,9 +1,8 @@
-'use strict';
+import * as blessed from 'blessed';
+import FilterSet    from '../../domain/model/filterSet';
 
-var blessed = require('blessed');
-
-module.exports = function(parent, filters) {
-  var view = new blessed.List({
+export default function(parent: blessed.Widgets.Node, filters: FilterSet) {
+  const view = new blessed.widget.List({
     name: 'filters',
     parent: parent,
     width: '40%',
@@ -23,21 +22,21 @@ module.exports = function(parent, filters) {
     }
   });
 
-  view.key(['escape', 'h', 'enter'], function() {
+  view.key(['escape', 'h', 'enter'], () => {
     parent.remove(view);
     parent.screen.render();
   });
 
-  view.key(['delete', 'enter', 'x'], function(text, i) {
+  view.key(['delete', 'enter', 'x'], (text, i) => {
     filters.remove(view.selected);
     view.removeItem(view.selected);
     parent.remove(view);
     parent.screen.render();
   });
 
-  view.setItems(filters.serialize().map(function(filter) {
-    return filter.type + ' = ' + filter.value;
-  }));
+  view.setItems(
+    filters.serialize().map(filter => `${filter.type} = ${filter.value}`)
+  );
 
   view.select(0);
   view.focus();

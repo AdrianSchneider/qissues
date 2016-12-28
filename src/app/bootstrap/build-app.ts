@@ -1,5 +1,5 @@
-import Container       from '../services/container';
 import Application     from '../main';
+import Container       from '../services/container';
 import Storage         from '../services/storage';
 import BootstrapParams from '../config/bootstrap';
 import ReportManager   from '../../domain/model/reportManager';

@@ -1,13 +1,13 @@
-import { Node } from 'blessed';
+import * as blessed from 'blessed';
 
 class Sequencer {
-  private readonly node: Node;
+  private readonly node: blessed.Widgets.Node;
   private readonly leader: string;
   private readonly timeout: number;
 
   private recording: boolean;
 
-  constructor(node: Node, leader: string, timeout: number) {
+  constructor(node: blessed.Widgets.Node, leader: string, timeout: number) {
     this.node = node;
     this.leader = leader;
     this.timeout = timeout;
@@ -59,8 +59,8 @@ class Sequencer {
 
     this.node.removeAllListeners('keypress');
 
-    this.getLetters().forEach(function(letter) {
-      var event = 'key ' + letter;
+    this.getLetters().forEach(letter => {
+      const event = 'key ' + letter;
       this.node.disabledListeners[event] = this.node.listeners(event);
       this.node.removeAllListeners(event);
     });

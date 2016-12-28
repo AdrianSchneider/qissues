@@ -7,7 +7,7 @@ import Promise from 'bluebird';
  * @param {String} key - key to mutate in object
  * @return {Function} to continue promise chain
  */
-export function tee(data: Object, key: string): Function {
+export function tee(data: Object, key: string): <T> (input: T) => Promise<T> {
   return input => {
     data[key] = input;
     return Promise.resolve(input);
