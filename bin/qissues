@@ -4,7 +4,7 @@
 var path          = require('path');
 var program       = require('commander');
 var blessed       = require('blessed');
-var bootstrap     = require('../build/app/bootstrap/builder').default;
+var bootstrap     = require('../build/src/app/bootstrap/builder').default;
 var configFile    = path.resolve(process.env.HOME, './.qissues.json');
 var cacheFile     = path.resolve(process.env.HOME, './.qissues-cache.json');
 var packageInfo   = require('../package.json');
@@ -23,7 +23,6 @@ Promise.config({
   longStackTraces: program.verbose
 });
 
-
 process.title = 'qissues';
 
 var container = bootstrap({
@@ -40,3 +39,8 @@ container.getMatching(['app', 'ui'])
     app.start(ui);
     app.exit = process.exit;
   });
+
+process.on('unhandledRejection', function(reason, promise) {
+  console.error('Unhandled Rejection: ' + reason.stack);
+  process.exit(1);
+});

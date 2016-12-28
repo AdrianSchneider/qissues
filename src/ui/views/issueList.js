@@ -40,7 +40,7 @@ module.exports = function(app, tracker, input, keys, behaviors, logger) {
     });
 
     list.getSelected = function() {
-      return list.issues.get(list.selected).getId();
+      return list.issues.get(list.selected).id;
     };
 
     list.getIssue = function() {

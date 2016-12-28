@@ -2,11 +2,12 @@ import * as _                   from 'underscore';
 import * as blessed             from 'blessed';
 import message                  from './message';
 import { nextIndex, prevIndex } from '../../util/circularArray'
+import IssuesCollection         from '../../domain/model/issues';
 
 /**
  * Extends the base List type with search functionality
  */
-export default class List extends blessed.List {
+export default class List extends blessed.widget.List {
   private activeSearch: string;
   private activeSelection: boolean;
   private selected;
@@ -14,12 +15,14 @@ export default class List extends blessed.List {
   private resultNumber;
   private parentElement;
 
-  protected items;
-  protected key;
-  protected screen;
-  protected select;
-  protected issues;
-  protected getItemIndex;
+  protected issues: IssuesCollection;
+  protected items: string[];
+
+  // protected items;
+  // protected screen;
+  // protected select;
+  // protected issues;
+  // protected getItemIndex;
 
   constructor(options: Object) {
     super(options);
@@ -53,7 +56,7 @@ export default class List extends blessed.List {
    * Starts a new search, and begins capturing input
    */
   public search() {
-    const input = new blessed.Textbox({
+    const input = new blessed.Widgets.Types.TextboxElement({
       parent: this.parentElement,
       bottom: 0,
       right: 0,
@@ -122,9 +125,9 @@ export default class List extends blessed.List {
    * Toggles selection of an item
    */
   public toggle() {
-    var key = this.issues.get(this.selected).getId();
-    var index = this.selected.indexOf(key);
-    var oldActiveSelection = this.activeSelection;
+    const key = this.issues.get(this.selected).id;
+    const index = this.selected.indexOf(key);
+    const oldActiveSelection = this.activeSelection;
 
     if (index === -1) {
       this.selected.push(key);
@@ -155,7 +158,7 @@ export default class List extends blessed.List {
   /**
    * Redraws an item in the list
    */
-  private redraw(item: blessed.Box) {
+  private redraw(item: blessed.widget.Box) {
     item.content = this.getDecorated(item);
   }
 
@@ -170,7 +173,7 @@ export default class List extends blessed.List {
    * @param {blessed.Box} item
    * @return {String} decorated item content
    */
-  private getDecorated(item: blessed.Box): string {
+  private getDecorated(item: blessed.widget.Box): string {
     return this.getMarkers()
       .filter(marker => marker.activeTest())
       .reduce(function(out, marker) {
@@ -215,7 +218,7 @@ export default class List extends blessed.List {
    * @param {blessed.Box} item
    * @return {Boolean} true if matching the current search criteria
    */
-  private isResult(item: blessed.Box): boolean {
+  private isResult(item: blessed.widget.Box): boolean {
     return (
       this.activeSearch &&
       item.originalContent &&
@@ -245,7 +248,7 @@ export default class List extends blessed.List {
    */
   public getSelectedItems(): string[] {
     if (this.selected.length) return this.selected;
-    return [this.issues.get(this.selected).getId()];
+    return [this.issues.get(this.selected).id].map(String);
   };
 }
 

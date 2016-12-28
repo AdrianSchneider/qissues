@@ -1,7 +1,7 @@
-import {Box, Node} from 'blessed';
+import * as blessed from 'blessed';
 
-export default function(node: Node) {
-  const box = new Box({
+export default function(node: blessed.widget.Box) {
+  const box = new blessed.widget.Box({
     name: 'canvas',
     width: '100%',
     height: '100%',

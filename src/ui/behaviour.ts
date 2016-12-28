@@ -1,7 +1,7 @@
-import { Node } from 'blessed'
+import { Widgets } from 'blessed'
 
 interface Behaviour {
-  register: (view: Node) => any;
+  register: (view: Widgets.Node) => void;
 };
 
 export default Behaviour;

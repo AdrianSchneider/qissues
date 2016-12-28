@@ -1,11 +1,11 @@
 export default class Id {
   public readonly id;
 
-  constructor(id: string) {
-    this.id = id;
+  constructor(id: string | Id) {
+    this.id = id.toString();
   }
 
-  toString(): string {
+  public toString(): string {
     return this.id;
   }
 }

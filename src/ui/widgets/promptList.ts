@@ -1,4 +1,4 @@
-import blessed from 'blessed';
+import { Node } from 'blessed';
 import List    from './list';
 
 /**
@@ -9,7 +9,7 @@ import List    from './list';
  * @param {Array<String>} options
  * @return {blessed.Node}
  */
-export default function promptList(text: string, parent, options, searchParent) {
+export default function promptList(text: string, parent: Node, options, searchParent?: Node) {
   var list = new List({
     parent: parent,
     searchParent: searchParent || parent,

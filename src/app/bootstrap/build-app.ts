@@ -1,17 +1,20 @@
-import Container     from '../services/container';
-import Application   from '../main';
-import ReportManager from '../../domain/model/reportManager';
+import Container       from '../services/container';
+import Application     from '../main';
+import Storage         from '../services/storage';
+import BootstrapParams from '../config/bootstrap';
+import ReportManager   from '../../domain/model/reportManager';
+import IssueTracker    from '../../domain/model/tracker';
 
-export default function(container: Container, config: Object): Container {
+export default function(container: Container, config: BootstrapParams): Container {
   container.registerService(
     'app',
-    function(reportManager) { return new Application(reportManager); },
-    ['domain.report-manager']
+    (tracker: IssueTracker, reportManager: ReportManager) => new Application(tracker, reportManager),
+    ['tracker', 'domain.report-manager']
   );
 
   container.registerService(
     'domain.report-manager',
-    function(storage) { return new ReportManager(storage); },
+    (storage: Storage) => new ReportManager(storage),
     ['storage']
   );
 

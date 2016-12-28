@@ -1,18 +1,22 @@
 import Report        from '../domain/model/report';
 import ReportManager from '../domain/model/reportManager';
 import FilterSet     from '../domain/model/filterset';
+import IssueTracker  from '../domain/model/tracker';
 
 export default class Application {
 
-  public readonly reportManager: ReportManager;
+  private readonly reportManager: ReportManager;
+  private readonly tracker: IssueTracker;
+
   private _exit: Function;
 
-  constructor(reportManager: ReportManager) {
+  constructor(tracker: IssueTracker, reportManager: ReportManager) {
+    this.tracker = tracker;
     this.reportManager = reportManager;
   }
 
   public start(ui) {
-    ui.start();
+    ui.start(this, this.tracker);
   }
 
   public exit(f: Function) {

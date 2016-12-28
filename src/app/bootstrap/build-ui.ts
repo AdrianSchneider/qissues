@@ -3,9 +3,9 @@ import jsYaml                     from 'js-yaml';
 import Container                  from '../services/container';
 import BootstrapParams            from '../config/bootstrap';
 import BlessedApplication         from '../../ui/app';
+import BlessedInterface           from '../../ui/interface';
 import keys                       from '../../ui/keys';
 import Browser                    from '../../ui/browser';
-import UserInput                  from '../../ui/input';
 import * as clipboard             from '../../ui/clipboard';
 import YamlFrontMatterFormat      from '../../ui/formats/yaml-front-matter';
 import * as YamlFrontMatterParser from '../../util/frontmatter-yaml';
@@ -40,35 +40,37 @@ export default function buildUi(container: Container, config: BootstrapParams): 
   );
 
   container.registerService(
-    'ui.input',
-    (screen, keys, logger) => new UserInput(screen, keys, logger),
-    ['ui.screen', 'ui.keys', 'logger']
-  );
-
-  container.registerService(
     'ui.screen',
     () => blessed.screen({ input: config.input, output: config.output })
   );
 
   container.registerService(
+    'ui.interface',
+    (screen, app, tracker, ui, logger, format, keys) => {
+      return new BlessedInterface(
+        screen,
+        logger,
+        format,
+        keys
+      );
+    },
+    ['ui.screen', 'logger', 'ui.formats.yaml-frontmatter', 'ui.keys']
+  );
+
+  container.registerService(
     'ui',
-    (screen, app, tracker, config, input, logger, format, keys) => {
+    (screen, ui, app, tracker, config, logger, format, keys) => {
       return new BlessedApplication(
         screen,
-        app,
-        {},
-        tracker,
+        ui,
         config,
-        input,
         logger,
         format,
         keys,
-        function() {
-          return container.getMatching(['ui.controller', 'ui.views']);
-        }
+        () => container.getMatching(['ui.controllers', 'ui.views'])
       );
     },
-    ['ui.screen', 'app', 'tracker', 'config', 'ui.input', 'logger', 'ui.formats.yaml-frontmatter', 'ui.keys']
+    ['ui.screen', 'ui.interface', 'app', 'tracker', 'config', 'logger', 'ui.formats.yaml-frontmatter', 'ui.keys']
   );
 
   return container;

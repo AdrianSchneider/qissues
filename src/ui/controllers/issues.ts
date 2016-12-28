@@ -1,5 +1,5 @@
-import UserInput         from '../input';
 import Browser           from '../browser';
+import BlessedInterface  from '../interface';
 import KeyMapping        from '../../app/config/keys';
 import Id                from '../../domain/model/id';
 import Comment           from '../../domain/model/comment';
@@ -21,19 +21,17 @@ interface ViewIssueOptions {
 }
 
 export default class ListIssuesController {
-  private readonly ui;
   private readonly app;
   private readonly repository: TrackerRepository;
   private readonly browser: Browser;
-  private readonly input: UserInput;
+  private readonly ui: BlessedInterface;
   private readonly keys: KeyMapping;
   private readonly normalizer;
   private readonly logger;
 
-  constructor(app, ui, input: UserInput, keys: KeyMapping, tracker, browser, logger) {
+  constructor(app, ui: BlessedInterface, keys: KeyMapping, tracker, browser, logger) {
     this.app = app;
     this.ui = ui;
-    this.input = input;
     this.repository = tracker.repository;
     this.normalizer = tracker.normalizer;
     this.browser = browser;
@@ -48,7 +46,7 @@ export default class ListIssuesController {
     this.ui.showLoading();
     return this.ui.capture(this.normalizer.getNewIssueRequirements(), filters)
       .then(data => this.repository.createIssue(this.normalizer.toNewIssue(data)))
-      .then(num => this.ui.viewIssue({ num: "" + num }))
+      .then(num => this.viewIssue({ num: "" + num }))
       .catch(Cancellation, () => {
         this.ui.message('Cancelled').then(() => this.listIssues());
       })
@@ -81,12 +79,12 @@ export default class ListIssuesController {
       this.normalizer.getIssueUrl(num, this.app.getFilters())
     ));
 
-    view.key(this.keys['issue.comment.inline'], () => this.input.ask('Comment')
+    view.key(this.keys['issue.comment.inline'], () => this.ui.ask('Comment')
       .then(this.persistComment(num))
       .then(this.refreshIssue(num))
       .catch(Cancellation, () => {}));
 
-    view.key(this.keys['issue.comment.external'], () => this.input.editExternally('')
+    view.key(this.keys['issue.comment.external'], () => this.ui.editExternally('')
       .then(this.persistComment(num))
       .then(this.refreshIssue(num))
       .catch(Cancellation, () => {}));
@@ -108,7 +106,7 @@ export default class ListIssuesController {
     );
 
     list.on('select', num => this.ui.controller.viewIssue(list.getSelected()));
-    list.key(this.keys['issue.lookup'], () => this.input.ask('Open Issue')
+    list.key(this.keys['issue.lookup'], () => this.ui.ask('Open Issue')
       .then(this.ui.controller.viewIssue));
 
     list.key(this.keys['issue.create'], () => this.ui.controller.createIssue());
@@ -116,17 +114,20 @@ export default class ListIssuesController {
       this.ui.controller.createIssue(this.app.getFilters().toValues());
     });
 
-    list.key(this.keys.refresh, () => this.ui.controller.listIssues(true, list.getSelected()));
+    list.key(this.keys.refresh, () => this.listIssues({
+      focus: list.getSelected(),
+      invalidate: true
+    }));
+
     list.key(this.keys.web, () => {
       this.browser.open(this.normalizer.getQueryUrl(this.app.getFilters()));
     });
 
     list.on('changeset', changeSet => {
-      this.ui.controller.applyChangeSet(changeSet)
-        .then(() => this.ui.controller.listIssues({
-          focus: list.getSelected(),
-          invalidate: true
-        }))
+      this.change(changeSet).then(() => this.listIssues({
+        focus: list.getSelected(),
+        invalidate: true
+      }))
     });
 
     this.app.getActiveReport().on('change', () => {
@@ -140,7 +141,7 @@ export default class ListIssuesController {
   /**
    * Prompts the user for changes
    */
-  public change(changes: ChangeSet, moreInfo: Object): Promise<any> {
+  public change(changes: ChangeSet, moreInfo?: Object): Promise<any> {
     return this.repository.applyChanges(changes, moreInfo || {})
       .catch(MoreInfoRequired, e => this.ui.capture(e.expectations)
         .then(evenMoreInfo => this.change(changes, evenMoreInfo)));
@@ -150,7 +151,7 @@ export default class ListIssuesController {
    * Returns a refresh function for a given issue id
    */
   private refreshIssue(num: string): () => void {
-    return () => this.ui.controller.viewIssue({ num: num, invalidate: true });
+    return () => this.viewIssue({ num: num, invalidate: true });
   }
 
   /**

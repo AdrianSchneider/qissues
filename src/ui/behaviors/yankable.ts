@@ -1,8 +1,7 @@
-import Promise    from 'bluebird'
-import { Node }   from 'blessed'
-import Behaviour  from '../behaviour';
-import sequencer  from '../events/sequencer';
-import KeyMapping from '../../app/config/keys';
+import * as blessed from 'blessed'
+import Behaviour    from '../behaviour';
+import sequencer    from '../events/sequencer';
+import KeyMapping   from '../../app/config/keys';
 
 export default class YankableBehaviour implements Behaviour {
   private readonly keys: KeyMapping;
@@ -16,7 +15,7 @@ export default class YankableBehaviour implements Behaviour {
   /**
    * Registers the yankable with the node
    */
-  public register(view: Node) {
+  public register(view: blessed.Widgets.Node): void {
     sequencer(view, this.keys.leader, 100)
       .on(this.keys['yank.id'],    this.yank(view, 'id'))
       .on(this.keys['yank.title'], this.yank(view, 'title'))
@@ -32,8 +31,8 @@ export default class YankableBehaviour implements Behaviour {
    * @param {String} field
    * @return {Function}
    */
-  private yank(view: Node, field: string): Function {
-    return (): Promise => {
+  private yank(view: blessed.Widgets.Node, field: string): () => Promise<void> {
+    return (): Promise<void> => {
       var issues = view.getIssues();
       if (!issues.length) return Promise.resolve();
 

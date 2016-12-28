@@ -6,7 +6,8 @@ interface BootstrapParams {
   configFile: string,
   cacheFile: string,
   logLevel: number,
-  clearCache: boolean
+  clearCache: boolean,
+  cachePrefix: string
 }
 
 export default BootstrapParams;

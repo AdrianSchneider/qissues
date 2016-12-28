@@ -2,7 +2,7 @@ import { format } from 'util'
 import { spawn}   from 'child_process'
 
 export default class Browser {
-  private readonly preferredBrowser;
+  private readonly preferredBrowser: string;
   private readonly process;
 
   constructor(process, preferredBrowser: string) {

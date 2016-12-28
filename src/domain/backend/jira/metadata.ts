@@ -1,4 +1,4 @@
-import Promise         from 'bluebird';
+import * as Promise    from 'bluebird';
 import { uniq, chain } from 'underscore';
 import JiraHttpClient  from './client';
 import Cache           from '../../../app/services/cache';
@@ -49,15 +49,15 @@ export default class JiraMetadata implements TrackerMetadata{
     if (cached) return Promise.resolve(cached.map(User.unserialize));
 
     return this.getProjects()
-      .map(project => {
-        const opts = { qs: { project: project.getId()} };
+      .map((project: Project) => {
+        const opts = { qs: { project: project.id } };
         return this.client.get('/rest/api/2/user/assignable/search', opts)
           .then(response => response.map(user => new User(user.name)));
       })
       .reduce((users, usersInProject) => {
-        return uniq(users.concat(usersInProject), false, user => user.getAccount());
+        return uniq(users.concat(usersInProject), false, user => user.account)
       }, [])
-      .filter(user => user.getAccount().indexOf('addon_') !== 0)
+      .filter(user => user.account.indexOf('addon_') !== 0)
       .tap(this.cacheResultsAs('users'));
   }
 
@@ -110,8 +110,8 @@ export default class JiraMetadata implements TrackerMetadata{
     if (cached) return Promise.resolve(cached.map(Status.unserialize));
 
     return this.getProjects()
-      .map((project) => {
-        return this.client.get('/rest/api/2/project/' + project.getInternalId() + '/statuses')
+      .map((project: Project) => {
+        return this.client.get(`/rest/api/2/project/${project.internalId}/statuses`)
           .reduce((statuses, type) => uniq(statuses.concat(type.statuses), row => row.name), [])
       })
       .reduce((statuses, perProject) => uniq(statuses.concat(perProject), status => status.name), [])

@@ -1,6 +1,11 @@
-'use strict';
+import jsYaml from 'js-yaml';
 
-module.exports = function FrontMatterParser(yaml) {
+export default class FrontMatterParser {
+  private readonly yaml;
+
+  constructor(yaml) {
+    this.yaml = yaml;
+  }
 
   /**
    * Takes a front-matter yaml string and
@@ -10,21 +15,14 @@ module.exports = function FrontMatterParser(yaml) {
    * @param {String} mainField - for body
    * @return {Object}
    */
-  this.parse = function(content, mainField) {
-    var parts = split(content);
-    var metadata = parts[0];
-    var body = parts[1];
-    var out;
-
+  public parse(content: string, mainField: string): Object {
+    const [metadata, body] = this.split(content);
     try {
-      out = yaml.safeLoad(metadata);
+      return { ...this.yaml.safeLoad(metadata), [mainField]: body };
     } catch (e) {
       throw new Error('Content metadata is not valid YAML: ' + e.message);
     }
-
-    out[mainField] = body;
-    return out;
-  };
+  }
 
   /**
    * Separate the YAML from the main body
@@ -32,15 +30,13 @@ module.exports = function FrontMatterParser(yaml) {
    * @param {String} Input
    * @return {Array<String>} (yaml, body)
    */
-  var split = function(input) {
-    var parts = input.split('---');
+  private split(input: string): string[] {
+    const parts = input.split('---');
     if(parts.length != 3) {
       throw new Error('Content requires ---YAML---BODY');
     }
 
-    return parts.slice(-2).map(function(part) {
-      return part.trim();
-    });
-  };
+    return parts.slice(-2).map(part => part.trim());
+  }
 
-};
+}

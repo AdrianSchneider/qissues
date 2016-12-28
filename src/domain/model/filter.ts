@@ -25,7 +25,7 @@ export default class Filter {
     return new Filter(data.type, data.value);
   }
 
-  public static addSelectedTo(filters: FilterSet, type: string) {
+  public static addSelectedTo(filters: FilterSet, type: string): (item: string) => void {
     return item => filters.add(new Filter(type, item));
   }
 }

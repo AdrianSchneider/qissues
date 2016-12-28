@@ -1,9 +1,9 @@
-import { Node } from 'blessed';
+import * as blessed from 'blessed';
 
 export default class HelpController {
   private args: string[];
   private helpProgram: string;
-  private screen: Node;
+  private screen: blessed.Widgets.Screen;
 
   constructor(helpProgram: string, helpProgramArgs: string[], contentFile: string, screen: Node) {
     this.args = helpProgramArgs.concat([contentFile]);
@@ -11,7 +11,7 @@ export default class HelpController {
   }
 
   public help(): void {
-    this.screen.exec(this.helpProgram, this.args, () => {});
+    this.screen.exec(this.helpProgram, this.args, {}, () => {});
     this.screen.render();
   }
 }

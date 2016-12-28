@@ -2,9 +2,8 @@
 
 import * as _     from 'underscore';
 import { format } from 'util';
-import Promise    from 'bluebird';
 
-export default class YamlFrontMatterFormat { 
+export default class YamlFrontMatterFormat {
   private readonly parser;
   private readonly yamlParser;
   private readonly contentField;

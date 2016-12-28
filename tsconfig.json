@@ -2,13 +2,17 @@
   "compileOnSave": true,
   "compilerOptions": {
     "module": "CommonJS",
-    "rootDir": "src/",
+    "rootDirs": [
+      "src/",
+      "tests/"
+    ],
     "allowJs": true,
     "outDir": "build/",
-    "target": "es5"
+    "target": "es6"
   },
   "include": [
-    "src/**/*.ts"
+    "src/**/*.ts",
+    "tests/**/*.ts"
   ],
   "exclude": [
     "build",

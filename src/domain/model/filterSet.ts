@@ -42,15 +42,13 @@ export default class FilterSet extends EventEmitter {
    * Flattens filters, combining similar ones
    */
   public flatten(): Filter[] {
-    return _.pairs(this.filters.reduce(function(out, filter) {
+    return _.pairs(this.filters.reduce((out, filter) => {
       if(typeof out[filter.type] === 'undefined') {
         out[filter.type] = [];
       }
 
       if (_.isArray(filter.value)) {
-        _.each(filter.value, function(value) {
-          out[filter.type].push(value);
-        });
+        _.each(filter.value, value => out[filter.type].push(value));
       } else {
         out[filter.type].push(filter.value);
       }
@@ -66,10 +64,10 @@ export default class FilterSet extends EventEmitter {
   }
 
   public toValues(): Object {
-    return this.filters.reduce((out: Object, filter: Filter) => {
-      out[filter.type] = filter.value;
-      return out;
-    }, {});
+    return this.filters.reduce(
+      (out: Object, filter: Filter) => ({ ...out, [filter.type]: filter.value }),
+      {}
+    );
   }
 
   public static unserialize(filters: SerializedFilter[]): FilterSet {

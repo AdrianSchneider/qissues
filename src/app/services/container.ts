@@ -38,14 +38,14 @@ export default class Container {
    * @param serviceName the service to get
    * @return promise fulfilling the service
    */
-  public get(serviceName: string, satisfying?: string): Promise<any> {
+  public get(serviceName: string, satisfying?: string): BPromise<any> {
     if (!this.isRegistered(serviceName)) {
       const suffix = satisfying ? ` for ${satisfying}` : '';
       throw new ReferenceError(`Cannot get undefined service ${serviceName}${suffix}`);
     }
 
     if (typeof this.readyServices[serviceName] !== 'undefined') {
-      return Promise.resolve(this.readyServices[serviceName]);
+      return BPromise.resolve(this.readyServices[serviceName]);
     }
 
     return this.getServiceFromDefinition(this.registered[serviceName], serviceName)
@@ -70,7 +70,7 @@ export default class Container {
    * @param services - service names
    * @return promised services
    */
-  public getMatching(services: string[]): Promise<any>[] {
+  public getMatching(services: string[]): BPromise<any>[] {
     return BPromise.map(services, name => this.get(name));
   }
 

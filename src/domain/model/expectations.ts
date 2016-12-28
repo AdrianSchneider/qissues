@@ -66,8 +66,8 @@ export default class Expectations {
   }
 
   private fieldSchemaToJoi(fieldName: string): [string, Object] {
-    var field = this.schema[fieldName];
-    var node = joi[field.type]();
+    const field = this.schema[fieldName];
+    let node = joi[field.type]();
 
     if (field.required) {
       node = node.required();
