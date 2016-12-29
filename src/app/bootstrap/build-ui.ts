@@ -46,7 +46,7 @@ export default function buildUi(container: Container, config: BootstrapParams): 
 
   container.registerService(
     'ui.interface',
-    (screen, app, tracker, ui, logger, format, keys) => {
+    (screen,  logger, format, keys) => {
       return new BlessedInterface(
         screen,
         logger,
@@ -67,7 +67,7 @@ export default function buildUi(container: Container, config: BootstrapParams): 
         logger,
         format,
         keys,
-        () => container.getMatching(['ui.controllers', 'ui.views'])
+        () => container.get('ui.controllers')
       );
     },
     ['ui.screen', 'ui.interface', 'app', 'tracker', 'config', 'logger', 'ui.formats.yaml-frontmatter', 'ui.keys']

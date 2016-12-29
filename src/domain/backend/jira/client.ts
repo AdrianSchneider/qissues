@@ -23,7 +23,10 @@ export default class JiraHttpClient {
     return new Promise((resolve, reject) => {
       request.get(this.buildUrl(path), this.attachOptions(options), (err, res, body) => {
         if(err) return reject(err);
-        if(res.statusCode !== 200) return reject(new Error('Received ' + res.statusCode + ' instead of 200 (url = ' + path + ')'));
+        if(res.statusCode !== 200) {
+          this.logger.trace('received ' + JSON.stringify(body, null, 4));
+          return reject(new Error('Received ' + res.statusCode + ' instead of 200 (url = ' + path + ')'));
+        }
         return resolve(body);
       });
     });

@@ -67,7 +67,7 @@ export default class ListIssuesController {
     this.ui.clearScreen();
     this.ui.showLoading(options.invalidate ? 'Refreshing...' : 'Loading ' + num + '...');
 
-    const view = this.ui.views.singleIssue(
+    const view = this.views.singleIssue(
       this.ui.canvas,
       this.repository.lookup(new Id(num), options.invalidate),
       this.repository.getComments(new Id(num), options.invalidate)

@@ -7,16 +7,15 @@ import BootstrapParams  from './../config/bootstrap';
 export default function(container: Container, config: BootstrapParams): Container {
   container.registerService(
     'ui.controller.issues',
-    (app, ui, input, keys, tracker, browser, logger) => new IssuesController(
+    (app, ui, keys, tracker, browser, logger) => new IssuesController(
       app,
       ui,
-      input,
       keys,
       tracker,
       browser,
       logger
     ),
-    ['app', 'ui', 'ui.input', 'ui.keys', 'tracker', 'ui.browser', 'logger']
+    ['app', 'ui.interface', 'ui.keys', 'tracker', 'ui.browser', 'logger']
   );
 
   container.registerService(

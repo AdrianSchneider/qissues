@@ -1,6 +1,7 @@
 import * as _           from 'underscore';
 import * as Promise     from 'bluebird';
 import * as blessed     from 'blessed';
+import UiControllers    from './controllers';
 import canvas           from './views/canvas';
 import messageWidget    from './widgets/message';
 import prompt           from './widgets/prompt';
