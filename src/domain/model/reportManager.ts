@@ -18,7 +18,7 @@ export default class ReportManager {
     }
   }
 
-  public get(name: string): Report {
+  public get(name: string): Report | null {
     return this.reports.find(report => report.name === name);
   }
 

@@ -1,13 +1,19 @@
 import { format } from 'util'
 import { spawn}   from 'child_process'
 
+interface ProcessOptions {
+  platform?: string
+}
+
 export default class Browser {
   private readonly preferredBrowser: string;
-  private readonly process;
+  private readonly process: ProcessOptions;
+  private readonly spawner: (program: string, args: string[]) => void;
 
-  constructor(process, preferredBrowser: string) {
+  constructor(process: ProcessOptions, preferredBrowser: string, spawner?) {
     this.process = process;
     this.preferredBrowser = preferredBrowser;
+    this.spawner = spawner || spawn;
   }
 
   /**
@@ -19,7 +25,7 @@ export default class Browser {
       throw new Error('Could not detect browser; please configure "browser" option');
     }
 
-    spawn(browser, [url]);
+    this.spawner(browser, [url]);
   }
 
   /**

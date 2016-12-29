@@ -1,4 +1,4 @@
-import Promise from 'bluebird';
+import * as Promise from 'bluebird';
 
 /**
  * Returns a function which copies its input to data[key] before sending it out again

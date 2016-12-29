@@ -3,33 +3,36 @@ import * as joi        from 'joi';
 import * as Promise    from 'bluebird';
 import ValidationError from '../errors/validation';
 
-interface SchemaDefinition {
-  [key: string]: SchemaFieldDefinition
-}
-
-interface SchemaFieldDefinition {
-  type: string,
-  required: boolean,
-  default: any,
-  choices?: Promise<string[]>
-}
-
+/**
+ * Represents some user input expectations
+ * Expectations are defined with the SchemaDefinitions (loosely resembling joi schemas)
+ * then we can prompt the user for input with those expectations
+ * This is used to generate input forms or seed validation
+ */
 export default class Expectations {
 
   private schema: SchemaDefinition;
-
   constructor(schema: SchemaDefinition) {
     this.schema = schema;
   }
 
+  /**
+   * Returns a clone of the schema definiton
+   */
   public serialize(): SchemaDefinition {
-    return this.schema;
+    return { ...this.schema };
   }
 
+  /**
+   * Checks to see if this expectation has any rules
+   */
   public hasRules(): boolean {
     return Object.keys(this.schema).length > 0;
   }
 
+  /**
+   * Gets the entered values merged with the defaults
+   */
   public getValues(overrideValues: Object): Object {
     if (!overrideValues) overrideValues = {};
     return _.mapObject(this.schema, (field, key) => {
@@ -37,16 +40,18 @@ export default class Expectations {
     });
   }
 
+  /**
+   * Gets the suggestions for the choice fields
+   */
   public getSuggestions(): Promise<array> {
     return Promise
-      .filter(Object.keys(this.schema), field => {
-        return !!this.schema[field].choices;
-      })
-      .map(field => this.schema[field].choices.then((choices) => {
-        return [field, choices];
-      }));
+      .filter(Object.keys(this.schema), field => !!this.schema[field].choices)
+      .map(field => this.schema[field].choices.then((choices) => ([field, choices])));
   }
 
+  /**
+   * Ensure the input is valid, otherwise a ValidationError is thrown
+   */
   public ensureValid(data: Object) {
     return this.objectSchemaToJoi(this.schema).then((schema) => {
       var result = joi.validate(data, schema, { stripUnknown: true });
@@ -55,7 +60,10 @@ export default class Expectations {
     });
   }
 
-  private objectSchemaToJoi(schema) {
+  /**
+   * Utility to convert the schema to a joi schema
+   */
+  private objectSchemaToJoi(schema: SchemaDefinition): Promise<joi.Schema> {
     return Promise
       .map(Object.keys(schema), field => this.fieldSchemaToJoi(field))
       .reduce((out, [key, value]) => {
@@ -65,6 +73,9 @@ export default class Expectations {
       .then(fields => joi.object(fields));
   }
 
+  /**
+   * Utility to convert a schema field config to a joi field
+   */
   private fieldSchemaToJoi(fieldName: string): [string, Object] {
     const field = this.schema[fieldName];
     let node = joi[field.type]();
@@ -89,4 +100,15 @@ export default class Expectations {
     return [fieldName, node];
   }
 
+}
+
+interface SchemaDefinition {
+  [key: string]: SchemaFieldDefinition
+}
+
+interface SchemaFieldDefinition {
+  type: string,
+  required: boolean,
+  default?: any,
+  choices?: Promise<string[]>
 }

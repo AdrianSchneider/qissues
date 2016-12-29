@@ -18,18 +18,24 @@ export default class Cache {
     this.hasher = hasher || this.md5;
   }
 
-  public set(key: string, data: any, ttl?: number) {
+  /**
+   * Sets a new cache entry
+   * Returns the data to allow chaining this with promises easily
+   */
+  public set<T>(key: string, data: T, ttl?: number): T {
     this.storage.set(this.storageKey(key), {
       data: data,
       expires: moment().add(ttl || 3600, 'seconds').toDate()
     });
+
+    return data;
   }
 
-  public get(key: string, invalidate: boolean) {
+  public get(key: string, invalidate?: boolean): any {
+    if (invalidate) return;
     const entry = this.storage.get(this.storageKey(key));
-    if (entry && !invalidate && !this.hasExpired(entry)) {
-      return entry.data;
-    }
+    if (!entry || this.hasExpired(entry)) return;
+    return entry.data;
   }
 
   public invalidate(key: string) {
@@ -61,7 +67,7 @@ export default class Cache {
   }
 
   private hasExpired(entry: CacheEntry): Boolean {
-    return new Date(entry.expires) > new Date();
+    return new Date(entry.expires) < new Date();
   }
 
   private storageKey(key: string): string {

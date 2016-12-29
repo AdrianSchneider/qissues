@@ -1,7 +1,5 @@
 import * as Promise    from 'bluebird';
 import { uniq, chain } from 'underscore';
-import JiraHttpClient  from './client';
-import Cache           from '../../../app/services/cache';
 import TrackerMetadata from '../../model/trackerMetadata';
 import Expectations    from '../../model/expectations';
 import Type            from '../../model/meta/type';
@@ -11,14 +9,16 @@ import Label           from '../../model/meta/label';
 import Priority        from '../../model/meta/priority';
 import Status          from '../../model/meta/status';
 import Project         from '../../model/meta/project';
+import HttpClient      from '../../shared/httpClient';
+import Cache           from '../../../app/services/cache';
 
 export default class JiraMetadata implements TrackerMetadata{
 
-  private client: JiraHttpClient;
+  private client: HttpClient;
   private cache: Cache;
   private ttl: number;
 
-  constructor(client: JiraHttpClient, cache: Cache) {
+  constructor(client: HttpClient, cache: Cache) {
     this.client = client;
     this.cache = cache;
     this.ttl = 86400;
@@ -41,7 +41,7 @@ export default class JiraMetadata implements TrackerMetadata{
         })
       })
       .reduce((types, typesByProject) => uniq(types.concat(typesByProject, false, String)))
-      .tap(this.cacheResultsAs('types'));
+      .then(this.cacheResultsAs('types'));
   }
 
   public getUsers(invalidate: boolean): Promise<User[]> {
@@ -58,7 +58,7 @@ export default class JiraMetadata implements TrackerMetadata{
         return uniq(users.concat(usersInProject), false, user => user.account)
       }, [])
       .filter(user => user.account.indexOf('addon_') !== 0)
-      .tap(this.cacheResultsAs('users'));
+      .then(this.cacheResultsAs('users'));
   }
 
   public getViews(invalidate?: boolean): Promise<Object> {
@@ -67,7 +67,7 @@ export default class JiraMetadata implements TrackerMetadata{
 
     return this.client.get('/rest/greenhopper/1.0/rapidview')
       .then(response => response.views)
-      .tap(this.cacheResultsAs('views'));
+      .then(this.cacheResultsAs('views'));
   }
 
   public getSprints(invalidate?: boolean): Promise<Sprint[]> {
@@ -81,7 +81,7 @@ export default class JiraMetadata implements TrackerMetadata{
           .then(response => response.sprints.map(sprint => new Sprint(sprint.id, sprint.name)));
       })
       .reduce((allSprints, sprintsPerView) => allSprints.concat(sprintsPerView), [])
-      .tap(this.cacheResultsAs('sprints'));
+      .then(this.cacheResultsAs('sprints'));
   }
 
   public getLabels(invalidate?: boolean): Promise<Label[]> {
@@ -90,7 +90,7 @@ export default class JiraMetadata implements TrackerMetadata{
 
     return this.client.get('/rest/api/1.0/labels/suggest?query=')
       .then(body => body.suggestions.map(label => new Label(null, label.label)))
-      .tap(this.cacheResultsAs('labels'));
+      .then(this.cacheResultsAs('labels'));
   }
 
   /**
@@ -102,7 +102,7 @@ export default class JiraMetadata implements TrackerMetadata{
 
     return this.client.get('/rest/api/2/issue/createmeta')
       .then(response => response.projects.map(project => new Project(project.key, project.name, project.id)))
-      .tap(this.cacheResultsAs('projects'));
+      .then(this.cacheResultsAs('projects'));
   }
 
   public getStatuses(invalidate: boolean): Promise<Status[]> {
@@ -116,7 +116,7 @@ export default class JiraMetadata implements TrackerMetadata{
       })
       .reduce((statuses, perProject) => uniq(statuses.concat(perProject), status => status.name), [])
       .map(status => new Status(status.name))
-      .tap(this.cacheResultsAs('statuses'));
+      .then(this.cacheResultsAs('statuses'));
   }
 
   public getTransitions(num: string, invalidate?: boolean): Promise<JiraTransition[]> {
@@ -126,7 +126,7 @@ export default class JiraMetadata implements TrackerMetadata{
     const opts = { qs: { expand: 'transitions.fields' } };
     return this.client.get('/rest/api/2/issue/' + num + '/transitions', opts)
       .then(response => response.transitions)
-      .tap(this.cacheResultsAs(`transitions:${num}`))
+      .then(this.cacheResultsAs(`transitions:${num}`))
   }
 
   public getIssueTransition(num: string, status: string) {

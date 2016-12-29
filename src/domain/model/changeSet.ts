@@ -6,6 +6,10 @@ export class ChangeSet {
   public readonly changes: Object;
 
   constructor(issues: Id[], changes: Object) {
+    if (!issues.length) {
+      throw new Error('Must change at least one issue');
+    }
+
     if (Object.keys(changes).length > 1) {
       throw new Error('Cannot change multiple properties at once yet');
     }
@@ -16,11 +20,11 @@ export class ChangeSet {
 }
 
 export class ChangeSetBuilder {
-  public issues: Id[];
-  public changes: Object;
+  private readonly issues: Id[] = [];
+  private readonly changes: Object = {};
 
   public addIssue(issue: Id): ChangeSetBuilder {
-    this.issues = uniq(this.issues.concat([issue]));
+    this.issues.push(issue);
     return this;
   }
 
@@ -30,6 +34,6 @@ export class ChangeSetBuilder {
   }
 
   public get(): ChangeSet {
-    return new ChangeSet(this.issues, this.changes);
+    return new ChangeSet(uniq(this.issues), this.changes);
   }
 }

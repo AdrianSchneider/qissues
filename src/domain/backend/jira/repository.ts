@@ -1,7 +1,6 @@
 import * as _             from 'underscore';
 import Promise            from 'bluebird';
 import { format }         from 'util';
-import JiraClient         from './client';
 import Id                 from '../../model/id';
 import TrackerRepository  from '../../model/trackerRepository';
 import Issue              from '../../model/issue';
@@ -10,6 +9,7 @@ import CommentsCollection from '../../model/issues';
 import NewIssue           from '../../model/newIssue';
 import NewComment         from '../../model/newComment';
 import MoreInfoRequired   from '../../errors/infoRequired';
+import HttpClient         from '../../shared/httpClient';
 import Cache              from '../../../app/services/cache';
 
 interface QueryOptions {
@@ -17,13 +17,13 @@ interface QueryOptions {
 }
 
 class JiraRepository implements TrackerRepository {
-  private client: JiraClient;
+  private client: HttpClient;
   private cache: Cache;
   private normalizer;
   private logger;
   private metadata;
 
-  public constructor(client: JiraClient, cache: Cache, normalizer, logger, metadata) {
+  public constructor(client: HttpClient, cache: Cache, normalizer, logger, metadata) {
     this.client = client;
     this.cache = cache;
     this.normalizer = normalizer;
@@ -48,7 +48,7 @@ class JiraRepository implements TrackerRepository {
     if (cached) return Promise.resolve(this.normalizer.toIssue(cached));
 
     return this.client.get(this.getIssueUrl(num))
-      .tap(data => this.cache.set(cacheId, data))
+      .then(data => this.cache.set(cacheId, data))
       .then(this.normalizer.toIssue);
   }
 
@@ -68,7 +68,7 @@ class JiraRepository implements TrackerRepository {
     if (cached) return Promise.resolve(this.normalizer.toIssuesCollection(cached));
 
     return this.client.get('/rest/api/2/search', options)
-      .tap(data => this.cache.set(cacheId, data))
+      .then(data => this.cache.set(cacheId, data))
       .then(this.normalizer.toIssuesCollection);
   }
 
@@ -81,7 +81,7 @@ class JiraRepository implements TrackerRepository {
     if (cached) return Promise.resolve(this.normalizer.toCommentsCollection(cached));
 
     return this.client.get(this.getIssueUrl(num, '/comment'))
-      .tap(data => this.cache.set(cacheId, data))
+      .then(data => this.cache.set(cacheId, data))
       .then(this.normalizer.toCommentsCollection);
   }
 

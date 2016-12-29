@@ -39,12 +39,13 @@ export default class Issue {
   public readonly dateUpdated?: Date;
   public readonly commentCount?: number;
 
-  constructor(id: Id, title: string, description: string, status: Status, attributes: IssueAttributes) {
+  constructor(id: Id, title: string, description: string, status: Status, attributes?: IssueAttributes) {
     this.id = id;
     this.title = title;
     this.description = description;
     this.status = status;
 
+    if (!attributes) attributes = {};
     if (attributes.project) this.project = attributes.project;
     if (attributes.type) this.type = attributes.type;
     if (attributes.priority) this.priority = attributes.priority;

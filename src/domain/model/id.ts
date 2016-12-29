@@ -1,7 +1,7 @@
 export default class Id {
   public readonly id;
 
-  constructor(id: string | Id) {
+  constructor(id: string | Id | number) {
     this.id = id.toString();
   }
 

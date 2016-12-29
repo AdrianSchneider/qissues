@@ -7,14 +7,6 @@ export default class FrontMatterParser {
     this.yaml = yaml;
   }
 
-  /**
-   * Takes a front-matter yaml string and
-   * returns an object of data
-   *
-   * @param {String} content
-   * @param {String} mainField - for body
-   * @return {Object}
-   */
   public parse(content: string, mainField: string): Object {
     const [metadata, body] = this.split(content);
     try {
@@ -24,12 +16,6 @@ export default class FrontMatterParser {
     }
   }
 
-  /**
-   * Separate the YAML from the main body
-   *
-   * @param {String} Input
-   * @return {Array<String>} (yaml, body)
-   */
   private split(input: string): string[] {
     const parts = input.split('---');
     if(parts.length != 3) {

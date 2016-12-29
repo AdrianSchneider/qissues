@@ -70,7 +70,7 @@ export default class Container {
    * @param services - service names
    * @return promised services
    */
-  public getMatching(services: string[]): BPromise<any>[] {
+  public getMatching(services: string[]): BPromise<array> {
     return BPromise.map(services, name => this.get(name));
   }
 

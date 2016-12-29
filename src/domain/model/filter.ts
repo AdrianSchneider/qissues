@@ -5,6 +5,9 @@ export interface SerializedFilter {
   value: string
 }
 
+/**
+ * Represents a specific issue filtering rule
+ */
 export default class Filter {
   public readonly type: string;
   public readonly value: string;

@@ -3,10 +3,10 @@ PROJECT = "qissues"
 default: ;@echo "Building ${PROJECT}"; \
 	  bin/build;
 
-test: test-unit test-domain test-ui
+test: test-unit
 
 test-unit: ;@echo "Unit Testing ${PROJECT}"; \
-    node_modules/.bin/mocha tests --recursive -R dot;
+	node_modules/.bin/mocha --compilers ts:ts-node/register,tsx:ts-node/register --recursive -R dot "tests/unit/**/*.spec.ts"
 
 test-domain: ;@echo "Domain Testing ${PROJECT}"; \
 		node_modules/.bin/cucumber.js tests/domain --require tests/domain/support --require tests/domain/step_definitions -f progress;

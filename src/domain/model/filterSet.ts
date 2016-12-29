@@ -3,6 +3,9 @@ import Filter             from './filter';
 import {SerializedFilter} from './filter';
 import { EventEmitter }   from 'events';
 
+/**
+ * Represents a set of filtering rules
+ */
 export default class FilterSet extends EventEmitter {
   public readonly filters: Filter[];
 
