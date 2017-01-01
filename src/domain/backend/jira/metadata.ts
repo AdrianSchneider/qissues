@@ -33,8 +33,7 @@ export default class JiraMetadata implements TrackerMetadata{
   public getUsers(): Promise<User[]> {
     return this.getProjects()
       .map((project: Project) => {
-        const opts = { qs: { project: project.id } };
-        return this.client.get('/rest/api/2/user/assignable/search', opts)
+        return this.client.get('/rest/api/2/user/assignable/search', { project: project.id })
           .then(response => response.map(user => new User(user.name)));
       })
       .reduce((users, usersInProject) => {
@@ -51,8 +50,7 @@ export default class JiraMetadata implements TrackerMetadata{
   public getSprints(): Promise<Sprint[]> {
     return this.getViews()
       .map(view => {
-        const opts = { qs: { rapidViewId: view.id } };
-        return this.client.get('/rest/greenhopper/1.0/xboard/plan/backlog/data.json', opts)
+        return this.client.get('/rest/greenhopper/1.0/xboard/plan/backlog/data.json', { rapidViewId: view.id })
           .then(response => response.sprints.map(sprint => new Sprint(sprint.id, sprint.name)));
       })
       .reduce((allSprints, sprintsPerView) => allSprints.concat(sprintsPerView), [])

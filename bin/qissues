@@ -18,7 +18,9 @@ program
   }, 0)
   .parse(process.argv);
 
+// Promise configuration
 const Promise = require('bluebird');
+global.Promise = Promise;
 Promise.config({
   longStackTraces: program.verbose
 });

@@ -15,16 +15,13 @@ import HttpClient             from '../../domain/shared/httpClient';
 export default function buildJira(container: Container, config: BootstrapParams): Container {
   container.registerService(
     'tracker.jira.client',
-    (config, logger) => jiraClient(logger, config),
+    (config, logger) => jiraClient(config, logger),
     ['config', 'logger']
   );
 
   container.registerService(
     'tracker.jira.metadata',
-    (client: HttpClient) => {
-      const metadata = new JiraMetadata(client);
-      return metadata;
-    },
+    (client: HttpClient) => new JiraMetadata(client),
     ['tracker.jira.client']
   );
 
@@ -39,7 +36,10 @@ export default function buildJira(container: Container, config: BootstrapParams)
 
   container.registerService(
     'tracker.jira.normalizer',
-    (metadata: JiraMetadata, config: Config) => new JiraNormalizer(metadata, config, issueExpectations),
+    (metadata: JiraMetadata, config: Config) => {
+      const normalizer = new JiraNormalizer(metadata, config, issueExpectations);
+      return normalizer;
+    },
     ['tracker.jira.metadata', 'config']
   );
 

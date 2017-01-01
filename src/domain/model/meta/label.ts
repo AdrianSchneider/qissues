@@ -2,7 +2,8 @@ export default class Label {
   public readonly id: string;
   public readonly name: string;
 
-  constructor(id: string | number, name: string) {
+  constructor(id: string | number | null, name: string) {
+    if (!id) id = '';
     this.id = id.toString();
     this.name = name;
   }

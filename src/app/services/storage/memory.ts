@@ -11,9 +11,9 @@ export default class MemoryStorage implements Storage {
   /**
    * Gets the key from memory
    */
-  public get(key: string, defaults: any): any {
+  public get(key: string, defaults?: any): any {
     setTimeout(this.cleanup, 1000);
-    return this.data[key] || defaults;
+    return typeof this.data[key] !== 'undefined' ? this.data[key] : defaults;
   }
 
   /**
@@ -49,7 +49,7 @@ export default class MemoryStorage implements Storage {
   }
 
   public serialize(): Object {
-    return this.data;
+    return { ...this.data };
   }
 
   /**
