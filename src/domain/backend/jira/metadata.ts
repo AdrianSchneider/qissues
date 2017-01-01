@@ -1,53 +1,36 @@
-import * as Promise    from 'bluebird';
-import { uniq, chain } from 'underscore';
-import TrackerMetadata from '../../model/trackerMetadata';
-import Expectations    from '../../model/expectations';
-import Type            from '../../model/meta/type';
-import User            from '../../model/meta/user';
-import Sprint          from '../../model/meta/sprint';
-import Label           from '../../model/meta/label';
-import Priority        from '../../model/meta/priority';
-import Status          from '../../model/meta/status';
-import Project         from '../../model/meta/project';
-import HttpClient      from '../../shared/httpClient';
-import Cache           from '../../../app/services/cache';
+import * as Promise       from 'bluebird';
+import { uniq, chain }    from 'underscore';
+import * as fallback      from 'promise-fallback';
+import { JiraTransition } from './types';
+import TrackerMetadata    from '../../model/trackerMetadata';
+import Expectations       from '../../model/expectations';
+import Type               from '../../model/meta/type';
+import User               from '../../model/meta/user';
+import Sprint             from '../../model/meta/sprint';
+import Label              from '../../model/meta/label';
+import Priority           from '../../model/meta/priority';
+import Status             from '../../model/meta/status';
+import Project            from '../../model/meta/project';
+import HttpClient         from '../../shared/httpClient';
 
 export default class JiraMetadata implements TrackerMetadata{
 
-  private client: HttpClient;
-  private cache: Cache;
-  private ttl: number;
-
-  constructor(client: HttpClient, cache: Cache) {
+  private readonly client: HttpClient;
+  constructor(client: HttpClient) {
     this.client = client;
-    this.cache = cache;
-    this.ttl = 86400;
   }
 
-  /**
-   * Fetches the available types in Jira
-   *
-   * @param {Boolean} invalidate
-   * @return {Promise<Array><Type>}
-   */
-  public getTypes(invalidate: boolean): Promise<Type[]>{
-    const cached = this.cache.get('types', invalidate);
-    if (cached) return Promise.resolve(cached.map(Type.unserialize));
-
+  public getTypes(): Promise<Type[]>{
     return this.client.get('/rest/api/2/issue/createmeta')
       .then(response => {
         return response.projects.map(project => {
           return project.issuetypes.map(type => new Type(type.id, type.name));
         })
       })
-      .reduce((types, typesByProject) => uniq(types.concat(typesByProject, false, String)))
-      .then(this.cacheResultsAs('types'));
+      .reduce((types, typesByProject) => uniq(types.concat(typesByProject), false, String))
   }
 
-  public getUsers(invalidate: boolean): Promise<User[]> {
-    const cached = this.cache.get('users', invalidate);
-    if (cached) return Promise.resolve(cached.map(User.unserialize));
-
+  public getUsers(): Promise<User[]> {
     return this.getProjects()
       .map((project: Project) => {
         const opts = { qs: { project: project.id } };
@@ -57,23 +40,15 @@ export default class JiraMetadata implements TrackerMetadata{
       .reduce((users, usersInProject) => {
         return uniq(users.concat(usersInProject), false, user => user.account)
       }, [])
-      .filter(user => user.account.indexOf('addon_') !== 0)
-      .then(this.cacheResultsAs('users'));
+      .filter(user => user.account.indexOf('addon_') !== 0);
   }
 
-  public getViews(invalidate?: boolean): Promise<Object> {
-    const cached = this.cache.get('views', invalidate);
-    if (cached) return Promise.resolve(cached);
-
+  public getViews(): Promise<Object> {
     return this.client.get('/rest/greenhopper/1.0/rapidview')
       .then(response => response.views)
-      .then(this.cacheResultsAs('views'));
   }
 
-  public getSprints(invalidate?: boolean): Promise<Sprint[]> {
-    const cached = this.cache.get('sprints', invalidate);
-    if (cached) return Promise.resolve(cached.map(Sprint.unserialize));
-
+  public getSprints(): Promise<Sprint[]> {
     return this.getViews()
       .map(view => {
         const opts = { qs: { rapidViewId: view.id } };
@@ -81,34 +56,21 @@ export default class JiraMetadata implements TrackerMetadata{
           .then(response => response.sprints.map(sprint => new Sprint(sprint.id, sprint.name)));
       })
       .reduce((allSprints, sprintsPerView) => allSprints.concat(sprintsPerView), [])
-      .then(this.cacheResultsAs('sprints'));
   }
 
-  public getLabels(invalidate?: boolean): Promise<Label[]> {
-    const cached = this.cache.get('labels', invalidate);
-    if (cached) return Promise.resolve(cached.map(Label.unserialize));
-
+  public getLabels(): Promise<Label[]> {
     return this.client.get('/rest/api/1.0/labels/suggest?query=')
       .then(body => body.suggestions.map(label => new Label(null, label.label)))
-      .then(this.cacheResultsAs('labels'));
   }
 
-  /**
-   * Fetches all of the projects the user has access to
-   */
-  public getProjects(invalidate?: boolean): Promise<Project[]> {
-    const cached = this.cache.get('projects', invalidate);
-    if (cached) return Promise.resolve(cached.map(Project.unserialize));
-
+  public getProjects(): Promise<Project[]> {
     return this.client.get('/rest/api/2/issue/createmeta')
-      .then(response => response.projects.map(project => new Project(project.key, project.name, project.id)))
-      .then(this.cacheResultsAs('projects'));
+      .then(response => response.projects.map(
+        project => new Project(project.key, project.name, project.id)
+      ))
   }
 
-  public getStatuses(invalidate: boolean): Promise<Status[]> {
-    const cached = this.cache.get('statuses', invalidate);
-    if (cached) return Promise.resolve(cached.map(Status.unserialize));
-
+  public getStatuses(): Promise<Status[]> {
     return this.getProjects()
       .map((project: Project) => {
         return this.client.get(`/rest/api/2/project/${project.internalId}/statuses`)
@@ -116,17 +78,12 @@ export default class JiraMetadata implements TrackerMetadata{
       })
       .reduce((statuses, perProject) => uniq(statuses.concat(perProject), status => status.name), [])
       .map(status => new Status(status.name))
-      .then(this.cacheResultsAs('statuses'));
   }
 
-  public getTransitions(num: string, invalidate?: boolean): Promise<JiraTransition[]> {
-    const cached = this.cache.get(`transitions:${num}`, invalidate);
-    if (cached) return Promise.resolve(cached);
-
+  public getTransitions(num: string): Promise<JiraTransition[]> {
     const opts = { qs: { expand: 'transitions.fields' } };
     return this.client.get('/rest/api/2/issue/' + num + '/transitions', opts)
       .then(response => response.transitions)
-      .then(this.cacheResultsAs(`transitions:${num}`))
   }
 
   public getIssueTransition(num: string, status: string) {
@@ -134,7 +91,6 @@ export default class JiraMetadata implements TrackerMetadata{
       const transition: JiraTransition = transitions.find(transition => {
         return transition.to.name.toLowerCase() === status.toLowerCase();
       });
-
 
       if (!transition) throw new Error('Could not find transition for ' + status);
       return transition;
@@ -158,24 +114,4 @@ export default class JiraMetadata implements TrackerMetadata{
         .vlaue()
     );
   }
-
-  private cacheResultsAs(name: string): (result) => void {
-    return result => this.cache.set(
-      name,
-      result.map(result => result.serialize ? result.serialize() : result),
-      this.ttl
-    );
-  }
-
-}
-
-interface JiraTransition {
-  to: JiraNamedField,
-  fields: JiraNamedField[]
-}
-
-interface JiraNamedField {
-  name: string,
-  required: boolean,
-  allowedValues: string[]
 }

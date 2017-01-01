@@ -4,7 +4,7 @@ import Storage from '../storage';
 export default class MemoryStorage implements Storage {
   protected readonly data: Object;
 
-  constructor(data: Object) {
+  constructor(data?: Object) {
     this.data = data || {};
   }
 

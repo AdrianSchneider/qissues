@@ -34,3 +34,14 @@ export interface JiraCommentResponse {
 export interface JiraCommentsResponse {
   comments: JiraCommentResponse[]
 }
+
+export interface JiraTransition {
+  to: JiraNamedField,
+  fields: JiraNamedField[]
+}
+
+export interface JiraNamedField {
+  name: string,
+  required: boolean,
+  allowedValues: string[]
+}

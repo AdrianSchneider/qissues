@@ -7,11 +7,11 @@ import Status   from './meta/status';
 import Project  from './meta/project';
 
 interface TrackerMetadata {
-  getTypes:    (invalidate: boolean) => Promise<Type[]>;
-  getUsers:    (invalidate: boolean) => Promise<User[]>;
-  getSprints:  (invalidate: boolean) => Promise<Sprint[]>;
-  getLabels:   (invalidate: boolean) => Promise<Label[]>;
-  getProjects: (invalidate: boolean) => Promise<Project[]>;
+  getTypes:    () => Promise<Type[]>;
+  getUsers:    () => Promise<User[]>;
+  getSprints:  () => Promise<Sprint[]>;
+  getLabels:   () => Promise<Label[]>;
+  getProjects: () => Promise<Project[]>;
 }
 
 export default TrackerMetadata;

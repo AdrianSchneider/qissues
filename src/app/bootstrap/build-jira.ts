@@ -1,25 +1,40 @@
 import Cache                  from '../services/cache';
 import Config                 from '../services/config';
 import Container              from '../services/container';
-import JiraClient             from '../../domain/backend/jira/client';
+import BootstrapParams        from '../config/bootstrap';
+import jiraClient             from '../../domain/backend/jira/client';
 import JiraMetadata           from '../../domain/backend/jira/metadata';
 import JiraRepository         from '../../domain/backend/jira/repository';
 import * as issueExpectations from '../../domain/backend/jira/requirements/issue';
 import configExpectations     from '../../domain/backend/jira/requirements/config';
 import JiraNormalizer         from '../../domain/backend/jira/normalizer';
 import IssueTracker           from '../../domain/model/tracker';
+import MetadataCacheProxy     from '../../domain/backend/metadataCacheProxy';
+import HttpClient             from '../../domain/shared/httpClient';
 
-export default function buildJira(container: Container, config: Object): Container {
+export default function buildJira(container: Container, config: BootstrapParams): Container {
   container.registerService(
     'tracker.jira.client',
-    (config, logger) => new JiraClient(logger, config),
+    (config, logger) => jiraClient(logger, config),
     ['config', 'logger']
   );
 
   container.registerService(
     'tracker.jira.metadata',
-    (client: JiraClient, cache: Cache) => new JiraMetadata(client, cache),
-    ['tracker.jira.client', 'cache']
+    (client: HttpClient) => {
+      const metadata = new JiraMetadata(client);
+      return metadata;
+    },
+    ['tracker.jira.client']
+  );
+
+  container.registerService(
+    'tracker.jira.metadata-cached',
+    (metadata: JiraMetadata, cache: Cache) => {
+      const proxier = new MetadataCacheProxy(cache);
+      return proxier.createProxy(metadata);
+    },
+    ['tracker.jira.metadata', 'cache']
   );
 
   container.registerService(
@@ -37,7 +52,7 @@ export default function buildJira(container: Container, config: Object): Contain
   container.registerService(
     'tracker.jira',
     (normalizer, repository, metadata) => new IssueTracker(normalizer, repository, metadata, configExpectations),
-    ['tracker.jira.normalizer', 'tracker.jira.repository', 'tracker.jira.metadata']
+    ['tracker.jira.normalizer', 'tracker.jira.repository', 'tracker.jira.metadata-cached']
   );
 
   container.registerService('tracker', tracker => tracker, ['tracker.jira']);
