@@ -1,7 +1,7 @@
 import Promise from 'bluebird';
 import copyPaste from 'copy-paste';
 
-export function copy(text: string): Promise[] {
+export function copy(text: string): Promise {
   return new Promise((reject, resolve)  => {
     return copyPaste.copy(text, (err) => {
       if (err) return reject(err);

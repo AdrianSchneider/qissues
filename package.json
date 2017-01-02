@@ -66,7 +66,10 @@
   "preferGlobal": true,
   "nyc": {
     "include": [
-      "src/domain/**/*.ts"
+      "src/domain/**/*.ts",
+      "src/app/services/**/*.ts",
+      "src/ui/services/**/*.ts",
+      "src/util/**/*.ts"
     ],
     "exclude": [
       "typings"

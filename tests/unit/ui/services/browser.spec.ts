@@ -1,5 +1,5 @@
 import { assert } from 'chai';
-import Browser    from '../../../src/ui/browser';
+import Browser    from '../../../../src/ui/services/browser';
 
 describe('UI Browser', () => {
 

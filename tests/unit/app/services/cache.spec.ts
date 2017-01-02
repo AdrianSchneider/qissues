@@ -74,6 +74,18 @@ describe('Cache', function() {
 
   describe('#invalidateAll', function() {
 
+    it('Defaults to removing all', () => {
+      storage.keys = () => ['a', 'b'];
+      storage.removeMulti = keys => assert.deepEqual(keys, ['a', 'b']);
+      cache.invalidateAll();
+    });
+
+    it('Accepts a predicate to remove things by', () => {
+      storage.keys = () => ['aa', 'b'];
+      storage.removeMulti = keys => assert.deepEqual(keys, ['aa']);
+      cache.invalidateAll(key => key.length > 1);
+    });
+
   });
 
   describe('#clean', function() {

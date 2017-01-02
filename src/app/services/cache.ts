@@ -31,6 +31,19 @@ export default class Cache {
     return data;
   }
 
+  /**
+   * Attempts to get key from cache, otherwise runs F to get the data
+   * and sets it on the way out
+   */
+  public wrap<T>(key: string, f: () => Promise<T>, invalidate?: boolean): Promise<T> {
+    const cached = this.get(key, invalidate);
+    if (cached) return Promise.resolve(cached);
+    return f().then(result => this.set(key, cached));
+  }
+
+  /**
+   * Gets a key from cache
+   */
   public get(key: string, invalidate?: boolean): any {
     if (invalidate) return;
     const entry = this.storage.get(this.storageKey(key));

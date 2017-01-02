@@ -12,7 +12,7 @@ export default class MemoryStorage implements Storage {
    * Gets the key from memory
    */
   public get(key: string, defaults?: any): any {
-    setTimeout(this.cleanup, 1000);
+    setTimeout(this.cleanup.bind(this), 1000);
     return typeof this.data[key] !== 'undefined' ? this.data[key] : defaults;
   }
 

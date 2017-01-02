@@ -5,8 +5,8 @@ import BootstrapParams       from '../config/bootstrap';
 import BlessedApplication    from '../../ui/app';
 import BlessedInterface      from '../../ui/interface';
 import keys                  from '../../ui/keys';
-import Browser               from '../../ui/browser';
-import * as clipboard        from '../../ui/clipboard';
+import Browser               from '../../ui/services/browser';
+import * as clipboard        from '../../ui/services/clipboard';
 import YamlFrontMatterFormat from '../../ui/formats/yaml-front-matter';
 import YamlFrontMatterParser from '../../util/frontmatter-yaml';
 

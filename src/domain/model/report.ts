@@ -15,7 +15,7 @@ export default class Report extends EventEmitter {
     super();
     this.name = name;
     this.filters = filters.clone();
-    filters.on('change', () => this.emit('change'));
+    this.filters.on('change', () => this.emit('change'));
   }
 
   public replaceFilters(filters: FilterSet) {

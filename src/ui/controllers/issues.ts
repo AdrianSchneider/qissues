@@ -29,7 +29,7 @@ export default class ListIssuesController {
   private readonly normalizer;
   private readonly logger;
 
-  constructor(app, ui: BlessedInterface, keys: KeyMapping, tracker, browser, logger) {
+  constructor(app, ui: BlessedInterface, views, keys: KeyMapping, tracker, browser, logger) {
     this.app = app;
     this.ui = ui;
     this.repository = tracker.repository;

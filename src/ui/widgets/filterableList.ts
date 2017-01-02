@@ -1,4 +1,4 @@
-import Node             from 'blessed';
+import { Widgets }             from 'blessed';
 import message          from './message';
 import List             from './list';
 import sequencer        from '../events/sequencer';
@@ -12,14 +12,14 @@ import KeyMapping       from '../../app/config/keys';
 
 interface FilterableListOptions {
   keys: KeyMapping,
-  parent: Node,
+  parent: Widgets.Node,
   reports: Object,
   report: Object
 }
 
 export default class FilterableList extends List {
 
-  private options: FilterableListOptions;
+  protected options: FilterableListOptions;
   private keys: KeyMapping;
   private filters;
   private reports;

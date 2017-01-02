@@ -43,6 +43,6 @@ container.getMatching(['app', 'ui'])
   });
 
 process.on('unhandledRejection', function(reason, promise) {
-  console.error('Unhandled Rejection: ' + reason.stack);
+  console.error('Unhandled Rejection: ' + reason.toString());
   process.exit(1);
 });

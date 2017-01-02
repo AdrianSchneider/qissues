@@ -2,6 +2,7 @@ import * as _             from 'underscore';
 import Promise            from 'bluebird';
 import { format }         from 'util';
 import Id                 from '../../model/id';
+import Report             from '../../model/report';
 import TrackerRepository  from '../../model/trackerRepository';
 import Issue              from '../../model/issue';
 import IssuesCollection   from '../../model/issues';
@@ -34,7 +35,7 @@ class JiraRepository implements TrackerRepository {
   /**
    * Creates a new issue in JIRA
    */
-  public createIssue(data: NewIssue): Promise<Issue> {
+  public createIssue(data: NewIssue): Promise<Id> {
     return this.client.post('/rest/api/2/issue', this.normalizer.toNewIssueJson(data))
       .then(this.normalizer.toNum);
   }
@@ -43,46 +44,40 @@ class JiraRepository implements TrackerRepository {
    * Looks up an issue in Jira
    */
   public lookup(num: Id, opts: QueryOptions): Promise<Issue> {
-    const cacheId = `lookup:${num}`;
-    const cached = this.cache.get(cacheId, opts.invalidate);
-    if (cached) return Promise.resolve(this.normalizer.toIssue(cached));
-
-    return this.client.get(this.getIssueUrl(num))
-      .then(data => this.cache.set(cacheId, data))
-      .then(this.normalizer.toIssue);
+    return this.cache.wrap(
+      `lookup:${num}`,
+      () => this.client.get(this.getIssueUrl(num)),
+      opts.invalidate,
+    ).then(this.normalizer.toIssue);
   }
 
   /**
    * Queries JIRA by generating JQL from the report
    */
-  public query(report, options: QueryOptions): Promise<IssuesCollection> {
-    const requestOpts = { qs: {
+  public query(report: Report, options: QueryOptions): Promise<IssuesCollection> {
+    const qs = {
       maxResults: 500,
-      jql: this.normalizer.filterSetToJql(report.getFilters())
-    } };
+      jql: this.normalizer.filterSetToJql(report.filters)
+    };
 
-    this.logger.trace('JQL = ' + requestOpts.qs.jql);
+    this.logger.trace('JQL = ' + qs.jql);
 
-    const cacheId = `issues:${requestOpts.qs.jql}`;
-    const cached = this.cache.get(cacheId, options.invalidate);
-    if (cached) return Promise.resolve(this.normalizer.toIssuesCollection(cached));
-
-    return this.client.get('/rest/api/2/search', options)
-      .then(data => this.cache.set(cacheId, data))
-      .then(this.normalizer.toIssuesCollection);
+    return this.cache.wrap(
+      `issues:${qs.jql}`,
+      () => this.client.get('/rest/api/2/search', qs),
+      options.invalidate
+    ).then(this.normalizer.toIssuesCollection);
   }
 
   /**
    * Gets the comments from an issue
    */
   public getComments(num: Id, options: QueryOptions): Promise<CommentsCollection> {
-    const cacheId = 'comments:' + num;
-    const cached = this.cache.get(cacheId, options.invalidate);
-    if (cached) return Promise.resolve(this.normalizer.toCommentsCollection(cached));
-
-    return this.client.get(this.getIssueUrl(num, '/comment'))
-      .then(data => this.cache.set(cacheId, data))
-      .then(this.normalizer.toCommentsCollection);
+    return this.cache.wrap(
+      `comments:${num}`,
+      () => this.client.get(this.getIssueUrl(num, '/comment')),
+      options.invalidate
+    ).then(this.normalizer.toCommentsCollection);
   }
 
   /**

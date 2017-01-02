@@ -14,8 +14,9 @@ export default class List extends blessed.widget.List {
   private searchResults;
   private resultNumber;
   private parentElement;
+  protected options;
 
-  protected issues: IssuesCollection;
+  public issues: IssuesCollection;
   protected items: string[];
 
   // protected items;
