@@ -132,17 +132,16 @@ export default class JiraNormalizer {
    * @param {FilterSet} filters
    * @return {string}
    */
-  private filterSetToJql(filters) {
-    return filters.flatten().map(function(filter) {
-      if (filter[0] === 'sprint' && filter[1][0] === 'Active Sprints') {
+  private filterSetToJql(filters: FilterSet): string {
+    return filters.flatten().map(filter => {
+      const key: string = filter[0];
+      const value: Array<string> = filter[1];
+
+      if (key === 'sprint' && value[0] === 'Active Sprints') {
         return 'sprint in openSprints()';
       }
 
-      return filter[0]  +' in (' +
-        filter[1].map(function(item) {
-          return "'" + item.replace(/'/g, "\\'") + "'";
-        }).join(',') +
-      ')';
+      return key  +' in (' + value.map(item => "'" + item.replace(/'/g, "\\'") + "'").join(',') + ')';
     }).join(' AND ');
   }
 

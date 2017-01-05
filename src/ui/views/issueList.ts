@@ -1,58 +1,52 @@
 import { Widgets }      from 'blessed';
-import Behaviour        from '../behaviour';
-import List             from './list';
+import HasIssues        from './hasIssues';
+import View             from '../view';
+import List             from '../widgets/list';
 import FilterableList   from '../widgets/filterableList';
 import Issue            from '../../domain/model/issue';
 import IssuesCollection from '../../domain/model/issues';
 import KeyMapping       from '../../app/config/keys';
+import Cancellation     from '../../domain/errors/cancellation';
+import Filter           from '../../domain/model/filter';
+import Application from "../../app/main";
 
-export default class IssueList extends List {
-
-  private list: Widgets.Node;
-  private behaviours: Behaviour[];
-  private logger;
-  private app;
-  private ui;
-
-  private keys: KeyMapping;
-  private filters;
-  private reports;
-  private metadata;
-
+/**
+ * Responsible for managing the main issue list
+ */
+export default class IssueList implements View, HasIssues {
+  public node: Widgets.BlessedElement;
   private issues: IssuesCollection;
 
-  public render(issues: Promise<IssuesCollection>, options: IssueListOptions) {
+  private app: Application;
 
-    const list = this.createList(options.parent);
-    list.issues = [];
-
-    this.behaviours.forEach(behaviour => behaviour.register(list));
+  /**
+   * Renders the issue list
+   */
+  public render(parent: Widgets.BlessedElement, options: IssueListOptions) {
+    this.node = this.createList(parent);
+    options.issues.then(issues => this.issues = issues);
   }
 
-  private createList(parent: Widgets.Node): FilterableList {
-    var list = new FilterableList({
+  private createList(parent: Widgets.BlessedElement): Widgets.BlessedElement {
+    return new FilterableList({
       parent: parent,
       filters: this.app.getFilters(),
       report: this.app.getActiveReport(),
       reports: this.app.getReports(),
-      input: this.input,
-      logger: this.logger,
-      normalizer: this.normalizer,
-      metadata: this.metadata,
+//      input: this.input,
+//      logger: this.logger,
+//      normalizer: this.normalizer,
+//      metadata: this.metadata,
       name: 'issues',
-      width: parent.getInnerWidth('100%'),
-      height: parent.getInnerHeight('100%'),
+//      width: parent.getInnerWidth('100%'),
+//      height: parent.getInnerHeight('100%'),
       tags: true,
       selectedFg: 'black',
       selectedBg: 'green',
       keys: true,
-      keyConfig: keys,
+//      keyConfig: keys,
       vi: true
     });
-
-    list.setIssues = setIssues.bind(list);
-
-    return list;
   }
 
   private findLastFocused(list: Widgets.ListElement, focused?: string): number {
@@ -87,12 +81,19 @@ export default class IssueList extends List {
   }
 
   private showReportsList() {
-    reportsList(this.options.parent, this.options.reports, this.options.report);
+    reportsList(this.options.parent, this.options.reports, this.options.report); }
+
+  public getIssues(): IssuesCollection {
+    return this.issues;
+  }
+
+  public getIssue() {
+    return this.issues[0];
   }
 
 }
 
 interface IssueListOptions {
+  issues: Promise<IssuesCollection>,
   focus?: string,
-  parent: Widgets.Node
 }

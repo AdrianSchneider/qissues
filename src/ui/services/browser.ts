@@ -1,5 +1,5 @@
 import { format } from 'util'
-import { spawn}   from 'child_process'
+import { spawn }  from 'child_process'
 
 interface ProcessOptions {
   platform?: string

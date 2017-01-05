@@ -8,6 +8,10 @@ var Cancellation = require('../../domain/errors/cancellation');
 
 module.exports = function(keys, input, metadata) {
 
+  var events = [
+    'changeset'
+  ];
+
   /**
    * Sets up listeners on view to allow changes
    *
