@@ -72,7 +72,7 @@ export default class Editable implements Behaviour {
   private changeText(message: string, field: string) {
     return () => this.ui.ask(message)
       .then(input => this.emitChanged(field, input))
-      //.catch(Cancellation, () => {});
+      .catch(Cancellation, () => {});
   }
 
   /**
@@ -81,7 +81,7 @@ export default class Editable implements Behaviour {
   private changeList(getOptions: () => Promise<string[]>, message: string, field: string) {
     return () => this.ui.selectFromCallableList(message, getOptions)
       .then(selection => this.emitChanged(field, selection))
-      //.catch(Cancellation, () => {});
+      .catch(Cancellation, () => {});
   }
 
   /**

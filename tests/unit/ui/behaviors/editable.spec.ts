@@ -1,5 +1,6 @@
 import { assert }       from 'chai';
 import { EventEmitter } from 'events';
+import * as Promise     from 'bluebird';
 import Editable         from "../../../../src/ui/behaviors/editable";
 import Sequencer        from "../../../../src/ui/services/sequencer";
 import BlessedInterface from "../../../../src/ui/interface";
@@ -12,6 +13,7 @@ import Status           from "../../../../src/domain/model/meta/status";
 import Sprint           from "../../../../src/domain/model/meta/sprint";
 import IssuesCollection from "../../../../src/domain/model/issues";
 import { ChangeSet }    from "../../../../src/domain/model/changeSet";
+import Cancellation from "../../../../src/domain/errors/cancellation";
 
 describe('Editable Behaviour', () => {
 
@@ -115,7 +117,17 @@ describe('Editable Behaviour', () => {
     assert.throws(() => editable.attach(view, config), Error, 'already');
   });
 
-  it('Handles cancellations gracefully for text changes');
-  it('Handles cancellations gracefully for list changes');
+  it('Handles cancellations gracefully for text changes', () => {
+    ui.ask = message => Promise.reject(new Cancellation());
+    view.on('changeset', changeset => { throw new Error('should cancel instead'); });
+    actions[config.keys.changeTitle]();
+  });
+
+  it('Handles cancellations gracefully for list changes', () => {
+    ui.selectFromCallableList = (message, getOpts) => Promise.reject(new Cancellation());
+    metadata.getSprints = () => Promise.resolve([new Sprint('1', 'urgent')]);
+    view.on('changeset', changeset => { throw new Error('should cancel instead'); });
+    actions[config.keys.changeSprint]();
+  });
 
 });
