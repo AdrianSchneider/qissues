@@ -71,8 +71,8 @@ export default class Editable implements Behaviour {
    */
   private changeText(message: string, field: string) {
     return () => this.ui.ask(message)
-      .then(() => this.emitChanged(field))
-      .catch(Cancellation, () => {});
+      .then(input => this.emitChanged(field, input))
+      //.catch(Cancellation, () => {});
   }
 
   /**
@@ -80,15 +80,15 @@ export default class Editable implements Behaviour {
    */
   private changeList(getOptions: () => Promise<string[]>, message: string, field: string) {
     return () => this.ui.selectFromCallableList(message, getOptions)
-      .then(() => this.emitChanged(field))
-      .catch(Cancellation, () => {});
+      .then(selection => this.emitChanged(field, selection))
+      //.catch(Cancellation, () => {});
   }
 
   /**
    * Emits a changeset for the field that changed
    */
-  private emitChanged(field: string): (content: string) => void {
-    return content => this.view.emit(
+  private emitChanged(field: string, content: string) {
+    this.view.emit(
       'changeset',
       (new ChangeSetBuilder())
         .addIssues(this.view.getIssues().map(issue => issue.id))

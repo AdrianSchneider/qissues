@@ -69,6 +69,7 @@
       "src/domain/**/*.ts",
       "src/app/services/**/*.ts",
       "src/ui/services/**/*.ts",
+      "src/ui/behaviors/**/*.ts",
       "src/util/**/*.ts"
     ],
     "exclude": [

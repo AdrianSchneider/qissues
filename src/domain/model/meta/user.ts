@@ -17,6 +17,10 @@ export default class User {
     };
   }
 
+  public toString(): string {
+    return this.name || this.account;
+  }
+
   public static unserialize(data: SerializedUser): User {
     return new User(data.id, data.name, data.id);
   }
