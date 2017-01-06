@@ -1,7 +1,7 @@
-import { Message } from 'blessed';
+import { Widgets, widget } from 'blessed';
 
-export default function MessageWidget(parent, message: string, timeout?: number) {
-  const alert = new Message({
+export default function MessageWidget(parent: Widgets.BlessedElement, message: string, timeout?: number) {
+  const alert = new widget.Message({
     width: '35%',
     height: 5,
     top: 'center',

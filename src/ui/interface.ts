@@ -143,7 +143,7 @@ export default class BlessedInterface {
    * @param provider - function providing promised choices
    * @return promised answer
    */
-  public selectFromCallableList(text: string, provider: Function): Promise<string> {
+  public selectFromCallableList(text: string, provider: () => Promise<string[]>): Promise<string> {
     return new Promise((resolve, reject) => {
       var list = promptList(text, this.parent, [BlessedInterface.loadingMessage], this.parent);
 

@@ -12,6 +12,7 @@ interface TrackerMetadata {
   getSprints:  () => Promise<Sprint[]>;
   getLabels:   () => Promise<Label[]>;
   getProjects: () => Promise<Project[]>;
+  getStatuses: () => Promise<Status[]>;
 }
 
 export default TrackerMetadata;

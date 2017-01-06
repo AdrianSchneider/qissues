@@ -28,6 +28,11 @@ export class ChangeSetBuilder {
     return this;
   }
 
+  public addIssues(issues: Id[]): ChangeSetBuilder {
+    issues.forEach(id => this.addIssue(id));
+    return this;
+  }
+
   public addChange(field: string, value: any): ChangeSetBuilder {
     this.changes[field] = value;
     return this;

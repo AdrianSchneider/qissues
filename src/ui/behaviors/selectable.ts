@@ -16,7 +16,7 @@ interface SelectableKeys {
 export default class Selectable implements Behaviour {
   private view: View;
   private activeSelection: boolean = false;
-  private element: widget.List;
+  private element: Widgets.ListElement;
   private parent: Widgets.BlessedElement;
   private selected: string[] = [];
   private items: Object[];
@@ -66,9 +66,9 @@ export default class Selectable implements Behaviour {
 
     this.activeSelection = this.selected.length > 0;
     if(this.activeSelection != oldActiveSelection) {
-      this.element.items.forEach(this.redraw);
+      this.element['items'].forEach(this.redraw);
     } else {
-      this.redraw(this.element.items[this.element.selected]);
+      this.redraw(this.element['items'][this.element.selected]);
     }
 
     this.element.screen.render();
@@ -80,7 +80,7 @@ export default class Selectable implements Behaviour {
   private clearSelection() {
     this.activeSelection = false;
     this.element.selected = [];
-    this.element.items.forEach(this.element.redraw);
+    this.element['items'].forEach(this.element.redraw);
     this.element.screen.render();
   }
 

@@ -11,6 +11,7 @@ export interface IssueAttributes {
   status?: Status,
   type?: Type,
   priority?: Priority,
+  label?: Label,
   sprint?: Sprint,
   project?: Project,
   assignee?: User,
@@ -33,23 +34,24 @@ export default class Issue {
   public readonly type?: Type;
   public readonly priority?: Priority;
   public readonly sprint?: Sprint;
+  public readonly label?: Label;
   public readonly assignee?: User;
   public readonly reporter?: User;
   public readonly dateCreated?: Date;
   public readonly dateUpdated?: Date;
   public readonly commentCount?: number;
 
-  constructor(id: Id, title: string, description: string, status: Status, attributes?: IssueAttributes) {
+  constructor(id: Id, title: string, description: string, status: Status, attributes: IssueAttributes = {}) {
     this.id = id;
     this.title = title;
     this.description = description;
     this.status = status;
 
-    if (!attributes) attributes = {};
     if (attributes.project) this.project = attributes.project;
     if (attributes.type) this.type = attributes.type;
     if (attributes.priority) this.priority = attributes.priority;
     if (attributes.sprint) this.sprint = attributes.sprint;
+    if (attributes.label) this.label = attributes.label;
     if (attributes.assignee) this.assignee = attributes.assignee;
     if (attributes.reporter) this.reporter = attributes.reporter;
     if (attributes.dateCreated) this.dateCreated = attributes.dateCreated;
