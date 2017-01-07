@@ -5,6 +5,11 @@ default: ;@echo "Building ${PROJECT}"; \
 
 test: test-unit
 
+clean: ;@echo "Cleaning ${PROJECT}"; \
+	rm -fr build;
+	rm -fr .nyc_output;
+	rm -fr coverage;
+
 test-unit: ;@echo "Unit Testing ${PROJECT}"; \
 	node_modules/.bin/mocha --compilers ts:ts-node/register,tsx:ts-node/register --recursive -R dot "tests/unit/**/*.spec.ts"
 
