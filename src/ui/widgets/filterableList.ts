@@ -1,7 +1,7 @@
 import { Widgets }             from 'blessed';
 import message          from './message';
 import List             from './list';
-import sequencer        from '../events/sequencer';
+//import sequencer        from '../events/sequencer';
 import * as filterView  from '../views/filters';
 import * as reportsList from '../views/reports';
 import * as f           from '../../util/f';
@@ -31,6 +31,7 @@ export default class FilterableList extends List {
 
     this.keys = options.keys;
 
+    return;
     sequencer(this, this.keys.leader, 100)
       .on(this.keys['filter.list'],     this.showFilters)
       .on(this.keys['filter.project'],  this.filter(this.metadata.getProjects, 'Project',  'project'))

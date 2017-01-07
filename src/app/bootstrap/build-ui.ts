@@ -6,7 +6,8 @@ import BlessedApplication    from '../../ui/app';
 import BlessedInterface      from '../../ui/interface';
 import keys                  from '../../ui/keys';
 import Browser               from '../../ui/services/browser';
-import * as clipboard        from '../../ui/services/clipboard';
+import Clipboard             from '../../ui/services/clipboard';
+import Sequencer             from '../../ui/services/sequencer';
 import YamlFrontMatterFormat from '../../ui/formats/yaml-front-matter';
 import YamlFrontMatterParser from '../../util/frontmatter-yaml';
 
@@ -36,7 +37,12 @@ export default function buildUi(container: Container, config: BootstrapParams): 
 
   container.registerService(
     'ui.clipboard',
-    () => clipboard
+    () => new Clipboard()
+  );
+
+  container.registerService(
+    'ui.sequencer',
+    () => new Sequencer()
   );
 
   container.registerService(

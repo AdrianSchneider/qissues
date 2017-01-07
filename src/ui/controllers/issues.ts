@@ -28,10 +28,12 @@ export default class ListIssuesController {
   private readonly keys: KeyMapping;
   private readonly normalizer;
   private readonly logger;
+  private views;
 
   constructor(app, ui: BlessedInterface, views, keys: KeyMapping, tracker, browser, logger) {
     this.app = app;
     this.ui = ui;
+    this.views = views;
     this.repository = tracker.repository;
     this.normalizer = tracker.normalizer;
     this.browser = browser;
@@ -73,7 +75,7 @@ export default class ListIssuesController {
       this.repository.getComments(new Id(num), options.invalidate)
     );
 
-    view.key(this.keys.back, () => this.ui.controller.listIssues(null, num));
+    view.key(this.keys.back, () => this.listIssues({ focus: num }));
     view.key(this.keys.refresh, () => this.refreshIssue(num));
     view.key(this.keys.web, () => this.browser.open(
       this.normalizer.getIssueUrl(num, this.app.getFilters())
@@ -89,29 +91,28 @@ export default class ListIssuesController {
       .then(this.refreshIssue(num))
       .catch(Cancellation, () => {}));
 
-    view.on('changeset', changeSet => this.ui.controller.applyChangeSet(changeSet)
+    view.on('changeset', changeSet => this.applyChangeSet(changeSet)
       .then(this.refreshIssue(num)));
   }
 
   /**
    * Lists issues
    */
-  public listIssues(options?: ListIssuesOptions) {
+  public listIssues(options: ListIssuesOptions = {}) {
     this.ui.showLoading();
 
-    var list = this.ui.views.issueList(
-      this.repository.query(this.app.getActiveReport(), options.invalidate),
-      options.focus,
-      this.ui.canvas
-    );
+    var list = this.views.issueList.render(this.ui.canvas, {
+      issues: this.repository.query(this.app.getActiveReport(), options.invalidate),
+      focus: options.focus
+    });
 
-    list.on('select', num => this.ui.controller.viewIssue(list.getSelected()));
+    list.on('select', num => this.viewIssue(list.getSelected()));
     list.key(this.keys['issue.lookup'], () => this.ui.ask('Open Issue')
-      .then(this.ui.controller.viewIssue));
+      .then(this.viewIssue));
 
-    list.key(this.keys['issue.create'], () => this.ui.controller.createIssue());
+    list.key(this.keys['issue.create'], () => this.createIssue());
     list.key(this.keys['issue.create.contextual'], () => {
-      this.ui.controller.createIssue(this.app.getFilters().toValues());
+      this.createIssue(this.app.getFilters().toValues());
     });
 
     list.key(this.keys.refresh, () => this.listIssues({

@@ -27,10 +27,7 @@ export default function buildJira(container: Container, config: BootstrapParams)
 
   container.registerService(
     'tracker.jira.metadata-cached',
-    (metadata: JiraMetadata, cache: Cache) => {
-      const proxier = new MetadataCacheProxy(cache);
-      return proxier.createProxy(metadata);
-    },
+    (metadata: JiraMetadata, cache: Cache) => (new MetadataCacheProxy(cache)).createProxy(metadata),
     ['tracker.jira.metadata', 'cache']
   );
 

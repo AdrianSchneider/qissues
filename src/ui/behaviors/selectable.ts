@@ -104,4 +104,5 @@ export default class Selectable implements Behaviour {
   public getSelectedItems(): string[] {
     if (this.selected.length) return this.selected;
     return [this.issues.get(this.selected).id].map(String); //   };
+  }
 }

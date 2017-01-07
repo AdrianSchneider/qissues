@@ -15,22 +15,22 @@ import HttpClient         from '../../shared/httpClient';
 import Cache              from '../../../app/services/cache';
 
 interface QueryOptions {
-  invalidate: boolean
+  invalidate?: boolean
 }
 
 class JiraRepository implements TrackerRepository {
   private client: HttpClient;
   private cache: Cache;
   private normalizer;
-  private logger;
   private metadata;
+  private logger;
 
-  public constructor(client: HttpClient, cache: Cache, normalizer, logger, metadata) {
+  public constructor(client: HttpClient, cache: Cache, normalizer, metadata, logger) {
     this.client = client;
     this.cache = cache;
     this.normalizer = normalizer;
-    this.logger = logger;
     this.metadata = metadata;
+    this.logger = logger;
   }
 
   /**
@@ -44,7 +44,7 @@ class JiraRepository implements TrackerRepository {
   /**
    * Looks up an issue in Jira
    */
-  public lookup(num: Id, opts?: QueryOptions): Promise<Issue> {
+  public lookup(num: Id, opts: QueryOptions = {}): Promise<Issue> {
     return this.cache.wrap(
       `lookup:${num}`,
       () => this.client.get(this.getIssueUrl(num)),
@@ -55,7 +55,7 @@ class JiraRepository implements TrackerRepository {
   /**
    * Queries JIRA by generating JQL from the report
    */
-  public query(report: Report, options: QueryOptions): Promise<IssuesCollection> {
+  public query(report: Report, options: QueryOptions = {}): Promise<IssuesCollection> {
     const qs = {
       maxResults: 500,
       jql: this.normalizer.filterSetToJql(report.filters)
@@ -73,7 +73,7 @@ class JiraRepository implements TrackerRepository {
   /**
    * Gets the comments from an issue
    */
-  public getComments(num: Id, options?: QueryOptions): Promise<CommentsCollection> {
+  public getComments(num: Id, options: QueryOptions = {}): Promise<CommentsCollection> {
     return this.cache.wrap(
       `comments:${num}`,
       () => this.client.get(this.getIssueUrl(num, '/comment')),

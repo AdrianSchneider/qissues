@@ -12,17 +12,18 @@ import IssueTracker     from '../../domain/model/tracker';
 export default function(container: Container, config: BootstrapParams) {
   container.registerService(
     'ui.views',
-    () => null
+    (issueList) => ({ issueList }),
+    ['ui.views.issueList']
   );
 
   container.registerService(
     'ui.views.issueList',
     (keyConfig, ...behaviours: Behaviour[]) => {
       const view = new IssueList();
-      behaviours.forEach(behaviour => behaviour.attach(view, { keys: keyConfig }));
+      //behaviours.forEach(behaviour => behaviour.attach(view, { keys: keyConfig }));
       return view;
     },
-    ['keys', 'ui.behaviours.editable', 'ui.behaviours.yankable']
+    ['ui.keys', 'ui.behaviours.editable', 'ui.behaviours.yankable']
   );
 
   container.registerService(

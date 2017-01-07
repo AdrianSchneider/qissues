@@ -43,7 +43,9 @@ export default class MetadataCacheProxy {
     return (...args) => {
       const [cacheKey, unserializer] = this.methodsToCacheKeys[method];
       const cached = this.cache.get(cacheKey);
-      if (cached) return Promise.resolve(cached.map(unserializer));
+      if (cached) {
+        return Promise.resolve(cached.map(unserializer));
+      }
 
       return target[method].apply(target, args)
         .then(this.cacheResultsAs(cacheKey));

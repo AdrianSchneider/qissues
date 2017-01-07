@@ -17,17 +17,17 @@ interface TrackerRepository {
   /**
    * Looks up an issue
    */
-  lookup: (num: Id, options?: Object) => Promise<Issue>;
+  lookup: (num: Id, options: Object) => Promise<Issue>;
 
   /**
    * Queries the repository for issues
    */
-  query: (report, options?: Object) => Promise<IssuesCollection>;
+  query: (report, options: Object) => Promise<IssuesCollection>;
 
   /**
    * Fetches comments for an issue
    */
-  getComments: (num: Id, options?: Object) => Promise<CommentsCollection>;
+  getComments: (num: Id, options) => Promise<CommentsCollection>;
 
   /**
    * Persists a new comment
