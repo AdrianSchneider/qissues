@@ -1,3 +1,4 @@
+import * as Promise       from 'bluebird';
 import Id                 from './id';
 import Issue              from './issue';
 import NewIssue           from './newIssue';
@@ -11,7 +12,7 @@ interface TrackerRepository {
   /**
    * Creates a new issue in the repository
    */
-  createIssue: (data: NewIssue) => Promise<Issue>;
+  createIssue: (data: NewIssue) => Promise<Id>;
 
   /**
    * Looks up an issue

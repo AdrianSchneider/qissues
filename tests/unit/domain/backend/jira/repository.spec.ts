@@ -1,3 +1,4 @@
+import * as Promise     from 'bluebird';
 import { assert }       from 'chai';
 import Id               from '../../../../../src/domain/model/id';
 import Issue            from '../../../../../src/domain/model/issue';

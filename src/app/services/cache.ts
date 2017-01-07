@@ -1,3 +1,4 @@
+import * as Promise   from 'bluebird';
 import { createHash } from 'crypto';
 import * as moment    from 'moment';
 import Storage        from '../services/storage';

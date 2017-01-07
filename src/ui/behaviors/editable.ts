@@ -1,3 +1,4 @@
+import * as Promise         from 'bluebird';
 import * as blessed         from 'blessed'
 import Behaviour            from '../behaviour';
 import BlessedInterface     from '../interface';

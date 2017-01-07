@@ -61,6 +61,11 @@ export default class BlessedApplication {
             .then(controllers.issues.viewIssue)
             .catch(Cancellation, _.noop);
         });
+      })
+      .catch(error => {
+        this.logger.error('Failed to start qissues');
+        this.logger.error(error.stack);
+        app.exit(1);
       });
   }
 }

@@ -79,4 +79,21 @@ describe('Externally Viewable Behaviour', () => {
     keyCallback();
   });
 
+  it('Cannot attach to another view', () => {
+    const node = { key: (key, cb) => { assert.equal(key, 'b'); } };
+    const view = <HasIssues>{ node: node };
+
+    behaviour.attach(view, {
+      keys: { open: 'b' },
+      getFilters: () => new FilterSet([])
+    });
+
+    assert.throws(() => {
+      behaviour.attach(view, {
+        keys: { open: 'b' },
+        getFilters: () => new FilterSet([])
+      });
+    }, Error, 'Already');
+  });
+
 });

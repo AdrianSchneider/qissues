@@ -13,7 +13,7 @@ import Status             from '../../model/meta/status';
 import Project            from '../../model/meta/project';
 import HttpClient         from '../../shared/httpClient';
 
-export default class JiraMetadata implements TrackerMetadata{
+export default class JiraMetadata implements TrackerMetadata {
 
   private readonly client: HttpClient;
   constructor(client: HttpClient) {
@@ -23,11 +23,13 @@ export default class JiraMetadata implements TrackerMetadata{
   public getTypes(): Promise<Type[]>{
     return this.client.get('/rest/api/2/issue/createmeta')
       .then(response => {
-        return response.projects.map(project => {
+        return response.data.projects.map(project => {
           return project.issuetypes.map(type => new Type(type.id, type.name));
         })
       })
-      .reduce((types, typesByProject) => uniq(types.concat(typesByProject), false, String))
+      .reduce((types: Type[], typesByProject: Type[]) => {
+        return uniq(types.concat(typesByProject), false, String);
+      }, []);
   }
 
   public getUsers(): Promise<User[]> {
@@ -39,19 +41,19 @@ export default class JiraMetadata implements TrackerMetadata{
       .reduce((users, usersInProject) => {
         return uniq(users.concat(usersInProject), false, user => user.account)
       }, [])
-      .filter(user => user.account.indexOf('addon_') !== 0);
+      .filter((user: User) => user.account.indexOf('addon_') !== 0);
   }
 
   public getViews(): Promise<Object> {
     return this.client.get('/rest/greenhopper/1.0/rapidview')
-      .then(response => response.views)
+      .then(response => response.data.views)
   }
 
   public getSprints(): Promise<Sprint[]> {
     return this.getViews()
       .map(view => {
-        return this.client.get('/rest/greenhopper/1.0/xboard/plan/backlog/data.json', { rapidViewId: view.id })
-          .then(response => response.sprints.map(sprint => new Sprint(sprint.id, sprint.name)));
+        return this.client.get('/rest/greenhopper/1.0/xboard/plan/backlog/data.json', { rapidViewId: view['id'] })
+          .then(response => response.body.sprints.map(sprint => new Sprint(sprint.id, sprint.name)));
       })
       .reduce((allSprints, sprintsPerView) => allSprints.concat(sprintsPerView), [])
   }
@@ -63,7 +65,7 @@ export default class JiraMetadata implements TrackerMetadata{
 
   public getProjects(): Promise<Project[]> {
     return this.client.get('/rest/api/2/issue/createmeta')
-      .then(response => response.projects.map(
+      .then(response => response.data.projects.map(
         project => new Project(project.key, project.name, project.id)
       ))
   }
@@ -72,10 +74,10 @@ export default class JiraMetadata implements TrackerMetadata{
     return this.getProjects()
       .map((project: Project) => {
         return this.client.get(`/rest/api/2/project/${project.internalId}/statuses`)
-          .reduce((statuses, type) => uniq(statuses.concat(type.statuses), row => row.name), [])
+          .reduce((statuses, type) => uniq(statuses.concat(type['statuses']), row => row.name), [])
       })
       .reduce((statuses, perProject) => uniq(statuses.concat(perProject), status => status.name), [])
-      .map(status => new Status(status.name))
+      .map(status => new Status(status['name']))
   }
 
   public getTransitions(num: string): Promise<JiraTransition[]> {

@@ -43,10 +43,10 @@ export default class Expectations {
   /**
    * Gets the suggestions for the choice fields
    */
-  public getSuggestions(): Promise<array> {
+  public getSuggestions(): Promise<Array<any>> {
     return Promise
       .filter(Object.keys(this.schema), field => !!this.schema[field].choices)
-      .map(field => this.schema[field].choices.then((choices) => ([field, choices])));
+      .map((field: string) => this.schema[field].choices.then((choices) => ([field, choices])));
   }
 
   /**
@@ -66,8 +66,8 @@ export default class Expectations {
   private objectSchemaToJoi(schema: SchemaDefinition): Promise<joi.Schema> {
     return Promise
       .map(Object.keys(schema), field => this.fieldSchemaToJoi(field))
-      .reduce((out, [key, value]) => {
-        out[key] = value;
+      .reduce((out, fs: FieldAndSchema) => {
+        out[fs.field] = fs.schema;
         return out;
       }, {})
       .then(fields => joi.object(fields));
@@ -76,9 +76,9 @@ export default class Expectations {
   /**
    * Utility to convert a schema field config to a joi field
    */
-  private fieldSchemaToJoi(fieldName: string): [string, Object] {
+  private fieldSchemaToJoi(fieldName: string): Promise<FieldAndSchema> {
     const field = this.schema[fieldName];
-    let node = joi[field.type]();
+    let node: joi.Schema = joi[field.type]();
 
     if (field.required) {
       node = node.required();
@@ -91,13 +91,13 @@ export default class Expectations {
     }
 
     if (field.choices) {
-      return field.choices.then((choices) => {
+      return field.choices.then(choices => {
         node = node.valid(choices.map(String));
-        return [fieldName, node];
+        return Promise.resolve({ field: fieldName, schema: node });
       });
     }
 
-    return [fieldName, node];
+    return Promise.resolve({ field: fieldName, schema: node });
   }
 
 }
@@ -111,4 +111,9 @@ interface SchemaFieldDefinition {
   required: boolean,
   default?: any,
   choices?: Promise<string[]>
+}
+
+interface FieldAndSchema {
+  field: string,
+  schema: joi.Schema
 }

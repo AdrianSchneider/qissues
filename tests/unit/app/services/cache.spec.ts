@@ -1,7 +1,7 @@
-import { assert }     from 'chai';
-import * as moment    from 'moment';
-import Promise        from 'bluebird';
-import Cache          from '../../../../src/app/services/cache';
+import { assert }   from 'chai';
+import * as moment  from 'moment';
+import * as Promise from 'bluebird';
+import Cache        from '../../../../src/app/services/cache';
 
 describe('Cache', function() {
 

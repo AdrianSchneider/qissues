@@ -1,12 +1,13 @@
 import * as _             from 'underscore';
-import Promise            from 'bluebird';
+import * as Promise       from 'bluebird';
 import { format }         from 'util';
 import Id                 from '../../model/id';
 import Report             from '../../model/report';
 import TrackerRepository  from '../../model/trackerRepository';
 import Issue              from '../../model/issue';
 import IssuesCollection   from '../../model/issues';
-import CommentsCollection from '../../model/issues';
+import Comment            from '../../model/comment';
+import CommentsCollection from '../../model/comments';
 import NewIssue           from '../../model/newIssue';
 import NewComment         from '../../model/newComment';
 import MoreInfoRequired   from '../../errors/infoRequired';
@@ -37,18 +38,18 @@ class JiraRepository implements TrackerRepository {
    */
   public createIssue(data: NewIssue): Promise<Id> {
     return this.client.post('/rest/api/2/issue', this.normalizer.toNewIssueJson(data))
-      .then(this.normalizer.toNum);
+      .then(json => this.normalizer.toNum(json));
   }
 
   /**
    * Looks up an issue in Jira
    */
-  public lookup(num: Id, opts: QueryOptions): Promise<Issue> {
+  public lookup(num: Id, opts?: QueryOptions): Promise<Issue> {
     return this.cache.wrap(
       `lookup:${num}`,
       () => this.client.get(this.getIssueUrl(num)),
       opts.invalidate,
-    ).then(this.normalizer.toIssue);
+    ).then(data => this.normalizer.toIssue(data));
   }
 
   /**
@@ -66,18 +67,18 @@ class JiraRepository implements TrackerRepository {
       `issues:${qs.jql}`,
       () => this.client.get('/rest/api/2/search', qs),
       options.invalidate
-    ).then(this.normalizer.toIssuesCollection);
+    ).then(issues => this.normalizer.toIssuesCollection(issues));
   }
 
   /**
    * Gets the comments from an issue
    */
-  public getComments(num: Id, options: QueryOptions): Promise<CommentsCollection> {
+  public getComments(num: Id, options?: QueryOptions): Promise<CommentsCollection> {
     return this.cache.wrap(
       `comments:${num}`,
       () => this.client.get(this.getIssueUrl(num, '/comment')),
       options.invalidate
-    ).then(this.normalizer.toCommentsCollection);
+    ).then(comments => this.normalizer.toCommentsCollection(comments));
   }
 
   /**
@@ -93,7 +94,7 @@ class JiraRepository implements TrackerRepository {
   /**
    * Applies a changeset
    */
-  public applyChanges(changes, details): Promise<void> {
+  public applyChanges(changes, details): Promise<any> {
     this.cache.invalidateAll(key => key.indexOf('issues:') === 0);
     changes.getIssues().forEach(num => this.cache.invalidate('lookup:' + num));
 

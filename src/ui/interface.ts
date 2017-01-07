@@ -77,8 +77,7 @@ export default class BlessedInterface {
    * @param {Number} delay
    * @return {Promise}
    */
-  public message(msg: string, delay?: number): Promise<void> {
-    if (!delay) delay = 1000;
+  public message(msg: string, delay: number = 1000): Promise<void> {
     return new Promise((resolve, reject) => {
       messageWidget(this.canvas, msg, delay);
       setTimeout(() => resolve(), delay);

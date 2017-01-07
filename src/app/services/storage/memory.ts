@@ -12,7 +12,6 @@ export default class MemoryStorage implements Storage {
    * Gets the key from memory
    */
   public get(key: string, defaults?: any): any {
-    setTimeout(this.cleanup.bind(this), 1000);
     return typeof this.data[key] !== 'undefined' ? this.data[key] : defaults;
   }
 
@@ -56,6 +55,8 @@ export default class MemoryStorage implements Storage {
    * Purges any keys that have expired, and flush if any are removed
    */
   protected cleanup() {
+    console.error('memory cleanup');
+
     const now = new Date();
     let changes = false;
 
