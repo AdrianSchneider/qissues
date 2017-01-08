@@ -16,9 +16,9 @@ import Filter           from '../../domain/model/filter';
 export default class IssueList implements View, HasIssues {
   public node: Widgets.BlessedElement;
   private issues: IssuesCollection;
-  private app: Application;
+  private readonly app: Application;
 
-  constructor(app) {
+  constructor(app: Application) {
     this.app = app;
   }
 
@@ -28,35 +28,42 @@ export default class IssueList implements View, HasIssues {
   public render(parent: Widgets.BlessedElement, options: IssueListOptions) {
     this.node = this.createList(parent);
     this.issues = options.issues;
-
-    this.node.setItems(
-      options.issues.map(this.renderIssue)
-    );
+    this.renderIssues(this.issues);
 
     parent.append(this.node);
     parent.screen.render();
+    this.node.focus();
+
     return this.node;
+  }
+
+  private renderIssue(issue: Issue): string {
+    return `{yellow-fg}${issue.id}{/yellow-fg}: ${issue.title}`;
+  }
+
+  private renderIssues(issues: IssuesCollection) {
+    this.node['setItems'](issues.map(this.renderIssue));
   }
 
   private createList(parent: Widgets.BlessedElement): Widgets.BlessedElement {
     return new FilterableList({
       parent: parent,
-      filters: this.app.getFilters(),
-      report: this.app.getActiveReport(),
-      reports: this.app.getReports(),
-//      input: this.input,
-//      logger: this.logger,
-//      normalizer: this.normalizer,
-//      metadata: this.metadata,
       name: 'issues',
-//      width: parent.getInnerWidth('100%'),
-//      height: parent.getInnerHeight('100%'),
       tags: true,
       selectedFg: 'black',
       selectedBg: 'green',
       keys: true,
       vi: true
+      // filters: this.app.getFilters(),
+      // report: this.app.getActiveReport(),
+      // reports: this.app.getReports(),
+//      width: parent.getInnerWidth('100%'),
+//      height: parent.getInnerHeight('100%'),
 //      keyConfig: keys,
+//      input: this.input,
+//      logger: this.logger,
+//      normalizer: this.normalizer,
+//      metadata: this.metadata,
     });
   }
 
@@ -65,10 +72,6 @@ export default class IssueList implements View, HasIssues {
     return list.ritems.findIndex(item => {
       return item.toLowerCase().indexOf(focused.toLowerCase()) !== -1;
     }) || 0;
-  }
-
-  private renderIssue(issue: Issue): string {
-    return `{yellow-fg}${issue.id}{/yellow-fg}: ${issue.title}`;
   }
 
   private showFilters() {

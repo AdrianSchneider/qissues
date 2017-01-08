@@ -47,7 +47,13 @@ export default function buildUi(container: Container, config: BootstrapParams): 
 
   container.registerService(
     'ui.screen',
-    () => blessed.screen({ input: config.input, output: config.output })
+    () => {
+      const screen = blessed.screen({ input: config.input, output: config.output });
+      screen.key(['q', 'C-c'], function(ch, key) {
+        return process.exit(0);
+      });
+      return screen;
+    }
   );
 
   container.registerService(
