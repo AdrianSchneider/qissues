@@ -52,11 +52,22 @@ class IssueList implements View, HasIssues extends EventEmitter {
     this.node.key(this.keys['issue.create.contextual'], () => this.emit('createIssueContextual'));
     this.node.key(this.keys.refresh, () => this.emit('refresh'));
 
+    this.applySelected(options.focus);
+
     parent.append(this.node);
     parent.screen.render();
     this.node.focus();
 
     return this.node;
+  }
+
+  private applySelected(selected) {
+    if (!selected) return;
+
+    const i = this.issues.findIndex(issue => issue.id.toString() == selected);
+    if (i !== -1) {
+      this.node['select'](i);
+    }
   }
 
   private renderIssue(issue: Issue): string {
@@ -125,7 +136,7 @@ class IssueList implements View, HasIssues extends EventEmitter {
 
   public getIssue() {
     if (!this.issues) return null;
-    return this.issues[0];
+    return this.issues.getByIndex(this.node['selected']);
   }
 
 }

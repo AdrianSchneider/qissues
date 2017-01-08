@@ -26,4 +26,8 @@ export default class IssuesCollection {
     return this.issues[i];
   }
 
+  public findIndex(predicate: (item: Issue) => boolean): number {
+    return this.issues.findIndex(predicate);
+  }
+
 }

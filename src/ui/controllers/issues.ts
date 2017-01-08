@@ -50,7 +50,7 @@ export default class ListIssuesController {
 
     if (!view['setup']) {
       view.on('select', num => this.viewIssue({ num }));
-      view.on('refresh', () => this.listIssues({ focus: view.getIssue(), invalidate: true }));
+      view.on('refresh', () => this.listIssues({ focus: view.getIssue().id, invalidate: true }));
       view.on('createIssue', () => this.createIssue());
       view.on('createIssueContextually', () => this.createIssue(this.app.filters().toValues()));
       view.on('changeset', changeSet => {
@@ -65,7 +65,12 @@ export default class ListIssuesController {
     this.app.getActiveReport().on('change', () => this.listIssues({ focus: view.getIssue() }));
 
     this.ui.showLoading();
-    this.logger.info('Listing issues');
+
+    if (options.focus) {
+      this.logger.info(`Listing issues focusing on ${options.focus}`);
+    } else {
+      this.logger.info('Listing issues');
+    }
 
     return this.repository.query(this.app.getActiveReport(), options.invalidate).then(issues => {
       this.logger.debug('Issues loaded. Rendering issuesView');
