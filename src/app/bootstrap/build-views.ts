@@ -18,12 +18,13 @@ export default function(container: Container, config: BootstrapParams) {
 
   container.registerService(
     'ui.views.issueList',
-    (keyConfig, ...behaviours: Behaviour[]) => {
-      const view = new IssueList();
+    (app, keyConfig, ...behaviours: Behaviour[]) => {
+      const view = new IssueList(app);
+      // TODO race condition here; render vs instntiation refactoring needed
       //behaviours.forEach(behaviour => behaviour.attach(view, { keys: keyConfig }));
       return view;
     },
-    ['ui.keys', 'ui.behaviours.editable', 'ui.behaviours.yankable']
+    ['app', 'ui.keys', 'ui.behaviours.editable', 'ui.behaviours.yankable']
   );
 
   container.registerService(

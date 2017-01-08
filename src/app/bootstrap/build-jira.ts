@@ -37,13 +37,13 @@ export default function buildJira(container: Container, config: BootstrapParams)
       const normalizer = new JiraNormalizer(metadata, config, issueExpectations);
       return normalizer;
     },
-    ['tracker.jira.metadata', 'config']
+    ['tracker.jira.metadata-cached', 'config']
   );
 
   container.registerService(
     'tracker.jira.repository',
     (client, cache, normalizer, metadata, logger) => new JiraRepository(client, cache, normalizer, metadata, logger),
-    ['tracker.jira.client', 'cache', 'tracker.jira.normalizer', 'tracker.jira.metadata', 'logger'],
+    ['tracker.jira.client', 'cache', 'tracker.jira.normalizer', 'tracker.jira.metadata-cached', 'logger'],
   );
 
   container.registerService(

@@ -45,8 +45,8 @@ export default class Expectations {
    */
   public getSuggestions(): Promise<Array<any>> {
     return Promise
-      .filter(Object.keys(this.schema), field => !!this.schema[field].choices)
-      .map((field: string) => this.schema[field].choices.then((choices) => ([field, choices])));
+      .filter(Object.keys(this.schema), field => !!this.schema[field].choices())
+      .map((field: string) => this.schema[field].choices().then((choices) => ([field, choices])));
   }
 
   /**
@@ -91,7 +91,7 @@ export default class Expectations {
     }
 
     if (field.choices) {
-      return field.choices.then(choices => {
+      return field.choices().then(choices => {
         node = node.valid(choices.map(String));
         return Promise.resolve({ field: fieldName, schema: node });
       });
@@ -110,7 +110,7 @@ interface SchemaFieldDefinition {
   type: string,
   required: boolean,
   default?: any,
-  choices?: Promise<string[]>
+  choices?: () => Promise<string[]>
 }
 
 interface FieldAndSchema {

@@ -3,12 +3,12 @@ import HasIssues        from './hasIssues';
 import View             from '../view';
 import List             from '../widgets/list';
 import FilterableList   from '../widgets/filterableList';
-import Issue            from '../../domain/model/issue';
-import IssuesCollection from '../../domain/model/issues';
+import Application      from "../../app/main";
 import KeyMapping       from '../../app/config/keys';
 import Cancellation     from '../../domain/errors/cancellation';
+import Issue            from '../../domain/model/issue';
+import IssuesCollection from '../../domain/model/issues';
 import Filter           from '../../domain/model/filter';
-import Application from "../../app/main";
 
 /**
  * Responsible for managing the main issue list
@@ -16,8 +16,11 @@ import Application from "../../app/main";
 export default class IssueList implements View, HasIssues {
   public node: Widgets.BlessedElement;
   private issues: IssuesCollection;
-
   private app: Application;
+
+  constructor(app) {
+    this.app = app;
+  }
 
   /**
    * Renders the issue list
@@ -25,6 +28,11 @@ export default class IssueList implements View, HasIssues {
   public render(parent: Widgets.BlessedElement, options: IssueListOptions) {
     this.node = this.createList(parent);
     options.issues.then(issues => this.issues = issues);
+    options.issues.then(issues => {
+      parent.screen.render();
+    });
+
+    return this.node;
   }
 
   private createList(parent: Widgets.BlessedElement): Widgets.BlessedElement {

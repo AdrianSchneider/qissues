@@ -21,9 +21,9 @@ export default class MetadataCacheProxy {
     getProjects: ['projects', Project.unserialize]
   };
 
-  constructor(cache: Cache, ttl?: number) {
+  constructor(cache: Cache, ttl: number = 86400) {
     this.cache = cache;
-    this.ttl = ttl || 86400;
+    this.ttl = ttl;
   }
 
   /**

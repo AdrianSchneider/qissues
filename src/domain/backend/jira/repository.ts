@@ -38,6 +38,7 @@ class JiraRepository implements TrackerRepository {
    */
   public createIssue(data: NewIssue): Promise<Id> {
     return this.client.post('/rest/api/2/issue', this.normalizer.toNewIssueJson(data))
+      .then(r => r.data)
       .then(json => this.normalizer.toNum(json));
   }
 
@@ -47,7 +48,7 @@ class JiraRepository implements TrackerRepository {
   public lookup(num: Id, opts: QueryOptions = {}): Promise<Issue> {
     return this.cache.wrap(
       `lookup:${num}`,
-      () => this.client.get(this.getIssueUrl(num)),
+      () => this.client.get(this.getIssueUrl(num)).then(r => r.data),
       opts.invalidate,
     ).then(data => this.normalizer.toIssue(data));
   }
@@ -65,7 +66,7 @@ class JiraRepository implements TrackerRepository {
 
     return this.cache.wrap(
       `issues:${qs.jql}`,
-      () => this.client.get('/rest/api/2/search', qs),
+      () => this.client.get('/rest/api/2/search', qs).then(r => r.data),
       options.invalidate
     ).then(issues => this.normalizer.toIssuesCollection(issues));
   }
@@ -76,7 +77,7 @@ class JiraRepository implements TrackerRepository {
   public getComments(num: Id, options: QueryOptions = {}): Promise<CommentsCollection> {
     return this.cache.wrap(
       `comments:${num}`,
-      () => this.client.get(this.getIssueUrl(num, '/comment')),
+      () => this.client.get(this.getIssueUrl(num, '/comment')).then(r => r.data),
       options.invalidate
     ).then(comments => this.normalizer.toCommentsCollection(comments));
   }
@@ -88,7 +89,7 @@ class JiraRepository implements TrackerRepository {
     return this.client.post(
       this.getIssueUrl(data.issue, '/comment'),
       this.normalizer.newCommentToJson(data)
-    );
+    ).then(r => r.data);
   }
 
   /**

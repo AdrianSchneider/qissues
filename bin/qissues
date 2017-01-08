@@ -13,9 +13,7 @@ program
   .version(packageInfo.version)
   .option('--clear-cache', 'Clears the cache')
   .option('--init', 'Setup qissues for the first time')
-  .option('-v --verbose', 'Verbosity (increase verbosity with more vs)', function(add, level) {
-    return level + 1;
-  }, 0)
+  .option('-v --verbose', 'Verbosity (increase verbosity with more vs)', (add, level) => level + 1, 0)
   .parse(process.argv);
 
 // Promise configuration
@@ -37,9 +35,13 @@ var container = bootstrap({
 });
 
 container.getMatching(['app', 'ui'])
-  .spread(function(app, ui) {
+  .spread((app, ui) => {
     app.start(ui);
     app.exit = process.exit;
+  })
+  .catch(error => {
+    console.error(`Failed to booot; ${error.stack}`);
+    process.exit(1);
   });
 
 process.on('unhandledRejection', function(reason, promise) {

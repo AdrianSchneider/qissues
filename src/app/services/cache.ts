@@ -5,6 +5,7 @@ import Storage        from '../services/storage';
 
 interface CacheEntry {
   data: any,
+  key: string,
   expires: Date
 }
 
@@ -24,11 +25,13 @@ export default class Cache {
    * Returns the data to allow chaining this with promises easily
    */
   public set<T>(key: string, data: T, ttl?: number): T {
-    this.storage.set(this.storageKey(key), {
+    const entry: CacheEntry = {
       data: data,
+      key: key,
       expires: moment().add(ttl || 3600, 'seconds').toDate()
-    });
+    };
 
+    this.storage.set(this.storageKey(key), entry);
     return data;
   }
 
@@ -39,7 +42,7 @@ export default class Cache {
   public wrap<T>(key: string, f: () => Promise<T>, invalidate?: boolean): Promise<T> {
     const cached = this.get(key, invalidate);
     if (cached) return Promise.resolve(cached);
-    return f().then(result => this.set(key, cached));
+    return f().then(result => this.set(key, result));
   }
 
   /**

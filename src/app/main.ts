@@ -15,8 +15,8 @@ export default class Application {
     this.reportManager = reportManager;
   }
 
-  public start(ui) {
-    ui.start(this, this.tracker);
+  public start(ui, opts) {
+    ui.start(this, this.tracker, opts);
   }
 
   public exit(f: Function) {
@@ -25,6 +25,10 @@ export default class Application {
 
   public getActiveReport(): Report {
     return this.reportManager.getDefault();
+  }
+
+  public getReports(): ReportManager {
+    return this.reportManager;
   }
 
   public getFilters(): FilterSet {

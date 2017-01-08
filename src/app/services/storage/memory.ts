@@ -55,8 +55,6 @@ export default class MemoryStorage implements Storage {
    * Purges any keys that have expired, and flush if any are removed
    */
   protected cleanup() {
-    console.error('memory cleanup');
-
     const now = new Date();
     let changes = false;
 
