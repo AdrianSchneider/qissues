@@ -44,9 +44,13 @@ export default class ViewManager {
     }
 
     const viewConfig = this.views[name];
-    const view = new viewConfig.view(this.app, this.ui, this.keys, element, options);
+    const view = this.construct(viewConfig.view, element, options);
     viewConfig.behaviours.forEach(behaviour => behaviour().attach(view, { keys: this.keys }));
     return view;
+  }
+
+  private construct(ctor, ...args): View {
+    return new ctor(this.app, this.ui, this.keys, ...args);
   }
 }
 
