@@ -24,7 +24,7 @@ describe('Externally Viewable Behaviour', () => {
     const view = <HasIssues>{ node: node };
 
     behaviour.attach(view, {
-      keys: { open: 'b' },
+      keys: { web: 'b' },
       getFilters: () => new FilterSet([])
     });
   });
@@ -36,7 +36,7 @@ describe('Externally Viewable Behaviour', () => {
     const filters = new FilterSet([]);
 
     behaviour.attach(view, {
-      keys: { open: 'b' },
+      keys: { web: 'b' },
       getFilters: () => filters
     });
 
@@ -61,7 +61,7 @@ describe('Externally Viewable Behaviour', () => {
     const issues = new IssuesCollection([issue]);
 
     behaviour.attach(view, {
-      keys: { open: 'b' },
+      keys: { web: 'b' },
       getFilters: () => filters
     });
 
@@ -84,13 +84,13 @@ describe('Externally Viewable Behaviour', () => {
     const view = <HasIssues>{ node: node };
 
     behaviour.attach(view, {
-      keys: { open: 'b' },
+      keys: { web: 'b' },
       getFilters: () => new FilterSet([])
     });
 
     assert.throws(() => {
       behaviour.attach(view, {
-        keys: { open: 'b' },
+        keys: { web: 'b' },
         getFilters: () => new FilterSet([])
       });
     }, Error, 'Already');

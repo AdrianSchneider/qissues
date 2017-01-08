@@ -32,11 +32,17 @@ class SingleIssueView extends EventEmitter implements View, HasIssues {
   private readonly ui: BlessedInterface;
   private readonly keys: KeyMapping;
 
-  constructor(app: Application, ui, keys) {
+  private parent;
+  private options;
+
+  constructor(app: Application, ui, keys, element, options) {
     super();
     this.app = app;
     this.ui = ui;
     this.keys = keys;
+    this.parent = element;
+    this.options = options;
+    this.render(this.parent, this.options);
   }
 
 

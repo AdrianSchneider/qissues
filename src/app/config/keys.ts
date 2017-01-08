@@ -1,8 +1,8 @@
 interface KeyMapping {
   "leader": string,
-  "yank.id": string,
-  "yank.title": string,
-  "yank.body": string,
+  "yankId": string,
+  "yankTitle": string,
+  "yankDescription": string,
   "refresh": string,
   "web": string,
   "back": string,

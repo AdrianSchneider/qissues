@@ -1,5 +1,5 @@
 import * as Promise from 'bluebird';
-import copyPaste from 'copy-paste';
+import * as copyPaste from 'copy-paste';
 
 export default class Clipboard {
 

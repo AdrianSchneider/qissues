@@ -11,6 +11,8 @@ import FilterSet         from '../../domain/model/filterset';
 import TrackerRepository from '../../domain/model/trackerRepository';
 import Cancellation      from '../../domain/errors/cancellation';
 import MoreInfoRequired  from '../../domain/errors/infoRequired';
+import ViewManager from '../viewManager';
+import HasIssues from '../views/hasIssues';
 
 export default class ListIssuesController {
   private readonly app: Application;
@@ -20,75 +22,62 @@ export default class ListIssuesController {
   private readonly keys: KeyMapping;
   private readonly normalizer;
   private readonly logger;
-  private views;
+  private viewManager: ViewManager;
 
-  constructor(app, ui: BlessedInterface, views, keys: KeyMapping, tracker, browser, logger) {
+  constructor(app, ui: BlessedInterface, viewManager: ViewManager, keys: KeyMapping, tracker, browser, logger) {
     this.app = app;
     this.ui = ui;
-    this.views = views;
+    this.viewManager = viewManager;
     this.repository = tracker.repository;
     this.normalizer = tracker.normalizer;
     this.browser = browser;
     this.keys = keys;
     this.logger = logger;
+
+    // TODO maintain focus here; need access to view
+    this.app.getActiveReport().on('change', () => this.listIssues());
   }
 
   /**
    * Lists issues
+   * Failures are passed back up to the caller
    */
-  public listIssues(options: ListIssuesOptions = {}) {
-    const view = this.views.issueList;
-
-    if (!view['setup']) {
-      view.on('select', num => {
-        this.viewIssue({ num }).catch(err => this.handleError(err, `Could not find ${num}`));
-      });
-
-      view.on('refresh', () => this.listIssues({ focus: view.getIssue().id, invalidate: true }));
-      view.on('createIssue', () => this.createIssue());
-      view.on('createIssueContextually', () => this.createIssue(this.app.getFilters().toValues()));
-      view.on('changeset', changeSet => {
-        this.change(changeSet).then(() => this.listIssues({
-          focus: view.getSelected(),
-          invalidate: true
-        }))
-      });
-      view['setup'] = true;
-    }
-
-    // TODO leaked event listener
-    this.app.getActiveReport().on('change', () => this.listIssues({ focus: view.getIssue() }));
-
+  public listIssues(options: ListIssuesOptions = {}): Promise<void> {
+    this.ui.showLoading();
     if (options.focus) {
       this.logger.info(`Listing issues focusing on ${options.focus}`);
     } else {
       this.logger.info('Listing issues');
     }
 
-    this.ui.showLoading();
-
     return this.repository.query(this.app.getActiveReport(), options.invalidate).then(issues => {
       this.logger.debug('Issues loaded. Rendering issuesView');
-      this.views.issueList.render(this.ui.canvas, {
-        issues: issues,
-        focus: options.focus
+      const view = <HasIssues>this.viewManager.getView('issues:list', this.ui.canvas, {
+        issues,
+        focus: options.focus,
+        keys: this.keys
+      });
+
+      view.on('select', num => {
+        this.viewIssue({ num }).catch(err => this.handleError(err, `Could not load ${num}`));
+      });
+
+      view.on('refresh', () => this.listIssues({ focus: view.getIssue().id.toString(), invalidate: true }));
+      view.on('createIssue', () => this.createIssue());
+      view.on('createIssueContextually', () => this.createIssue(this.app.getFilters().toValues()));
+      view.on('changeset', changeSet => {
+        this.change(changeSet).then(() => this.listIssues({ invalidate: true }))
       });
     });
   }
 
   /**
    * Handles interactions around viewing a single issue
+   * Failures are passed back up to the caller
    */
-  public viewIssue(options: ViewIssueOptions) {
+  public viewIssue(options: ViewIssueOptions): Promise<void> {
     const { num } = options;
     this.logger.info('Viewing issue ' + num);
-
-    const view = this.views.singleIssue;
-    if (!view['setup']) {
-      view.on('back', () => this.listIssues({ focus: num }));
-      view.on('refresh', () => this.viewIssue({ num, invalidate: true }));
-      view['setup'] = true;
-    }
 
     this.ui.clearScreen();
     this.ui.showLoading(options.invalidate ? 'Refreshing...' : 'Loading ' + num + '...');
@@ -98,7 +87,14 @@ export default class ListIssuesController {
       this.repository.getComments(new Id(num), options.invalidate)
     ]).spread((issue, comments) => {
       this.logger.debug('Finished fetching data for single view');
-      view.render(this.ui.canvas, { issue, comments });
+
+      const view = this.viewManager.getView('issues:view', this.ui.canvas, {
+        issue: issue,
+        comments: comments
+      });
+
+      view.on('back', () => this.listIssues({ focus: num }));
+      view.on('refresh', () => this.viewIssue({ num, invalidate: true }));
     });
   }
 

@@ -19,7 +19,7 @@ interface ExternallyViewableOptions {
 }
 
 interface Keys {
-  open: string | string[]
+  web: string | string[]
 }
 
 /**
@@ -42,7 +42,7 @@ export default class ExternallyViewable implements Behaviour {
 
     this.view = view;
     this.view.node.key(
-      options.keys.open,
+      options.keys.web,
       () => this.browser.open(this.getUrl(options.getFilters()))
     );
   }

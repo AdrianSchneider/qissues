@@ -23,12 +23,17 @@ class IssueList implements View, HasIssues extends EventEmitter {
   private readonly app: Application;
   private readonly ui: BlessedInterface;
   private readonly keys: KeyMapping;
+  private parent;
+  private options;
 
-  constructor(app: Application, ui, keys) {
+  constructor(app: Application, ui, keys, parent, options: IssueListOptions) {
     super();
     this.app = app;
     this.ui = ui;
     this.keys = keys;
+    this.parent = parent;
+    this.options = options;
+    this.render(this.parent, this.options);
   }
 
   /**
@@ -61,7 +66,10 @@ class IssueList implements View, HasIssues extends EventEmitter {
     return this.node;
   }
 
-  private applySelected(selected) {
+  /**
+   * Move the current selection to this id
+   */
+  private applySelected(selected: string) {
     if (!selected) return;
 
     const i = this.issues.findIndex(issue => issue.id.toString() == selected);

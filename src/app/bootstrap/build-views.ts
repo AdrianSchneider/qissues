@@ -1,48 +1,37 @@
-import BootstrapParams  from '../config/bootstrap';
-import Container        from '../services/container';
-import BlessedInterface from '../../ui/interface';
-import Behaviour        from '../../ui/behaviour';
-import Editable         from '../../ui/behaviors/editable';
-import Yankable         from '../../ui/behaviors/yankable';
-import IssueList        from '../../ui/views/issueList';
-import SingleIssue      from '../../ui/views/single';
-import Clipboard        from '../../ui/services/clipboard';
-import Sequencer        from '../../ui/services/sequencer';
-import IssueTracker     from '../../domain/model/tracker';
+import BootstrapParams    from '../config/bootstrap';
+import Container          from '../services/container';
+import BlessedInterface   from '../../ui/interface';
+import Behaviour          from '../../ui/behaviour';
+import Editable           from '../../ui/behaviors/editable';
+import Yankable           from '../../ui/behaviors/yankable';
+import ExternallyViewable from '../../ui/behaviors/externallyViewable';
+import IssueList          from '../../ui/views/issueList';
+import SingleIssue        from '../../ui/views/single';
+import ViewManager        from '../../ui/viewManager';
+import Clipboard          from '../../ui/services/clipboard';
+import Sequencer          from '../../ui/services/sequencer';
+import Browser            from '../../ui/services/browser';
+import IssueTracker       from '../../domain/model/tracker';
 
 export default function(container: Container, config: BootstrapParams) {
   container.registerService(
-    'ui.views',
-    (issueList, singleIssue) => ({ issueList, singleIssue }),
-    ['ui.views.issueList', 'ui.views.singleIssue']
-  );
-
-  container.registerService(
-    'ui.views.issueList',
-    (app, ui, keyConfig, ...behaviours: Behaviour[]) => {
-      const view = new IssueList(app, ui, keyConfig);
-      // TODO race condition here; render vs instntiation refactoring needed
-      //behaviours.forEach(behaviour => behaviour.attach(view, { keys: keyConfig }));
-      return view;
+    'ui.view-manager',
+    (app, ui, keyConfig, ...behaviours) => {
+      const viewManager = new ViewManager(app, ui, keyConfig);
+      viewManager.registerView('issues:view', SingleIssue, behaviours);
+      viewManager.registerView('issues:list', IssueList, behaviours);
+      return viewManager;
     },
-    ['app', 'ui', 'ui.keys', 'ui.behaviours.editable', 'ui.behaviours.yankable']
+    ['app', 'ui', 'ui.keys',
+      'ui.behaviours.editable',
+      'ui.behaviours.yankable',
+      'ui.behaviours.externally-viewable'
+    ]
   );
-
-  container.registerService(
-    'ui.views.singleIssue',
-    (app, ui, keyConfig, ...behaviours: Behaviour[]) => {
-      const view = new SingleIssue(app, ui, keyConfig);
-      // TODO race condition here; render vs instntiation refactoring needed
-      //behaviours.forEach(behaviour => behaviour.attach(view, { keys: keyConfig }));
-      return view;
-    },
-    ['app', 'ui', 'ui.keys', 'ui.behaviours.editable', 'ui.behaviours.yankable']
-  );
-
 
   container.registerService(
     'ui.behaviours.editable',
-    (ui: BlessedInterface, sequencer: Sequencer, tracker: IssueTracker) => {
+    (ui: BlessedInterface, sequencer: Sequencer, tracker: IssueTracker) => () => {
       return new Editable(ui, sequencer, tracker.metadata);
     },
     ['ui', 'ui.sequencer', 'tracker']
@@ -50,9 +39,18 @@ export default function(container: Container, config: BootstrapParams) {
 
   container.registerService(
     'ui.behaviours.yankable',
-    (clipboard: Clipboard, sequencer: Sequencer) => new Yankable(clipboard, sequencer),
-    ['ui.sequencer', 'ui.clipboard']
+    (clipboard: Clipboard, sequencer: Sequencer) => () => new Yankable(clipboard, sequencer),
+    ['ui.clipboard', 'ui.sequencer']
   );
+
+  container.registerService(
+    'ui.behaviours.externally-viewable',
+    (browser: Browser, tracker: IssueTracker) => () => {
+      return new ExternallyViewable(browser, tracker.normalizer);
+    },
+    ['ui.browser', 'tracker']
+  );
+
 
   return container;
 }

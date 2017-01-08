@@ -78,7 +78,7 @@ export default class Sequencer {
    * Generates a random id to associate a new node with
    */
   private generateId(node: any): string {
-    return '' + Math.random() + Math.random() + JSON.stringify(node);
+    return '' + Math.random() + Math.random();
   }
 
   private onLeader(node: NodeConfig) {
