@@ -1,6 +1,7 @@
-import * as Promise from 'bluebird';
-import Browser           from '../browser';
+import * as Promise      from 'bluebird';
+import Browser           from '../services/browser';
 import BlessedInterface  from '../interface';
+import Application       from '../../app/main';
 import KeyMapping        from '../../app/config/keys';
 import Id                from '../../domain/model/id';
 import Comment           from '../../domain/model/comment';
@@ -11,18 +12,8 @@ import TrackerRepository from '../../domain/model/trackerRepository';
 import Cancellation      from '../../domain/errors/cancellation';
 import MoreInfoRequired  from '../../domain/errors/infoRequired';
 
-interface ListIssuesOptions {
-  invalidate?: boolean,
-  focus?: string
-}
-
-interface ViewIssueOptions {
-  num: string,
-  invalidate?: boolean
-}
-
 export default class ListIssuesController {
-  private readonly app;
+  private readonly app: Application;
   private readonly repository: TrackerRepository;
   private readonly browser: Browser;
   private readonly ui: BlessedInterface;
@@ -49,10 +40,13 @@ export default class ListIssuesController {
     const view = this.views.issueList;
 
     if (!view['setup']) {
-      view.on('select', num => this.viewIssue({ num }));
+      view.on('select', num => {
+        this.viewIssue({ num }).catch(err => this.handleError(err, `Could not find ${num}`));
+      });
+
       view.on('refresh', () => this.listIssues({ focus: view.getIssue().id, invalidate: true }));
       view.on('createIssue', () => this.createIssue());
-      view.on('createIssueContextually', () => this.createIssue(this.app.filters().toValues()));
+      view.on('createIssueContextually', () => this.createIssue(this.app.getFilters().toValues()));
       view.on('changeset', changeSet => {
         this.change(changeSet).then(() => this.listIssues({
           focus: view.getSelected(),
@@ -62,15 +56,16 @@ export default class ListIssuesController {
       view['setup'] = true;
     }
 
+    // TODO leaked event listener
     this.app.getActiveReport().on('change', () => this.listIssues({ focus: view.getIssue() }));
-
-    this.ui.showLoading();
 
     if (options.focus) {
       this.logger.info(`Listing issues focusing on ${options.focus}`);
     } else {
       this.logger.info('Listing issues');
     }
+
+    this.ui.showLoading();
 
     return this.repository.query(this.app.getActiveReport(), options.invalidate).then(issues => {
       this.logger.debug('Issues loaded. Rendering issuesView');
@@ -98,7 +93,7 @@ export default class ListIssuesController {
     this.ui.clearScreen();
     this.ui.showLoading(options.invalidate ? 'Refreshing...' : 'Loading ' + num + '...');
 
-    Promise.all([
+    return Promise.all([
       this.repository.lookup(new Id(num), options.invalidate),
       this.repository.getComments(new Id(num), options.invalidate)
     ]).spread((issue, comments) => {
@@ -136,16 +131,27 @@ export default class ListIssuesController {
   }
 
   /**
-   * Returns a refresh function for a given issue id
-   */
-  private refreshIssue(num: string): () => void {
-    return () => this.viewIssue({ num: num, invalidate: true });
-  }
-
-  /**
    * Returns a function that will persist a comment for a given id
    */
   private persistComment(num: string): (text: string) => Promise<Comment> {
     return text => this.repository.postComment(new NewComment(text, new Id(num)));
   }
+
+  /**
+   * Show an error
+   */
+  private handleError(error: Error, message?: string): Promise<void> {
+    this.logger.error(error.stack);
+    return this.ui.message(message || 'An error occurred');
+  }
+}
+
+interface ListIssuesOptions {
+  invalidate?: boolean,
+  focus?: string
+}
+
+interface ViewIssueOptions {
+  num: string,
+  invalidate?: boolean
 }
