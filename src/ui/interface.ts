@@ -93,7 +93,7 @@ export default class BlessedInterface {
   public ask(text: string, parent?: blessed.Widgets.Node): Promise<string> {
     if (!parent) parent = this.parent;
     return new Promise((resolve, reject) => {
-      var input = prompt(text, parent);
+      var input = prompt(text + ' ', parent);
       input.key(this.keys['input.cancel'], () => {
         parent.remove(input);
         this.screen.render();

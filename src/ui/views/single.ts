@@ -1,11 +1,14 @@
 import * as Promise       from 'bluebird';
 import * as blessed       from 'blessed';
-import { EventEmitter } from 'events';
+import { EventEmitter }   from 'events';
 import { Widgets }        from 'blessed'
 import { format }         from 'util';
 import { mapObject }      from 'underscore';
 import HasIssues          from './hasIssues';
 import View               from '../view';
+import Application        from "../../app/main";
+import KeyMapping         from '../../app/config/keys';
+import BlessedInterface   from "../interface";
 import Id                 from '../../domain/model/id';
 import Issue              from '../../domain/model/issue';
 import IssuesCollection   from '../../domain/model/issues';
@@ -13,8 +16,8 @@ import CommentsCollection from '../../domain/model/comments';
 import wrap               from '../../util/wrap';
 
 interface SingleIssueViewOptions {
-  issue: Promise<Issue>,
-  comments: Promise<CommentsCollection>
+  issue: Issue,
+  comments: CommentsCollection
 }
 
 /**
@@ -25,25 +28,52 @@ class SingleIssueView extends EventEmitter implements View, HasIssues {
   private issue: Issue;
   private comments: CommentsCollection;
 
+  private readonly app: Application;
+  private readonly ui: BlessedInterface;
+  private readonly keys: KeyMapping;
+
+  constructor(app: Application, ui, keys) {
+    super();
+    this.app = app;
+    this.ui = ui;
+    this.keys = keys;
+  }
+
+
   /**
    * Renders the view
    * Waits for the promises to resolve before drawing
    */
   public render(parent: Widgets.BlessedElement, options: SingleIssueViewOptions): void {
     this.node = this.buildBox(parent, options);
+    this.issue = options.issue;
+    this.comments = options.comments;
 
-    options.issue.then(issue => this.issue = issue);
-    options.comments.then(comments => this.comments = comments);
 
-    return Promise.all([options.issue, options.comments])
-      .then(() => {
-        parent.append(this.node);
-        this.node.focus();
-        this.node.setContent(
-          this.renderIssue(this.issue, this.comments, +this.node.width)
-        );
-        parent.screen.render();
-      });
+    this.node.key(this.keys.back, () => this.emit('back'));
+    this.node.key(this.keys.refresh, () => this.emit('refresh'));
+
+    /*
+    this.node.key(this.keys['issue.comment.inline'], () => this.ui.ask('Comment')
+      .then(this.persistComment(num))
+      .then(this.refreshIssue(num))
+      .catch(Cancellation, () => {}));
+
+    this.node.key(this.keys['issue.comment.external'], () => this.ui.editExternally('')
+      .then(this.persistComment(num))
+      .then(this.refreshIssue(num))
+      .catch(Cancellation, () => {}));
+
+    this.node.on('changeset', changeSet => this.applyChangeSet(changeSet)
+      .then(this.refreshIssue(num)));
+      */
+
+    parent.append(this.node);
+    this.node.focus();
+    this.node.setContent(
+      this.renderIssue(this.issue, this.comments, +this.node.width)
+    );
+    parent.screen.render();
   }
 
   /**
@@ -78,7 +108,7 @@ class SingleIssueView extends EventEmitter implements View, HasIssues {
    * Renders the title of the issue
    */
   private buildHeader(issue: Issue, width: number): string {
-    return `{bold}{yellow-fg}${issue.id}{/yellow-fg} - ${issue.title}</bold}`;
+    return `{bold}{yellow-fg}${issue.id}{/yellow-fg} - ${issue.title}{/bold}`;
   }
 
   /**
@@ -135,8 +165,10 @@ class SingleIssueView extends EventEmitter implements View, HasIssues {
     return this.issue;
   }
 
-  public getIssues(): Promise<IssuesCollection> {
+  public getIssues(): IssuesCollection {
     return new IssuesCollection([this.issue]);
   }
 
 }
+
+export default SingleIssueView;

@@ -49,6 +49,6 @@ export default function Prompt(text: string, parent) {
     parent.render();
   };
 
-  parent.render();
+  parent.screen.render();
   return input;
 }

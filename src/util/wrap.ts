@@ -1,4 +1,4 @@
-import wordwrap from 'wordwrap';
+import * as wordwrap from 'wordwrap';
 
 /**
  * Indents a string on each line, while also wrapping words

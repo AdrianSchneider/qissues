@@ -5,6 +5,7 @@ import Behaviour        from '../../ui/behaviour';
 import Editable         from '../../ui/behaviors/editable';
 import Yankable         from '../../ui/behaviors/yankable';
 import IssueList        from '../../ui/views/issueList';
+import SingleIssue      from '../../ui/views/single';
 import Clipboard        from '../../ui/services/clipboard';
 import Sequencer        from '../../ui/services/sequencer';
 import IssueTracker     from '../../domain/model/tracker';
@@ -12,20 +13,32 @@ import IssueTracker     from '../../domain/model/tracker';
 export default function(container: Container, config: BootstrapParams) {
   container.registerService(
     'ui.views',
-    (issueList) => ({ issueList }),
-    ['ui.views.issueList']
+    (issueList, singleIssue) => ({ issueList, singleIssue }),
+    ['ui.views.issueList', 'ui.views.singleIssue']
   );
 
   container.registerService(
     'ui.views.issueList',
-    (app, keyConfig, ...behaviours: Behaviour[]) => {
-      const view = new IssueList(app);
+    (app, ui, keyConfig, ...behaviours: Behaviour[]) => {
+      const view = new IssueList(app, ui, keyConfig);
       // TODO race condition here; render vs instntiation refactoring needed
       //behaviours.forEach(behaviour => behaviour.attach(view, { keys: keyConfig }));
       return view;
     },
-    ['app', 'ui.keys', 'ui.behaviours.editable', 'ui.behaviours.yankable']
+    ['app', 'ui', 'ui.keys', 'ui.behaviours.editable', 'ui.behaviours.yankable']
   );
+
+  container.registerService(
+    'ui.views.singleIssue',
+    (app, ui, keyConfig, ...behaviours: Behaviour[]) => {
+      const view = new SingleIssue(app, ui, keyConfig);
+      // TODO race condition here; render vs instntiation refactoring needed
+      //behaviours.forEach(behaviour => behaviour.attach(view, { keys: keyConfig }));
+      return view;
+    },
+    ['app', 'ui', 'ui.keys', 'ui.behaviours.editable', 'ui.behaviours.yankable']
+  );
+
 
   container.registerService(
     'ui.behaviours.editable',

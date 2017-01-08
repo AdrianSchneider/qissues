@@ -1,4 +1,5 @@
 import { Widgets }      from 'blessed';
+import { EventEmitter } from 'events';
 import HasIssues        from './hasIssues';
 import View             from '../view';
 import List             from '../widgets/list';
@@ -6,20 +7,28 @@ import FilterableList   from '../widgets/filterableList';
 import Application      from "../../app/main";
 import KeyMapping       from '../../app/config/keys';
 import Cancellation     from '../../domain/errors/cancellation';
+import Id               from '../../domain/model/id';
 import Issue            from '../../domain/model/issue';
 import IssuesCollection from '../../domain/model/issues';
 import Filter           from '../../domain/model/filter';
+import BlessedInterface from "../interface";
 
 /**
  * Responsible for managing the main issue list
  */
-export default class IssueList implements View, HasIssues {
+class IssueList implements View, HasIssues extends EventEmitter {
   public node: Widgets.BlessedElement;
   private issues: IssuesCollection;
-  private readonly app: Application;
 
-  constructor(app: Application) {
+  private readonly app: Application;
+  private readonly ui: BlessedInterface;
+  private readonly keys: KeyMapping;
+
+  constructor(app: Application, ui, keys) {
+    super();
     this.app = app;
+    this.ui = ui;
+    this.keys = keys;
   }
 
   /**
@@ -29,6 +38,19 @@ export default class IssueList implements View, HasIssues {
     this.node = this.createList(parent);
     this.issues = options.issues;
     this.renderIssues(this.issues);
+
+    this.node.on('select', (li, i) => {
+      this.emit('select', this.issues.getByIndex(i).id);
+    });
+
+    this.node.key(this.keys['issue.lookup'], () => {
+      this.ui.ask('Open Issue')
+        .then(num => this.emit('select', new Id(num)));
+    });
+
+    this.node.key(this.keys['issue.create'], () => this.emit('createIssue'));
+    this.node.key(this.keys['issue.create.contextual'], () => this.emit('createIssueContextual'));
+    this.node.key(this.keys.refresh, () => this.emit('refresh'));
 
     parent.append(this.node);
     parent.screen.render();
@@ -102,6 +124,7 @@ export default class IssueList implements View, HasIssues {
   }
 
   public getIssue() {
+    if (!this.issues) return null;
     return this.issues[0];
   }
 
@@ -111,3 +134,5 @@ interface IssueListOptions {
   issues: IssuesCollection,
   focus?: string,
 }
+
+export default IssueList;

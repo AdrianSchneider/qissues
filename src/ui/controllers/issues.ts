@@ -1,3 +1,4 @@
+import * as Promise from 'bluebird';
 import Browser           from '../browser';
 import BlessedInterface  from '../interface';
 import KeyMapping        from '../../app/config/keys';
@@ -45,47 +46,33 @@ export default class ListIssuesController {
    * Lists issues
    */
   public listIssues(options: ListIssuesOptions = {}) {
+    const view = this.views.issueList;
+
+    if (!view['setup']) {
+      view.on('select', num => this.viewIssue({ num }));
+      view.on('refresh', () => this.listIssues({ focus: view.getIssue(), invalidate: true }));
+      view.on('createIssue', () => this.createIssue());
+      view.on('createIssueContextually', () => this.createIssue(this.app.filters().toValues()));
+      view.on('changeset', changeSet => {
+        this.change(changeSet).then(() => this.listIssues({
+          focus: view.getSelected(),
+          invalidate: true
+        }))
+      });
+      view['setup'] = true;
+    }
+
+    this.app.getActiveReport().on('change', () => this.listIssues({ focus: view.getIssue() }));
+
     this.ui.showLoading();
     this.logger.info('Listing issues');
 
     return this.repository.query(this.app.getActiveReport(), options.invalidate).then(issues => {
       this.logger.debug('Issues loaded. Rendering issuesView');
-
-      const list = this.views.issueList.render(this.ui.canvas, {
+      this.views.issueList.render(this.ui.canvas, {
         issues: issues,
         focus: options.focus
       });
-
-      list.on('select', num => this.viewIssue(list.getSelected()));
-      list.key(this.keys['issue.lookup'], () => this.ui.ask('Open Issue')
-        .then(num => this.viewIssue({ num })));
-
-      list.key(this.keys['issue.create'], () => this.createIssue());
-      list.key(this.keys['issue.create.contextual'], () => {
-        this.createIssue(this.app.getFilters().toValues());
-      });
-
-      list.key(this.keys.refresh, () => this.listIssues({
-        focus: list.getSelected(),
-        invalidate: true
-      }));
-
-      list.key(this.keys.web, () => {
-        this.browser.open(this.normalizer.getQueryUrl(this.app.getFilters()));
-      });
-
-      list.on('changeset', changeSet => {
-        this.change(changeSet).then(() => this.listIssues({
-          focus: list.getSelected(),
-          invalidate: true
-        }))
-      });
-
-      this.app.getActiveReport().on('change', () => {
-        this.ui.showLoading();
-        this.repository.query(this.app.getActiveReport()).then(list.setIssues);
-      });
-
     });
   }
 
@@ -96,34 +83,25 @@ export default class ListIssuesController {
     const { num } = options;
     this.logger.info('Viewing issue ' + num);
 
+    const view = this.views.singleIssue;
+    if (!view['setup']) {
+      view.on('back', () => this.listIssues({ focus: num }));
+      view.on('refresh', () => this.viewIssue({ num, invalidate: true }));
+      view['setup'] = true;
+    }
+
     this.ui.clearScreen();
     this.ui.showLoading(options.invalidate ? 'Refreshing...' : 'Loading ' + num + '...');
 
-    const view = this.views.singleIssue(
-      this.ui.canvas,
+    Promise.all([
       this.repository.lookup(new Id(num), options.invalidate),
       this.repository.getComments(new Id(num), options.invalidate)
-    );
-
-    view.key(this.keys.back, () => this.listIssues({ focus: num }));
-    view.key(this.keys.refresh, () => this.refreshIssue(num));
-    view.key(this.keys.web, () => this.browser.open(
-      this.normalizer.getIssueUrl(num, this.app.getFilters())
-    ));
-
-    view.key(this.keys['issue.comment.inline'], () => this.ui.ask('Comment')
-      .then(this.persistComment(num))
-      .then(this.refreshIssue(num))
-      .catch(Cancellation, () => {}));
-
-    view.key(this.keys['issue.comment.external'], () => this.ui.editExternally('')
-      .then(this.persistComment(num))
-      .then(this.refreshIssue(num))
-      .catch(Cancellation, () => {}));
-
-    view.on('changeset', changeSet => this.applyChangeSet(changeSet)
-      .then(this.refreshIssue(num)));
+    ]).spread((issue, comments) => {
+      this.logger.debug('Finished fetching data for single view');
+      view.render(this.ui.canvas, { issue, comments });
+    });
   }
+
   /**
    * Creates a new issue
    */

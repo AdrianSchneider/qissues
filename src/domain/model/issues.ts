@@ -21,4 +21,9 @@ export default class IssuesCollection {
   public get(id: string | Id): Issue {
     return this.issues.find(issue => issue.id.toString() === id.toString());
   }
+
+  public getByIndex(i: 0): Issue {
+    return this.issues[i];
+  }
+
 }
