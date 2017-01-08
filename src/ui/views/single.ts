@@ -147,7 +147,7 @@ class SingleIssueView extends EventEmitter implements View, HasIssues {
     return out + comments.map(comment => format(
       '\n\n    {blue-fg}%s{/blue-fg} at {blue-fg}%s{/blue-fg}\n\n%s',
       comment.author,
-      this.formatDate(comment.getDate()),
+      this.formatDate(comment.date),
       wrap(comment.message, 2, width)
     )).join('')
   }

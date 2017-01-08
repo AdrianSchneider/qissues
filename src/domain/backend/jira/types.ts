@@ -17,6 +17,7 @@ export interface JiraIssueFields {
   status: JiraField,
   created: string,
   updated: string,
+  comment: JiraCommentsResponse
 }
 
 export interface JiraField {
@@ -32,7 +33,8 @@ export interface JiraCommentResponse {
 }
 
 export interface JiraCommentsResponse {
-  comments: JiraCommentResponse[]
+  comments: JiraCommentResponse[],
+  total: number
 }
 
 export interface JiraTransition {

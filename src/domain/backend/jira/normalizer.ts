@@ -74,12 +74,13 @@ export default class JiraNormalizer {
       (() => {
         var meta: IssueAttributes = {};
 
-        if (response.fields.created)       meta.dateCreated = moment(response.fields.created).toDate();
-        if (response.fields.updated)       meta.dateUpdated = moment(response.fields.updated).toDate();
-        if (response.fields.assignee)      meta.assignee    = new User(response.fields.assignee.name);
-        if (response.fields.reporter)      meta.reporter    = new User(response.fields.reporter.name);
-        if (response.fields.priority)      meta.priority    = new Priority(response.fields.priority.id, response.fields.priority.name);
-        if (response.fields.issuetype)     meta.type        = new Type(response.fields.issuetype.name);
+        if (response.fields.created)       meta.dateCreated  = moment(response.fields.created).toDate();
+        if (response.fields.updated)       meta.dateUpdated  = moment(response.fields.updated).toDate();
+        if (response.fields.assignee)      meta.assignee     = new User(response.fields.assignee.name);
+        if (response.fields.reporter)      meta.reporter     = new User(response.fields.reporter.name);
+        if (response.fields.priority)      meta.priority     = new Priority(response.fields.priority.id, response.fields.priority.name);
+        if (response.fields.issuetype)     meta.type         = new Type(response.fields.issuetype.name);
+        if (response.fields.comment)       meta.commentCount = response.fields.comment.total;
 
         return meta;
       })()
