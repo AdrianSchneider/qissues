@@ -75,7 +75,7 @@ describe('Expectations', () => {
 
     it('Lists all fields and their choices', () => {
       const expectations = new Expectations({
-        author: { type: 'string', required: true, choices: Promise.resolve(['adrian', 'bob']) }
+        author: { type: 'string', required: true, choices: () => Promise.resolve(['adrian', 'bob']) }
       });
 
       return expectations.getSuggestions().then(suggestions => assert.deepEqual(
@@ -100,20 +100,20 @@ describe('Expectations', () => {
 
     it('Passes when using a preselected choice', function() {
       const choices = Promise.resolve(['adrian']);
-      const expectations = new Expectations({ title: { type: 'string', required: true, choices: choices } });
+      const expectations = new Expectations({ title: { type: 'string', required: true, choices: () => choices } });
       return expectations.ensureValid({ title: 'adrian' });
     });
 
     it('Fails when not using a preselected choice', function() {
       const choices = Promise.resolve(['adrian']);
-      const expectations = new Expectations({ title: { type: 'string', required: true, choices: choices } });
+      const expectations = new Expectations({ title: { type: 'string', required: true, choices: () => choices } });
       return expectations.ensureValid({ title: 'dude' })
         .catch(ValidationError, e => assert.include(e.message, 'must be one of'));
     });
 
     it('Fails when not using a preselected choice', function() {
       const choices = Promise.resolve(['adrian', 'joe']);
-      const expectations = new Expectations({ title: { type: 'string', required: true, choices: choices } });
+      const expectations = new Expectations({ title: { type: 'string', required: true, choices: () => choices } });
       return expectations.ensureValid({ title: 'dude' })
         .catch(ValidationError, e => assert.include(e.message, 'must be one of'));
     });

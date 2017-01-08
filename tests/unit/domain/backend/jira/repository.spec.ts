@@ -23,7 +23,7 @@ describe('JiraRepository', () => {
     cache = <Cache>{};
     normalizer = {};
     logger = {};
-    repository = new JiraRepository(client, cache, normalizer, logger, metadata);
+    repository = new JiraRepository(client, cache, normalizer, metadata, logger);
   });
 
   describe('#createIssue', () => {
@@ -31,7 +31,7 @@ describe('JiraRepository', () => {
     it('Persists a NewIssue in Jira, promising the new Id', () => {
       const newIssue = <NewIssue>{};
       const newIssueJson = { normalized: true };
-      const responseJson = { jira: true };
+      const responseJson = { data: { jira: true } };
 
       client.post = (url, data) => {
         assert.equal(url, '/rest/api/2/issue');
@@ -45,7 +45,7 @@ describe('JiraRepository', () => {
       };
 
       normalizer.toNum = response => {
-        assert.deepEqual(response, responseJson);
+        assert.deepEqual(response, responseJson.data);
         return new Id('100');
       };
 
@@ -61,7 +61,7 @@ describe('JiraRepository', () => {
   describe('#lookup', () => {
 
     it('Looks up the issue, wrapped in cache handlers, promising the found Issue', () => {
-      const response = { response: true};
+      const response = { data: { response: true } };
       const issue = <Issue>{ title: "asdf" };
 
       client.get = url => {
@@ -76,7 +76,7 @@ describe('JiraRepository', () => {
       };
 
       normalizer.toIssue = res => {
-        assert.deepEqual(res, response);
+        assert.deepEqual(res, response.data);
         return issue;
       };
 
@@ -91,12 +91,12 @@ describe('JiraRepository', () => {
     it('Queries the issues, using the generated JQL from the report', () => {
       const jql = 'JQL';
       const issues = <IssuesCollection>{};
-      const response = { response: true };
+      const response = { data: { response: true } };
       const report = <Report>{ filters: { } };
 
       client.get = (url, qs) => {
         assert.equal(url, '/rest/api/2/search');
-        assert.deepEqual(qs, { maxResults: 500, jql: jql });
+        assert.deepEqual(qs, { params: { maxResults: 500, jql: jql } });
         return Promise.resolve(response);
       };
 
@@ -110,7 +110,7 @@ describe('JiraRepository', () => {
       normalizer.filterSetToJql = f => jql;
 
       normalizer.toIssuesCollection = r => {
-        assert.deepEqual(r, response);
+        assert.deepEqual(r, response.data);
         return issues;
       };
 

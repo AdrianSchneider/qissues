@@ -45,7 +45,7 @@ export default class Expectations {
    */
   public getSuggestions(): Promise<Array<any>> {
     return Promise
-      .filter(Object.keys(this.schema), field => !!this.schema[field].choices())
+      .filter(Object.keys(this.schema), field => !!this.schema[field].choices)
       .map((field: string) => this.schema[field].choices().then((choices) => ([field, choices])));
   }
 
