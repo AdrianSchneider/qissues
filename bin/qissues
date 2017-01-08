@@ -34,8 +34,9 @@ var container = bootstrap({
   output     : process.stdout
 });
 
-container.getMatching(['app', 'ui'])
-  .spread((app, ui) => {
+container.getMatching(['app', 'ui', 'logger'])
+  .spread((app, ui, logger) => {
+    logger.debug('Container initialized');
     app.start(ui);
     app.exit = process.exit;
   })

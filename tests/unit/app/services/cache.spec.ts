@@ -92,4 +92,36 @@ describe('Cache', function() {
 
   });
 
+  describe('#wrap', () => {
+
+    it('Returns the cached result when available', () => {
+      const getData = () => 'cool beans';
+      storage.get = key => {
+        assert.equal(key, 'hit');
+        return { data: getData(), expires: moment().add(1, 'hour').toDate() };
+      };
+
+      return cache.wrap(
+        'hit',
+        () => Promise.resolve(getData()),
+        false
+      ).then(result => assert.deepEqual(result, 'cool beans'));
+    });
+
+    it('Returns the live result and updates cache when cache unavailable', () => {
+      const d = { expensive: true };
+      const getData = () => d;
+
+      storage.get = key => null;
+      storage.set = (key, value) => assert.deepEqual(value.data, d);
+
+      return cache.wrap(
+        'key miss',
+        () => Promise.resolve(getData()),
+        false
+      ).then(result => assert.deepEqual(result, d));
+    });
+
+  });
+
 });

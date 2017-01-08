@@ -42,21 +42,51 @@ export default class ListIssuesController {
   }
 
   /**
-   * Creates a new issue
+   * Lists issues
    */
-  public createIssue(filters?: FilterSet): Promise<any> {
+  public listIssues(options: ListIssuesOptions = {}) {
     this.ui.showLoading();
-    return this.ui.capture(this.normalizer.getNewIssueRequirements(), filters)
-      .then(data => this.repository.createIssue(this.normalizer.toNewIssue(data)))
-      .then(num => this.viewIssue({ num: "" + num }))
-      .catch(Cancellation, () => {
-        this.ui.message('Cancelled').then(() => this.listIssues());
-      })
-      .catch(Error, error => {
-        this.logger.error('Caught error: ' + error.stack);
-        this.ui.message(error.message, 5000)
-          .then(() => this.listIssues());
+    this.logger.info('Listing issues');
+
+    return this.repository.query(this.app.getActiveReport(), options.invalidate).then(issues => {
+      this.logger.debug('Issues loaded. Rendering issuesView');
+
+      const list = this.views.issueList.render(this.ui.canvas, {
+        issues: issues,
+        focus: options.focus
       });
+
+      list.on('select', num => this.viewIssue(list.getSelected()));
+      list.key(this.keys['issue.lookup'], () => this.ui.ask('Open Issue')
+        .then(num => this.viewIssue({ num })));
+
+      list.key(this.keys['issue.create'], () => this.createIssue());
+      list.key(this.keys['issue.create.contextual'], () => {
+        this.createIssue(this.app.getFilters().toValues());
+      });
+
+      list.key(this.keys.refresh, () => this.listIssues({
+        focus: list.getSelected(),
+        invalidate: true
+      }));
+
+      list.key(this.keys.web, () => {
+        this.browser.open(this.normalizer.getQueryUrl(this.app.getFilters()));
+      });
+
+      list.on('changeset', changeSet => {
+        this.change(changeSet).then(() => this.listIssues({
+          focus: list.getSelected(),
+          invalidate: true
+        }))
+      });
+
+      this.app.getActiveReport().on('change', () => {
+        this.ui.showLoading();
+        this.repository.query(this.app.getActiveReport()).then(list.setIssues);
+      });
+
+    });
   }
 
   /**
@@ -94,50 +124,24 @@ export default class ListIssuesController {
     view.on('changeset', changeSet => this.applyChangeSet(changeSet)
       .then(this.refreshIssue(num)));
   }
-
   /**
-   * Lists issues
+   * Creates a new issue
    */
-  public listIssues(options: ListIssuesOptions = {}) {
+  public createIssue(filters?: FilterSet): Promise<any> {
     this.ui.showLoading();
-
-    var list = this.views.issueList.render(this.ui.canvas, {
-      issues: this.repository.query(this.app.getActiveReport(), options.invalidate),
-      focus: options.focus
-    });
-
-    list.on('select', num => this.viewIssue(list.getSelected()));
-    list.key(this.keys['issue.lookup'], () => this.ui.ask('Open Issue')
-      .then(this.viewIssue));
-
-    list.key(this.keys['issue.create'], () => this.createIssue());
-    list.key(this.keys['issue.create.contextual'], () => {
-      this.createIssue(this.app.getFilters().toValues());
-    });
-
-    list.key(this.keys.refresh, () => this.listIssues({
-      focus: list.getSelected(),
-      invalidate: true
-    }));
-
-    list.key(this.keys.web, () => {
-      this.browser.open(this.normalizer.getQueryUrl(this.app.getFilters()));
-    });
-
-    list.on('changeset', changeSet => {
-      this.change(changeSet).then(() => this.listIssues({
-        focus: list.getSelected(),
-        invalidate: true
-      }))
-    });
-
-    this.app.getActiveReport().on('change', () => {
-      this.ui.showLoading();
-      this.repository.query(this.app.getActiveReport()).then(list.setIssues);
-    });
-
-    return list;
+    return this.ui.capture(this.normalizer.getNewIssueRequirements(), filters)
+      .then(data => this.repository.createIssue(this.normalizer.toNewIssue(data)))
+      .then(num => this.viewIssue({ num: "" + num }))
+      .catch(Cancellation, () => {
+        this.ui.message('Cancelled').then(() => this.listIssues());
+      })
+      .catch(Error, error => {
+        this.logger.error('Caught error: ' + error.stack);
+        this.ui.message(error.message, 5000)
+          .then(() => this.listIssues());
+      });
   }
+
 
   /**
    * Prompts the user for changes

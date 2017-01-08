@@ -14,7 +14,7 @@ export default class List extends blessed.widget.List {
   private searchResults;
   private resultNumber;
   private parentElement;
-  protected options;
+  public options;
 
   public issues: IssuesCollection;
   protected items: string[];
@@ -48,7 +48,7 @@ export default class List extends blessed.widget.List {
   /**
    * Overide setItems, specifying originalContent for each item
    */
-  public setItems(items: string[]) {
+  public _setItems(items: string[]) {
     super.setItems.call(this, items);
     this.items.forEach(item => item.originalContent = item.content);
   }

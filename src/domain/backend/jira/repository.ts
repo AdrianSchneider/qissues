@@ -58,14 +58,16 @@ class JiraRepository implements TrackerRepository {
    */
   public query(report: Report, options: QueryOptions = {}): Promise<IssuesCollection> {
     const qs = {
-      maxResults: 500,
-      jql: this.normalizer.filterSetToJql(report.filters)
+      params: {
+        maxResults: 500,
+        jql: this.normalizer.filterSetToJql(report.filters)
+      }
     };
 
-    this.logger.trace('JQL = ' + qs.jql);
+    this.logger.trace('JQL = ' + qs.params.jql);
 
     return this.cache.wrap(
-      `issues:${qs.jql}`,
+      `issues:${qs.params.jql}`,
       () => this.client.get('/rest/api/2/search', qs).then(r => r.data),
       options.invalidate
     ).then(issues => this.normalizer.toIssuesCollection(issues));

@@ -44,9 +44,11 @@ export default class BlessedApplication {
       .catch(Cancellation, () => {
         return this.ui.message('Needs config to run.').then(() => app.exit(1));
       })
-      .then(() => this.ui.message('Loading Qissues. ? for Help', 2000))
+      .then(() => this.ui.message('Loading Qissues. ? for Help', 1000))
       .then(this.getControllers)
       .then((controllers: UiControllers) => {
+        this.logger.debug('UI Initialized');
+
         controllers.issues.listIssues();
 
         app.getActiveReport().on('change', () => {

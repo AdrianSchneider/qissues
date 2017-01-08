@@ -27,11 +27,14 @@ export default class IssueList implements View, HasIssues {
    */
   public render(parent: Widgets.BlessedElement, options: IssueListOptions) {
     this.node = this.createList(parent);
-    options.issues.then(issues => this.issues = issues);
-    options.issues.then(issues => {
-      parent.screen.render();
-    });
+    this.issues = options.issues;
 
+    this.node.setItems(
+      options.issues.map(this.renderIssue)
+    );
+
+    parent.append(this.node);
+    parent.screen.render();
     return this.node;
   }
 
@@ -52,8 +55,8 @@ export default class IssueList implements View, HasIssues {
       selectedFg: 'black',
       selectedBg: 'green',
       keys: true,
-//      keyConfig: keys,
       vi: true
+//      keyConfig: keys,
     });
   }
 
@@ -102,6 +105,6 @@ export default class IssueList implements View, HasIssues {
 }
 
 interface IssueListOptions {
-  issues: Promise<IssuesCollection>,
+  issues: IssuesCollection,
   focus?: string,
 }
