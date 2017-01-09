@@ -64,7 +64,8 @@
     "pty.js": "^0.3.0",
     "sinon": "^1.17.6",
     "ts-node": "^1.7.2",
-    "typescript": "^2.1.4"
+    "typescript": "^2.1.4",
+    "typescript-require": "^0.2.9-1"
   },
   "preferGlobal": true,
   "nyc": {

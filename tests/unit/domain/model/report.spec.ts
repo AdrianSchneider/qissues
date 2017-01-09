@@ -1,7 +1,7 @@
 import { assert } from 'chai';
-import Report from '../../../../src/domain/model/report';
-import Filter from '../../../../src/domain/model/filter';
-import FilterSet from '../../../../src/domain/model/filterSet';
+import Report     from '../../../../src/domain/model/report';
+import Filter     from '../../../../src/domain/model/filter';
+import FilterSet  from '../../../../src/domain/model/filterSet';
 
 describe('Report', () => {
 
