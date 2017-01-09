@@ -50,7 +50,7 @@ export default class ListIssuesController {
       this.logger.info('Listing issues');
     }
 
-    return this.repository.query(this.app.getActiveReport(), options.invalidate).then(issues => {
+    return this.repository.query(this.app.getActiveReport(), options).then(issues => {
       this.logger.debug('Issues loaded. Rendering issuesView');
       const view = <HasIssues>this.viewManager.getView('issues:list', this.ui.canvas, {
         issues,
@@ -83,8 +83,8 @@ export default class ListIssuesController {
     this.ui.showLoading(options.invalidate ? 'Refreshing...' : 'Loading ' + num + '...');
 
     return Promise.all([
-      this.repository.lookup(new Id(num), options.invalidate),
-      this.repository.getComments(new Id(num), options.invalidate)
+      this.repository.lookup(new Id(num), options),
+      this.repository.getComments(new Id(num), options)
     ]).spread((issue, comments) => {
       this.logger.debug('Finished fetching data for single view');
 
