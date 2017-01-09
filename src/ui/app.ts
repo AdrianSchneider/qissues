@@ -49,7 +49,6 @@ export default class BlessedApplication {
       .then((controllers: UiControllers) => {
         this.logger.debug('UI Initialized');
 
-        controllers.issues.listIssues();
 
         app.getActiveReport().on('change', () => {
           this.logger.debug('Changing filters');
@@ -63,6 +62,8 @@ export default class BlessedApplication {
             .then(num => controllers.issues.viewIssue({ num }))
             .catch(Cancellation, _.noop);
         });
+
+        return controllers.issues.listIssues();
       })
       .catch(error => {
         this.logger.error('Failed to start qissues');
