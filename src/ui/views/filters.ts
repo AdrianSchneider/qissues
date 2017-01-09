@@ -11,15 +11,15 @@ export default function(parent: blessed.Widgets.Node, filters: FilterSet) {
     left: 'center',
     tags: true,
     bg: 'lightblack',
-    selectedFg: 'black',
-    selectedBg: 'yellow',
+    // selectedFg: 'black',
+    // selectedBg: 'yellow',
     keys: true,
     vi: true,
-    label: '{green-fg}Filters{/green-fg}',
-    border: {
-      type: 'line',
-      fg: 'lightgreen'
-    }
+    label: '{green-fg}Filters{/green-fg}'
+    // border: {
+    //   type: 'line',
+    //   fg: 'lightgreen'
+    // }
   });
 
   view.key(['escape', 'h', 'enter'], () => {
@@ -28,14 +28,14 @@ export default function(parent: blessed.Widgets.Node, filters: FilterSet) {
   });
 
   view.key(['delete', 'enter', 'x'], (text, i) => {
-    filters.remove(view.selected);
-    view.removeItem(view.selected);
+    filters.remove(view['selected']);
+    view.removeItem(view['selected']);
     parent.remove(view);
     parent.screen.render();
   });
 
   view.setItems(
-    filters.serialize().map(filter => `${filter.type} = ${filter.value}`)
+    <any>filters.serialize().map(filter => `${filter.type} = ${filter.value}`)
   );
 
   view.select(0);

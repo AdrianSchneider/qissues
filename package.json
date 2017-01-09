@@ -53,6 +53,7 @@
     "@types/node": "^6.0.52",
     "@types/request": "0.0.36",
     "@types/sinon": "^1.16.33",
+    "@types/winston": "^2.2.0",
     "chai": "^3.0.0",
     "coveralls": "^2.11.2",
     "cucumber": "^0.9.2",
@@ -68,14 +69,12 @@
   "preferGlobal": true,
   "nyc": {
     "include": [
-      "src/domain/**/*.ts",
-      "src/app/services/**/*.ts",
-      "src/ui/services/**/*.ts",
-      "src/ui/behaviors/**/*.ts",
-      "src/util/**/*.ts"
+      "src/**/*.ts"
     ],
     "exclude": [
-      "typings"
+      "typings",
+      "tests/ui",
+      "tests/domain"
     ],
     "extension": [
       ".ts"
@@ -87,6 +86,6 @@
       "json",
       "html"
     ],
-    "all": false
+    "all": true
   }
 }

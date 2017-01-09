@@ -16,7 +16,7 @@ import BlessedInterface from "../interface";
 /**
  * Responsible for managing the main issue list
  */
-class IssueList implements View, HasIssues extends EventEmitter {
+class IssueList extends EventEmitter implements View, HasIssues {
   public node: Widgets.BlessedElement;
   private issues: IssuesCollection;
 
@@ -110,33 +110,33 @@ class IssueList implements View, HasIssues extends EventEmitter {
 
   private findLastFocused(list: Widgets.ListElement, focused?: string): number {
     if (!focused) return 0;
-    return list.ritems.findIndex(item => {
+    return list['ritems'].findIndex(item => {
       return item.toLowerCase().indexOf(focused.toLowerCase()) !== -1;
     }) || 0;
   }
 
-  private showFilters() {
-    if (!this.filters.serialize().length) {
-      return message(this.options.parent, 'No filters defined');
-    }
-
-    return filterView(this.options.parent, this.filters);
-  }
-
-  private filter(getOptions, message, type) {
-    return () => this.input.selectFromCallableList(message, getOptions)
-      .then(Filter.addSelectedTo(this.filters, type))
-      .catch(Cancellation, () => {})
-  }
-
-  private reportsSave() {
-    this.input.ask('Save as')
-      .then(name => this.reports.addReport(name, this.filters))
-      .catch(Cancellation, () => {})
-  }
-
-  private showReportsList() {
-    reportsList(this.options.parent, this.options.reports, this.options.report); }
+//   private showFilters() {
+//     if (!this.filters.serialize().length) {
+//       return message(this.options.parent, 'No filters defined');
+//     }
+//
+//     return filterView(this.options.parent, this.filters);
+//   }
+//
+//   private filter(getOptions, message, type) {
+//     return () => this.input.selectFromCallableList(message, getOptions)
+//       .then(Filter.addSelectedTo(this.filters, type))
+//       .catch(Cancellation, () => {})
+//   }
+//
+//   private reportsSave() {
+//     this.input.ask('Save as')
+//       .then(name => this.reports.addReport(name, this.filters))
+//       .catch(Cancellation, () => {})
+//   }
+//
+//   private showReportsList() {
+//     reportsList(this.options.parent, this.options.reports, this.options.report); }
 
   public getIssues(): IssuesCollection {
     return this.issues;

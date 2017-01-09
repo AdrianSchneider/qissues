@@ -8,6 +8,6 @@ import * as Promise from 'bluebird';
  * @return {Function} - returning {Promise<Array>}
  */
 export function prepend(getOptions: Function, prependedOption: string) {
-  return (): Promise => getOptions()
+  return (): Promise<any> => getOptions()
     .then(options => [prependedOption].concat(options));
 }

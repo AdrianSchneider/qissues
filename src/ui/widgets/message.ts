@@ -10,14 +10,14 @@ export default function MessageWidget(parent: Widgets.BlessedElement, message: s
     parent: parent,
     fg: 'white',
     bg: 'lightblack',
-    padding: 1,
-    border: {
-      type: 'bg',
-      fg: 'blue'
-    }
+    padding: 1
+    // border: {
+    //   type: 'bg',
+    //   fg: 'blue'
+    // }
   });
 
-  alert.log(message, timeout);
+  alert.log(message, <any>timeout);
   parent.screen.render();
   return alert;
 };

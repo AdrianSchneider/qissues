@@ -1,4 +1,5 @@
 import * as axios from 'axios';
+import * as Promise from 'bluebird';
 import HttpClient from '../../shared/httpClient';
 
 /**
@@ -30,5 +31,18 @@ export default function(config, logger): HttpClient {
     error => Promise.reject(error)
   );
 
-  return instance;
+  return {
+    get: (path: string, options: Object): Promise<any> => {
+      return Promise.resolve(instance.get(path, options));
+    },
+    put: (path: string, data: Object): Promise<any> => {
+      return Promise.resolve(instance.put(path, data));
+    },
+    post: (path: string, data: Object): Promise<any> => {
+      return Promise.resolve(instance.post(path, data));
+    },
+    delete: (path: string): Promise<any> => {
+      return Promise.resolve(instance.delete(path));
+    }
+  };
 };

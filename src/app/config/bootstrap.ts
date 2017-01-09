@@ -1,8 +1,9 @@
 import * as events from 'events';
+import * as stream from 'stream';
 
 interface BootstrapParams {
-  input: events.EventEmitter,
-  output: events.EventEmitter,
+  input: stream.Writable,
+  output: stream.Readable,
   configFile: string,
   cacheFile: string,
   logLevel: number,

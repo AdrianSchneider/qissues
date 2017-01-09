@@ -37,29 +37,29 @@ export default class List extends blessed.widget.List {
     this.searchResults = [];
     this.resultNumber = -1;
 
-    this.key('/', this.search);
-    this.key('n', this.nextResult);
-    this.key('S-x', this.clearSelection);
-    this.key('x', this.toggle);
-    this.key('S-n', this.prevResult);
-    this.key(['escape', 'space'], this.clearSearch);
+    // this.key('/', this.search);
+    // this.key('n', this.nextResult);
+    // this.key('S-x', this.clearSelection);
+    // this.key('x', this.toggle);
+    // this.key('S-n', this.prevResult);
+    // this.key(['escape', 'space'], this.clearSearch);
   }
 
-  /**
-   * Overide setItems, specifying originalContent for each item
-   */
-  public _setItems(items: string[]) {
-    super.setItems.call(this, items);
-    this.items.forEach(item => item.originalContent = item.content);
-  }
-
-
-  /**
-   * Redraws an item in the list
-   */
-  private redraw(item: blessed.widget.Box) {
-    item.content = this.getDecorated(item);
-  }
+//   /**
+//    * Overide setItems, specifying originalContent for each item
+//    */
+//   public _setItems(items: string[]) {
+//     super.setItems.call(this, items);
+//     this.items.forEach(item => item.originalContent = item.content);
+//   }
+//
+//
+//   /**
+//    * Redraws an item in the list
+//    */
+//   private redraw(item: blessed.widget.Box) {
+//     item.content = this.getDecorated(item);
+//   }
 }
 
 interface ListMarker {

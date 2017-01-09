@@ -20,7 +20,7 @@ export default class BlessedInterface {
   private keys: KeyMapping;
   public canvas;
 
-  private static loadingMessage = 'Loading...';
+  private static loadingMessage: string = 'Loading...';
 
   constructor(screen, logger, format, keys) {
     this.screen = screen;
@@ -77,7 +77,7 @@ export default class BlessedInterface {
    * @param {Number} delay
    * @return {Promise}
    */
-  public message(msg: string, delay: number = 1000): Promise<void> {
+  public message(msg: string, delay: number = 1000): Promise<any> {
     return new Promise((resolve, reject) => {
       messageWidget(this.canvas, msg, delay);
       setTimeout(() => resolve(), delay);
@@ -90,7 +90,7 @@ export default class BlessedInterface {
    * @param text - the question to ask
    * @return the answer
    */
-  public ask(text: string, parent?: blessed.Widgets.Node): Promise<string> {
+  public ask(text: string, parent?: blessed.Widgets.Node): Promise<any> { // TODO Promise<string>
     if (!parent) parent = this.parent;
     return new Promise((resolve, reject) => {
       var input = prompt(text + ' ', parent);
@@ -101,7 +101,7 @@ export default class BlessedInterface {
       });
 
       input.readInput((err, text) => {
-        input.remove();
+        parent.remove(input);
         this.respondOrCancel(text, resolve, reject);
       });
     });
@@ -114,15 +114,15 @@ export default class BlessedInterface {
    * @param options - the options to pick from
    * @return promised answer
    */
-  public selectFromList(text: string, options: string[]): Promise<string> {
-    return new Promise((resolve, reject) => {
-      var list = promptList(text, parent, options);
+  public selectFromList(text: string, options: string[]): Promise<any> {
+    return new Promise((resolve, reject) => { // TODO Promise<string>
+      var list = promptList(text, this.parent, options);
 
       list.on('select', (item, i: number) => {
-        this.logger.debug('Selected ' + item.originalContent);
+        this.logger.debug('Selected ' + item['originalContent']);
         this.parent.remove(list);
         this.screen.render();
-        this.respondOrCancel(item.originalContent, resolve, reject);
+        this.respondOrCancel(item['originalContent'], resolve, reject);
       });
 
       list.key(this.keys.back, () => {
@@ -142,20 +142,20 @@ export default class BlessedInterface {
    * @param provider - function providing promised choices
    * @return promised answer
    */
-  public selectFromCallableList(text: string, provider: () => Promise<string[]>): Promise<string> {
+  public selectFromCallableList(text: string, provider: (invalidate?: boolean) => Promise<string[]>): Promise<any> { // TODO Promise<string>
     return new Promise((resolve, reject) => {
       var list = promptList(text, this.parent, [BlessedInterface.loadingMessage], this.parent);
 
       var setItems = (options: string[]) => {
-        list.setItems(options.map(String));
+        list.setItems(<any>options.map(String));
         this.parent.screen.render();
       };
 
       list.on('select', (item, i) => {
-        this.logger.debug('Selected ' + item.originalContent);
+        this.logger.debug('Selected ' + item['originalContent']);
         this.parent.remove(list);
         this.parent.screen.render();
-        this.respondOrCancel(item.originalContent, resolve, reject);
+        this.respondOrCancel(item['originalContent'], resolve, reject);
       });
 
       list.key(this.keys.back, () => {
@@ -168,7 +168,8 @@ export default class BlessedInterface {
       list.key(this.keys.refresh, () => {
         this.logger.debug('Refreshing promptList');
         setItems([BlessedInterface.loadingMessage]);
-        provider(true).then(setItems);
+
+        provider(true).then(results => setItems(results));
       });
 
       provider().then(setItems);
@@ -188,7 +189,7 @@ export default class BlessedInterface {
    * @param initial - the initial content
    * @return promised answer
    */
-  public editExternally(initial: string): Promise<string> {
+  public editExternally(initial: string): Promise<any> { // TODO Promise<string>
     return new Promise((resolve, reject) => {
       this.screen.readEditor({ value: initial }, (err, read) => {
         const text = read.toString('utf-8');

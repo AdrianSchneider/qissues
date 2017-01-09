@@ -1,5 +1,5 @@
-import { Node } from 'blessed';
-import List    from './list';
+import { Widgets } from 'blessed';
+import List        from './list';
 
 /**
  * A prompt for user input
@@ -9,7 +9,7 @@ import List    from './list';
  * @param {Array<String>} options
  * @return {blessed.Node}
  */
-export default function promptList(text: string, parent: Node, options, searchParent?: Node) {
+export default function promptList(text: string, parent: Widgets.Node, options, searchParent?: Widgets.Node): List {
   var list = new List({
     parent: parent,
     searchParent: searchParent || parent,

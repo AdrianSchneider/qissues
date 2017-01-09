@@ -21,7 +21,7 @@ export default class IssueTracker {
   public assertConfigured(config: Object) {
     return this.expectations.ensureValid(config)
       .catch(ValidationError, err => {
-        throw new MoreInfoRequired(err.messsage, this.expectations);
+        throw new MoreInfoRequired(err.message, this.expectations);
       });
   }
 }

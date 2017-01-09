@@ -6,8 +6,8 @@ interface Logger {
   info:  (string) => void;
   warn:  (string) => void;
   error: (string) => void;
-  trace: (string) => void;
-  silent: (string) => void;
+  trace?: (string) => void;
+  silent?: (string) => void;
 }
 
 export function getLogger(level: number): Logger {

@@ -64,7 +64,7 @@ export default class ListIssuesController {
 
       view.on('refresh', () => this.listIssues({ focus: view.getIssue().id.toString(), invalidate: true }));
       view.on('createIssue', () => this.createIssue());
-      view.on('createIssueContextually', () => this.createIssue(this.app.getFilters().toValues()));
+      // view.on('createIssueContextually', () => this.createIssue(this.app.getFilters().toValues()));
       view.on('changeset', changeSet => {
         this.change(changeSet).then(() => this.listIssues({ invalidate: true }))
       });
