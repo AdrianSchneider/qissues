@@ -6,12 +6,12 @@ export default function(node: blessed.Widgets.Screen) {
     width: '100%',
     height: '100%',
     top: 0,
-    left: 0
-    //autoPadding: true,
-    // border: {
-    //   type: 'line',
-    //   fg: 'lightblack'
-    // }
+    left: 0,
+    padding: { top: 0, bottom: 0, left: 1, right: 1 },
+    border: {
+      type: 'line',
+      fg: <any>'lightblack'
+    }
   });
 
   box['getInnerWidth'] = function(width) {

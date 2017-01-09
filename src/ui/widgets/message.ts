@@ -10,11 +10,11 @@ export default function MessageWidget(parent: Widgets.BlessedElement, message: s
     parent: parent,
     fg: 'white',
     bg: 'lightblack',
-    padding: 1
-    // border: {
-    //   type: 'bg',
-    //   fg: 'blue'
-    // }
+    padding: 1,
+    border: {
+       type: 'bg',
+       fg: 0
+     }
   });
 
   alert.log(message, <any>timeout);
