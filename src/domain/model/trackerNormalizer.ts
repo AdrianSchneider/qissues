@@ -1,6 +1,6 @@
 import Id         from './id';
 import NewComment from './newComment';
-import FilterSet  from './filterset';
+import FilterSet  from './filterSet';
 
 interface TrackerNormalizer {
 

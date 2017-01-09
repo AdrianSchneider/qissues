@@ -1,6 +1,6 @@
 import Report        from '../domain/model/report';
 import ReportManager from '../domain/model/reportManager';
-import FilterSet     from '../domain/model/filterset';
+import FilterSet     from '../domain/model/filterSet';
 import IssueTracker  from '../domain/model/tracker';
 
 export default class Application {

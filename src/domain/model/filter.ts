@@ -1,4 +1,4 @@
-import FilterSet from './filterset';
+import FilterSet from './filterSet';
 
 export interface SerializedFilter {
   type: string,

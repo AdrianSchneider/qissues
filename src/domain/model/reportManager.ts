@@ -1,6 +1,6 @@
 import Report               from './report';
 import { SerializedReport } from './report';
-import FilterSet            from './filterset';
+import FilterSet            from './filterSet';
 import Storage              from '../../app/services/storage';
 
 export default class ReportManager {

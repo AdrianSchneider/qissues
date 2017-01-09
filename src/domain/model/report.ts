@@ -1,5 +1,5 @@
 import { EventEmitter}     from 'events';
-import FilterSet           from './filterset';
+import FilterSet           from './filterSet';
 import { SerializedFilter} from './filter';
 
 export interface SerializedReport {

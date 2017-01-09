@@ -16,7 +16,7 @@ import NewIssue               from '../../model/newIssue';
 import NewComment             from '../../model/newComment';
 import { NewIssueAttributes } from '../../model/newIssue';
 import Expectations           from '../../model/expectations';
-import FilterSet              from '../../model/filterset';
+import FilterSet              from '../../model/filterSet';
 import User                   from '../../model/meta/user';
 import Status                 from '../../model/meta/status';
 import Type                   from '../../model/meta/type';

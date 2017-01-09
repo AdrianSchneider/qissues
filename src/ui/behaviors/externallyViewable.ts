@@ -4,7 +4,7 @@ import Browser           from '../services/browser';
 import Id                from '../../domain/model/id';
 import Issue             from '../../domain/model/issue';
 import TrackerNormalizer from '../../domain/model/trackerNormalizer';
-import FilterSet         from '../../domain/model/filterset';
+import FilterSet         from '../../domain/model/filterSet';
 
 interface ExternallyViewableOptions {
   /**

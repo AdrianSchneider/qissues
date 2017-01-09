@@ -7,7 +7,7 @@ import Id                from '../../domain/model/id';
 import Comment           from '../../domain/model/comment';
 import NewComment        from '../../domain/model/newComment';
 import { ChangeSet }     from '../../domain/model/changeSet';
-import FilterSet         from '../../domain/model/filterset';
+import FilterSet         from '../../domain/model/filterSet';
 import TrackerRepository from '../../domain/model/trackerRepository';
 import Cancellation      from '../../domain/errors/cancellation';
 import MoreInfoRequired  from '../../domain/errors/infoRequired';
