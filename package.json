@@ -84,8 +84,8 @@
       "ts-node/register"
     ],
     "reporter": [
-      "json",
-      "html"
+      "html",
+      "lcov"
     ],
     "all": true
   }
