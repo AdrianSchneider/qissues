@@ -1,10 +1,8 @@
 language: node_js
 sudo: false
 node_js:
-  - "4.0"
-  - "0.12"
-  - "0.11"
-  - "0.10"
+  - "4.4.7"
+  - "6.9.2"
 before_install:
   - npm install -g npm
 install:
@@ -12,7 +10,8 @@ install:
   - $CXX --version
   - npm install
 before_script:
-  - npm install 
+  - npm install
+script: make test
 notifications:
   email: false
 addons:
