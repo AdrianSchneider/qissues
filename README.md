@@ -1,6 +1,7 @@
 # Qissues
 
 [![Build Status](https://travis-ci.org/AdrianSchneider/qissues.svg?branch=master)](https://travis-ci.org/AdrianSchneider/qissues)
+[![Coverage Status](https://coveralls.io/repos/github/AdrianSchneider/qissues/badge.svg?branch=typescript)](https://coveralls.io/github/AdrianSchneider/qissues?branch=typescript)
 
 Qissues is an interactive cli for JIRA and other bug tracking systems. With vim-style keybindings, you can navigate, view and interact with issues quickly from your keyboard.
 
