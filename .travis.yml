@@ -10,7 +10,7 @@ install:
   - npm install
 before_script:
   - npm install
-script: make test
+script: make test-ci
 notifications:
   email: false
 addons:

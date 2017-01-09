@@ -23,4 +23,9 @@ coverage: ;@echo "Making Coverage for ${PROJECT}"; \
 		rm -fr coverage;
 	  node_modules/.bin/nyc npm t;
 
+test-ci: ;@echo "Preparing Coverage for ${PROJECT}"; \
+	make coverage;
+	./node_modules/coveralls/bin/coveralls.js < ./coverage/lcov.info;
+	rm -fr coverage;
+
 .PHONY: test test-domain test-unit test-ui coverage default
