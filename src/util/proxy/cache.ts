@@ -76,10 +76,10 @@ export default class CacheProxy {
    * before returning it
    */
   private cacheResultsAs<T>(name: string, serializer: (data: T) => any, ttl: number): (data: T) => Promise<T> {
-    return result => this.cache.set(
+    return result => Promise.resolve(this.cache.set(
       name,
       serializer(result),
       ttl
-    ).then(() => result);
+    )).then(() => result);
   }
 }
