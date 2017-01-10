@@ -55,7 +55,7 @@ export default class BlessedApplication {
           controllers.issues.listIssues();
         });
 
-        this.screen.key(this.keys.help, _.partial(controllers.help, this.screen));
+        this.screen.key(this.keys.help, () => controllers.help.help());
         this.screen.key(this.keys.exit, () => app.exit(0));
         this.screen.key(this.keys['issue.lookup'], () => {
           this.ui.ask('Open Issue', this.ui.canvas)
