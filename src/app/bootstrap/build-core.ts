@@ -6,6 +6,8 @@ import Logger          from '../services/logger';
 import { getLogger }   from '../services/logger';
 import Container       from '../services/container';
 import BootstrapParams from './../config/bootstrap';
+import CacheProxy      from '../../util/proxy/cache';
+import RetryProxy      from '../../util/proxy/retry';
 
 export default function buildCore(container: Container, options: BootstrapParams) {
   container.registerService(
@@ -31,6 +33,29 @@ export default function buildCore(container: Container, options: BootstrapParams
       return cache;
     },
     ['storage']
+  );
+
+  container.registerService(
+    'proxy.retry',
+    () => new RetryProxy()
+  );
+
+  container.registerService(
+    'proxy.cache',
+    (cache: Cache) => new CacheProxy(cache),
+    ['cache']
+  );
+
+  container.registerBehaviour(
+    'cachable',
+    (service: any, opts: Object, cacheProxy) => cacheProxy.createProxy(service, opts),
+    ['proxy.cache']
+  );
+
+  container.registerBehaviour(
+    'retryable',
+    (service: any, opts: Object, retryProxy) => retryProxy.createProxy(service, opts),
+    ['proxy.retry']
   );
 
   return container;
