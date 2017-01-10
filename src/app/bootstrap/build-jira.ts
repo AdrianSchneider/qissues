@@ -11,6 +11,7 @@ import JiraNormalizer         from '../../domain/backend/jira/normalizer';
 import IssueTracker           from '../../domain/model/tracker';
 import MetadataCacheProxy     from '../../domain/backend/metadataCacheProxy';
 import HttpClient             from '../../domain/shared/httpClient';
+import CacheProxy from '../../util/proxy/cache';
 
 export default function buildJira(container: Container, config: BootstrapParams): Container {
   container.registerService(
@@ -29,6 +30,33 @@ export default function buildJira(container: Container, config: BootstrapParams)
     'tracker.jira.metadata-cached',
     (metadata: JiraMetadata, cache: Cache) => (new MetadataCacheProxy(cache)).createProxy(metadata),
     ['tracker.jira.metadata', 'cache']
+  );
+
+  container.registerService(
+    'proxy.cache',
+    (cache: Cache) => new CacheProxy(cache),
+    ['cache']
+  );
+
+  container.registerService(
+    'tracker.jira.metadata-cached',
+    (metadata: JiraMetadata, proxy: CacheProxy) => {
+      const methodsToCacheKeys = {
+        getTypes: ['types', Type.unserialize],
+        getUsers: ['users', User.unserialize],
+        getSprints: ['sprints', Sprint.unserialize],
+        getLabels: ['labels', Label.unserialize],
+        getProjects: ['projects', Project.unserialize]
+      };
+
+      return proxy.createProxy(metadata, {
+        predicate: key => typeof methodsToCacheKeys[key] !== 'undefined',
+        cacheKey: key => methodsToCacheKeys[key][0],
+        serializer: data => data.map(row => row.serialize ? row.serialize() : row),
+        unserializer: data => data.map(methodsToCacheKeys[key][1])
+      });
+    },
+    ['tracker.jira.metadata', 'proxy.cache']
   );
 
   container.registerService(
