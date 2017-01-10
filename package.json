@@ -75,7 +75,8 @@
     "exclude": [
       "typings",
       "tests/ui",
-      "tests/domain"
+      "tests/domain",
+      "src/app/bootstrap"
     ],
     "extension": [
       ".ts"

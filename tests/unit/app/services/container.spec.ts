@@ -62,4 +62,25 @@ describe('Container', function() {
     });
   });
 
+  it('Can decorate services', () => {
+    container.registerService('multiplier', () => (a, b) => a * b);
+    container.registerBehaviour(
+      'multipliable',
+      (service, options, multiplier) => multiplier(service, options['by']),
+      ['multiplier']
+    );
+
+    container.registerService('four', () => 4, [], <any>{ multipliable: { by: 2 } });
+    return container.get('four').then(num => assert.equal(num, 8));
+  });
+
+  it('Cannot redefine decorators', () => {
+    container.registerBehaviour('multipliable', () => null);
+    assert.throws(
+      () => container.registerBehaviour('multipliable', () => null),
+      Error,
+      'existing'
+    );
+  });
+
 });
