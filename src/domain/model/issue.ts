@@ -1,11 +1,11 @@
-import Id       from './id';
-import User     from './meta/user';
-import Label    from './meta/label';
-import Priority from './meta/priority';
-import Sprint   from './meta/sprint';
-import Project  from './meta/project';
-import Status   from './meta/status';
-import Type     from './meta/type';
+import Id                               from './id';
+import User, { SerializedUser }         from './meta/user';
+import Label, { SerializedLabel }       from './meta/label';
+import Priority, { SerializedPriority } from './meta/priority';
+import Sprint , { SerializedSprint }    from './meta/sprint';
+import Project, { SerializedProject }   from './meta/project';
+import Status, { SerializedStatus }     from './meta/status';
+import Type, { SerializedType }         from './meta/type';
 
 export interface IssueAttributes {
   status?: Status,
@@ -58,4 +58,38 @@ export default class Issue {
     if (attributes.dateUpdated) this.dateUpdated = attributes.dateUpdated;
     if (attributes.commentCount) this.commentCount = attributes.commentCount;
   }
+
+  public serialize(): SerializedIssue {
+    return {
+      id: this.id.toString(),
+      title: this.title,
+      description: this.description,
+      status: this.status
+    };
+  }
+
+  public static unserialize(serialized: SerializedIssue) {
+    return new Issue(
+      new Id(serialized.id),
+      serialized.title,
+      serialized.description,
+      Status.unserialize(serialized.status)
+    );
+  }
+}
+
+export interface SerializedIssue {
+  id: string,
+  title: string,
+  description: string,
+  status?: SerializedStatus,
+  project?: SerializedProject,
+  priority?: SerializedProject,
+  sprint?: SerializedSprint,
+  label?: SerializedLabel,
+  assignee?: SerializedUser,
+  reporter?: SerializedUser,
+  dateCreated?: string,
+  dateUpdated?: string,
+  commentCount?: number,
 }

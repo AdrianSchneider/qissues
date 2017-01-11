@@ -1,4 +1,5 @@
-import Comment from './comment';
+import Comment               from './comment';
+import { SerializedComment } from './comment';
 
 export default class CommentsCollection {
   private readonly comments: Comment[];
@@ -23,5 +24,15 @@ export default class CommentsCollection {
 
   public findIndex(predicate: (item: Comment) => boolean): number {
     return this.comments.findIndex(predicate);
+  }
+
+  public serialize() {
+    return this.comments.map(comment => comment.serialize());
+  }
+
+  public static unserialize(comments: SerializedComment[]) {
+    return new CommentsCollection(
+      comments.map(Comment.unserialize)
+    );
   }
 }

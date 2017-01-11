@@ -24,7 +24,7 @@ export default class Label {
   }
 }
 
-interface SerializedLabel {
+export interface SerializedLabel {
   id: string,
   name: string
 }

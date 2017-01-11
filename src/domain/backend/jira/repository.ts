@@ -46,11 +46,9 @@ class JiraRepository implements TrackerRepository {
    * Looks up an issue in Jira
    */
   public lookup(num: Id, opts: QueryOptions = {}): Promise<Issue> {
-    return this.cache.wrap(
-      `lookup:${num}`,
-      () => this.client.get(this.getIssueUrl(num)).then(r => r.data),
-      opts.invalidate,
-    ).then(data => this.normalizer.toIssue(data));
+    return this.client.get(this.getIssueUrl(num))
+      .then(r => r.data)
+      .then(issue => this.normalizer.toIssue(issue));
   }
 
   /**
@@ -66,22 +64,18 @@ class JiraRepository implements TrackerRepository {
 
     this.logger.trace('JQL = ' + qs.params.jql);
 
-    return this.cache.wrap(
-      `issues:${qs.params.jql}`,
-      () => this.client.get('/rest/api/2/search', qs).then(r => r.data),
-      options.invalidate
-    ).then(issues => this.normalizer.toIssuesCollection(issues));
+    return this.client.get('/rest/api/2/search', qs)
+      .then(r => r.data)
+      .then(issues => this.normalizer.toIssuesCollection(issues));
   }
 
   /**
    * Gets the comments from an issue
    */
   public getComments(num: Id, options: QueryOptions = {}): Promise<CommentsCollection> {
-    return this.cache.wrap(
-      `comments:${num}`,
-      () => this.client.get(this.getIssueUrl(num, '/comment')).then(r => r.data),
-      options.invalidate
-    ).then(comments => this.normalizer.toCommentsCollection(comments));
+    return this.client.get(this.getIssueUrl(num, '/comment'))
+      .then(r => r.data)
+      .then(comments => this.normalizer.toCommentsCollection(comments));
   }
 
   /**
@@ -98,6 +92,8 @@ class JiraRepository implements TrackerRepository {
    * Applies a changeset
    */
   public applyChanges(changes, details): Promise<any> {
+    // TODO refactor into cache wrapper
+    // secondary key invalidation?
     this.cache.invalidateAll(key => key.indexOf('issues:') === 0);
     changes.getIssues().forEach(num => this.cache.invalidate('lookup:' + num));
 

@@ -23,7 +23,7 @@ export default class Priority {
   }
 }
 
-interface SerializedPriority {
+export interface SerializedPriority {
   priority: number,
   name: string
 }

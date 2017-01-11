@@ -1,5 +1,6 @@
-import Id    from './id';
-import Issue from './issue';
+import Id from './id';
+import Issue, { SerializedIssue } from './issue';
+
 
 export default class IssuesCollection {
   private readonly issues: Issue[];
@@ -30,4 +31,13 @@ export default class IssuesCollection {
     return this.issues.findIndex(predicate);
   }
 
+  public serialize(): SerializedIssue[] {
+    return this.issues.map(issue => issue.serialize());
+  }
+
+  public static unserialize(issues: SerializedIssue[]): IssuesCollection {
+    return new IssuesCollection(
+      issues.map(Issue.unserialize)
+    );
+  }
 }

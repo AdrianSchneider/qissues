@@ -18,6 +18,6 @@ export default class Status {
   }
 }
 
-interface SerializedStatus {
+export interface SerializedStatus {
   name: string
 }

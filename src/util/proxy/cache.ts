@@ -15,12 +15,17 @@ interface ProxyConfiguration {
   /**
    * Optional serializer (data to cache -> cached representation)
    */
-  serializer?: (any) => any;
+  serializer?: (data: any, method: string, args: any[]) => any;
 
   /**
    * Optional unserializer (cached representation -> response)
    */
-  unserializer?: (data: any, key: string) => any;
+  unserializer?: (data: any, method: string, args: any[]) => any;
+
+  /**
+   * Function to check whether or not to invalidate cache
+   */
+  invalidator?: (method: string, args: any[]) => boolean;
 
   /**
    * Optional ttl to set on item (overriding proxy default)
@@ -59,14 +64,15 @@ export default class CacheProxy {
       return (...args): Promise<any> => {
         const ttl          = config.ttl || this.defaultTtl;
         const cacheKey     = config.cacheKey(method, args)
-        const serializer   = config.serializer || (data => data);
-        const unserializer = config.unserializer || ((data, key: string) => data);
+        const serializer   = config.serializer || ((data, method, args) => data);
+        const unserializer = config.unserializer || ((data, key: string, args) => data);
+        const invalidator  = config.invalidator || (() => false);
 
-        const cached = this.cache.get(cacheKey);
-        if (cached) return Promise.resolve(cached.map(unserializer));
+        const cached = this.cache.get(cacheKey, invalidator(method, args));
+        if (cached) return Promise.resolve(unserializer(cached, method, args));
 
         return target[method].apply(target, args)
-          .then(this.cacheResultsAs(cacheKey, serializer, ttl));
+          .then(this.cacheResultsAs(cacheKey, serializer, ttl, method, args));
       };
     };
   }
@@ -75,10 +81,10 @@ export default class CacheProxy {
    * Returns a thenable that caches the serialized result
    * before returning it
    */
-  private cacheResultsAs<T>(name: string, serializer: (data: T) => any, ttl: number): (data: T) => Promise<T> {
+  private cacheResultsAs<T>(name: string, serializer: (data: T, method, args) => any, ttl: number, method, args): (data: T) => Promise<T> {
     return result => Promise.resolve(this.cache.set(
       name,
-      serializer(result),
+      serializer(result, method, args),
       ttl
     )).then(() => result);
   }
