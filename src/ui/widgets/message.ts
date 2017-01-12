@@ -18,6 +18,14 @@ export default function MessageWidget(parent: Widgets.BlessedElement, message: s
   });
 
   alert.log(message, <any>timeout);
+
+  if (timeout && isFinite(timeout)) {
+    setTimeout(() => {
+      parent.remove(alert);
+      parent.screen.render();
+    }, timeout);
+  }
+
   parent.screen.render();
   return alert;
 };

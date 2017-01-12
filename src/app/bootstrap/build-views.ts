@@ -5,6 +5,7 @@ import Behaviour          from '../../ui/behaviour';
 import Editable           from '../../ui/behaviors/editable';
 import Yankable           from '../../ui/behaviors/yankable';
 import ExternallyViewable from '../../ui/behaviors/externallyViewable';
+import Searchable         from '../../ui/behaviors/searchable';
 import IssueList          from '../../ui/views/issueList';
 import SingleIssue        from '../../ui/views/single';
 import ViewManager        from '../../ui/viewManager';
@@ -25,7 +26,8 @@ export default function(container: Container, config: BootstrapParams) {
     ['app', 'ui', 'ui.keys',
       'ui.behaviours.editable',
       'ui.behaviours.yankable',
-      'ui.behaviours.externally-viewable'
+      'ui.behaviours.externally-viewable',
+      'ui.behaviours.searchable'
     ]
   );
 
@@ -51,6 +53,11 @@ export default function(container: Container, config: BootstrapParams) {
     ['ui.browser', 'tracker']
   );
 
+  container.registerService(
+    'ui.behaviours.searchable',
+    (ui, logger) => () => new Searchable(ui, logger),
+    ['ui.interface', 'logger']
+  );
 
   return container;
 }

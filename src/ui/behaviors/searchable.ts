@@ -1,3 +1,4 @@
+import * as blessed from 'blessed';
 import { widget, Widgets }      from 'blessed';
 import View                     from '../view';
 import { ListMarker }           from '../marker';
@@ -15,12 +16,14 @@ export interface SearchableOptions {
 
 interface SearchKeys {
   search: string | string[],
-  next: string | string[],
-  prev: string | string[],
-  clear: string | string[]
+  nextResult: string | string[],
+  prevResult: string | string[],
+  clearResults: string | string[]
 }
 
 export default class Searchable implements Behaviour {
+
+  public readonly events: string[] = [];
 
   private view: View;
   private element: Widgets.BlessedElement;
@@ -63,18 +66,19 @@ export default class Searchable implements Behaviour {
   private startListening(keys: SearchKeys) {
     this.searchResults = [];
     this.resultNumber = -1;
-    this.element.key(keys.search, this.search);
-    this.element.key(keys.next, this.nextResult);
-    this.element.key(keys.prev, this.prevResult);
-    this.element.key(keys.clear, this.clearSearch);
+
+    this.element.key(keys.search, () => this.search());
+    this.element.key(keys.nextResult, () => this.nextResult());
+    this.element.key(keys.prevResult, () => this.prevResult());
+    this.element.key(keys.clearResults, () => this.clearSearch());
   }
 
   /**
    * Starts a new search, and begins capturing input
    */
   private search() {
-    const input = new Widgets.TextboxElement({
-      parent: this.parent,
+    const input = new blessed['Textbox']({
+      parent: this.element,
       bottom: 0,
       right: 0,
       width: 50,
@@ -85,22 +89,24 @@ export default class Searchable implements Behaviour {
       }
     });
 
-    input.readInput((err, text) => {
-      if (err) return this.logger.warn(err);
+    input.readInput((err: Error, text: string) => {
+      this.element.remove(input);
+      this.element.screen.render();
 
-      this.parent.remove(input);
-      this.parent.screen.render();
+      if (err) return this.logger.warn(err);
 
       if(!text || !text.length) return;
       this.activeSearch = text;
 
       this.element['items'].forEach(this.redraw);
-      this.searchResults = this.element['items'].filter(this.isResult);
+      this.searchResults = this.element['items'].filter(this.isResult.bind(this));
 
       if (!this.searchResults.length) {
-        //message(this.element.screen, 'Pattern not found');
-        return this.clearSearch();
+        return this.ui.message('Pattern not found', 1000)
+          .then(() => this.clearSearch());
       }
+
+      this.logger.debug(`Found ${this.searchResults.length} results for "${text}"`);
 
       this.resultNumber = -1;
       this.nextResult();
@@ -120,7 +126,7 @@ export default class Searchable implements Behaviour {
   private nextResult() {
     if (!this.searchResults.length) return;
     this.resultNumber = nextIndex(this.searchResults, this.resultNumber);
-    //this.element.select(this.searchResults[this.resultNumber]);
+    this.element['select'](this.searchResults[this.resultNumber]);
     this.element.screen.render();
   }
 
@@ -130,7 +136,7 @@ export default class Searchable implements Behaviour {
   private prevResult() {
     if (!this.searchResults.length) return;
     this.resultNumber = prevIndex(this.searchResults, this.resultNumber);
-    //this.element.select(this.searchResults[this.resultNumber]);
+    this.element['select'](this.searchResults[this.resultNumber]);
     this.element.screen.render();
   }
 
@@ -152,6 +158,9 @@ export default class Searchable implements Behaviour {
    * @return {Boolean} true if matching the current search criteria
    */
   private isResult(item: widget.Box): boolean {
+    // XXX we need an event based renderer
+    if (!item['originalContent']) item['originalContent'] = item.content;
+
     return (
       this.activeSearch &&
       item['originalContent'] &&
