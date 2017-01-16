@@ -4,6 +4,7 @@ import BlessedInterface from './interface';
 import View             from './view';
 import Application      from '../app/main';
 import KeyMapping       from '../app/config/keys';
+import Marker           from './marker';
 
 /**
  * Responsible for instantiating views
@@ -43,12 +44,24 @@ export default class ViewManager {
       throw new Error(`View ${name} is not registered yet`);
     }
 
+    const markers = [];
+
     const viewConfig = this.views[name];
     const view = this.construct(viewConfig.view, element, options);
-    viewConfig.behaviours.forEach(behaviour => behaviour().attach(view, {
-      keys: this.keys,
-      getFilters: () => this.app.getFilters()
-    }));
+
+    viewConfig.behaviours.forEach(getBehaviour => {
+      const behaviour = getBehaviour();
+      behaviour.attach(view, {
+        keys: this.keys,
+        getFilters: () => this.app.getFilters()
+      })
+
+      if (behaviour.marker) markers.push(behaviour.marker);
+    });
+
+    const marker = new Marker(markers);
+    marker.setupRendering(view);
+
     return view;
   }
 

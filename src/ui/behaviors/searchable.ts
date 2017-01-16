@@ -42,7 +42,7 @@ export default class Searchable implements Behaviour {
 
   public marker: ListMarker = {
     name: 'search',
-    test: this.isResult,
+    test: this.isResult.bind(this),
     activeTest: () => !!this.activeSearch,
     activeDecorator: text => `{red-fg}*{/red-fg} ${text}`,
     inactiveDecorator: text => `  ${text}`
@@ -77,6 +77,8 @@ export default class Searchable implements Behaviour {
    * Starts a new search, and begins capturing input
    */
   private search() {
+    if (!this.element['items']) return;
+
     const input = new blessed['Textbox']({
       parent: this.element,
       bottom: 0,
@@ -98,7 +100,6 @@ export default class Searchable implements Behaviour {
       if(!text || !text.length) return;
       this.activeSearch = text;
 
-      this.element['items'].forEach(this.redraw);
       this.searchResults = this.element['items'].filter(this.isResult.bind(this));
 
       if (!this.searchResults.length) {
@@ -107,6 +108,7 @@ export default class Searchable implements Behaviour {
       }
 
       this.logger.debug(`Found ${this.searchResults.length} results for "${text}"`);
+      this.view.emit('change.markers');
 
       this.resultNumber = -1;
       this.nextResult();
@@ -114,10 +116,6 @@ export default class Searchable implements Behaviour {
     });
 
     this.element.screen.render();
-  }
-
-  private redraw() {
-
   }
 
   /**
@@ -147,7 +145,7 @@ export default class Searchable implements Behaviour {
     this.searchResults = [];
     this.resultNumber = -1;
     this.activeSearch = '';
-    this.element['items'].forEach(this.redraw);
+    this.view.emit('change.markers');
     this.element.screen.render();
   }
 
@@ -158,13 +156,10 @@ export default class Searchable implements Behaviour {
    * @return {Boolean} true if matching the current search criteria
    */
   private isResult(item: widget.Box): boolean {
-    // XXX we need an event based renderer
-    if (!item['originalContent']) item['originalContent'] = item.content;
-
     return (
       this.activeSearch &&
-      item['originalContent'] &&
-      item['originalContent'].toLowerCase().indexOf(this.activeSearch.toLowerCase()) !== -1
+      item['content'] &&
+      item['content'].toLowerCase().indexOf(this.activeSearch.toLowerCase()) !== -1
     );
   };
 

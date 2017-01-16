@@ -84,10 +84,15 @@ class IssueList extends EventEmitter implements View, HasIssues {
 
   private renderIssues(issues: IssuesCollection) {
     this.node['setItems'](issues.map(this.renderIssue));
+
+    // wheneever the markers change, emit a redraw event
+    // this should be an internal event not tied to the rendering lifecycle
+    // trigger our internal marker.redraw
+    // and then the el/list/screen renderers will update the live view
   }
 
   private createList(parent: Widgets.BlessedElement): Widgets.BlessedElement {
-    return new FilterableList({
+    return new FilterableList(<any>{
       parent: parent,
       name: 'issues',
       tags: true,
