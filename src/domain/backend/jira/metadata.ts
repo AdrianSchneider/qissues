@@ -20,7 +20,7 @@ export default class JiraMetadata implements TrackerMetadata {
     this.client = client;
   }
 
-  public getTypes(): Promise<Type[]>{
+  public getTypes(options?): Promise<Type[]>{
     return this.client.get('/rest/api/2/issue/createmeta')
       .then(response => {
         return response.projects.map(project => {
@@ -32,10 +32,12 @@ export default class JiraMetadata implements TrackerMetadata {
       }, []);
   }
 
-  public getUsers(): Promise<User[]> {
+  public getUsers(options?): Promise<User[]> {
     return this.getProjects()
       .map((project: Project) => {
-        return this.client.get('/rest/api/2/user/assignable/search', { project: project.id })
+        return this.client.get('/rest/api/2/user/assignable/search', { params: { project: project.id } })
+          .tap(console.error)
+          .then(r => r.data)
           .then(response => response.map(user => new User(user.name)));
       })
       .reduce((users, usersInProject) => {
@@ -44,12 +46,12 @@ export default class JiraMetadata implements TrackerMetadata {
       .filter((user: User) => user.account.indexOf('addon_') !== 0);
   }
 
-  public getViews(): Promise<Object> {
+  public getViews(options?): Promise<Object> {
     return this.client.get('/rest/greenhopper/1.0/rapidview')
       .then(response => response.views)
   }
 
-  public getSprints(): Promise<Sprint[]> {
+  public getSprints(options?): Promise<Sprint[]> {
     return this.getViews()
       .map(view => {
         return this.client.get('/rest/greenhopper/1.0/xboard/plan/backlog/data.json', { rapidViewId: view['id'] })
@@ -58,19 +60,20 @@ export default class JiraMetadata implements TrackerMetadata {
       .reduce((allSprints, sprintsPerView) => allSprints.concat(sprintsPerView), [])
   }
 
-  public getLabels(): Promise<Label[]> {
+  public getLabels(options?): Promise<Label[]> {
     return this.client.get('/rest/api/1.0/labels/suggest?query=')
       .then(body => body.suggestions.map(label => new Label(null, label.label)))
   }
 
-  public getProjects(): Promise<Project[]> {
+  public getProjects(options?): Promise<Project[]> {
     return this.client.get('/rest/api/2/issue/createmeta')
+      .then(response => response.data)
       .then(response => response.projects.map(
         project => new Project(project.key, project.name, project.id)
       ))
   }
 
-  public getStatuses(): Promise<Status[]> {
+  public getStatuses(options?): Promise<Status[]> {
     return this.getProjects()
       .map((project: Project) => {
         return this.client.get(`/rest/api/2/project/${project.internalId}/statuses`)

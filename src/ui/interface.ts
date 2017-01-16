@@ -91,7 +91,7 @@ export default class BlessedInterface {
    * @return the answer
    */
   public ask(text: string, parent?: blessed.Widgets.Node): Promise<any> { // TODO Promise<string>
-    if (!parent) parent = this.parent;
+    if (!parent) parent = this.canvas;
     return new Promise((resolve, reject) => {
       var input = prompt(text + ' ', parent);
       input.key(this.keys['input.cancel'], () => {
@@ -102,7 +102,7 @@ export default class BlessedInterface {
 
       input.readInput((err, text) => {
         parent.remove(input);
-        this.respondOrCancel(text, resolve, reject);
+        this.respondOrCancel(<string>text, resolve, reject);
       });
     });
   }
@@ -116,18 +116,18 @@ export default class BlessedInterface {
    */
   public selectFromList(text: string, options: string[]): Promise<any> {
     return new Promise((resolve, reject) => { // TODO Promise<string>
-      var list = promptList(text, this.parent, options);
+      const list = promptList(text, this.canvas, options);
 
       list.on('select', (item, i: number) => {
         this.logger.debug('Selected ' + item['originalContent']);
-        this.parent.remove(list);
+        this.canvas.remove(list);
         this.screen.render();
         this.respondOrCancel(item['originalContent'], resolve, reject);
       });
 
       list.key(this.keys.back, () => {
         this.logger.debug('Back; closing promptList');
-        this.parent.remove(list);
+        this.canvas.remove(list);
         this.screen.render();
         reject(new Cancellation());
         return false;
@@ -144,24 +144,24 @@ export default class BlessedInterface {
    */
   public selectFromCallableList(text: string, provider: (invalidate?: boolean) => Promise<string[]>): Promise<any> { // TODO Promise<string>
     return new Promise((resolve, reject) => {
-      var list = promptList(text, this.parent, [BlessedInterface.loadingMessage], this.parent);
+      var list = promptList(text, this.canvas, [BlessedInterface.loadingMessage]);
 
       var setItems = (options: string[]) => {
         list.setItems(<any>options.map(String));
-        this.parent.screen.render();
+        this.canvas.screen.render();
       };
 
       list.on('select', (item, i) => {
         this.logger.debug('Selected ' + item['originalContent']);
-        this.parent.remove(list);
-        this.parent.screen.render();
+        this.canvas.remove(list);
+        this.canvas.screen.render();
         this.respondOrCancel(item['originalContent'], resolve, reject);
       });
 
       list.key(this.keys.back, () => {
         this.logger.debug('Back; closing promptList');
-        this.parent.remove(list);
-        this.parent.screen.render();
+        this.canvas.remove(list);
+        this.canvas.screen.render();
         reject(new Cancellation());
       });
 
@@ -172,7 +172,7 @@ export default class BlessedInterface {
         provider(true).then(results => setItems(results));
       });
 
-      provider().then(setItems);
+      provider().then(items => setItems.bind(this)(items));
     });
   }
 

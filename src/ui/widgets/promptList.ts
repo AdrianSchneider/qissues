@@ -10,7 +10,7 @@ import List        from './list';
  * @return {blessed.Node}
  */
 export default function promptList(text: string, parent: Widgets.Node, options, searchParent?: Widgets.Node): List {
-  var list = new List({
+  const list = new List({
     parent: parent,
     searchParent: searchParent || parent,
     width: '40%',

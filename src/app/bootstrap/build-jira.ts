@@ -26,7 +26,8 @@ export default function buildJira(container: Container, config: BootstrapParams)
     ['config', 'logger'],
     <any>{
       retryable: {
-        backoff: attempt => Math.pow(2, attempt) * 1000
+        backoff: attempt => Math.pow(2, attempt) * 1000,
+        errorPredicate: e => e.toString().indexOf('status code 400') !== -1
       }
     }
   );
@@ -38,18 +39,22 @@ export default function buildJira(container: Container, config: BootstrapParams)
     <any>{
       cachable: (() => {
         const methodsToCacheKeys = {
-          getTypes: ['types', Type.unserialize],
-          getUsers: ['users', User.unserialize],
-          getSprints: ['sprints', Sprint.unserialize],
-          getLabels: ['labels', Label.unserialize],
-          getProjects: ['projects', Project.unserialize]
+          getTypes: ['metadata.types', Type.unserialize],
+          getUsers: ['metadata.users', User.unserialize],
+          getSprints: ['metadata.sprints', Sprint.unserialize],
+          getLabels: ['metadata.labels', Label.unserialize],
+          getProjects: ['metadata.projects', Project.unserialize]
         };
 
         return {
           predicate: key => typeof methodsToCacheKeys[key] !== 'undefined',
           cacheKey: key => methodsToCacheKeys[key][0],
           serializer: data => data.map(row => row.serialize ? row.serialize() : row),
-          unserializer: (data, key) => data.map(methodsToCacheKeys[key][1])
+          unserializer: (data, key) => data.map(methodsToCacheKeys[key][1]),
+          invalidator: (method, args) => {
+            const [options] = args;
+            return !!options.invalidate;
+          }
         };
       })()
     }

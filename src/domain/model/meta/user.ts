@@ -22,12 +22,12 @@ export default class User {
   }
 
   public static unserialize(data: SerializedUser): User {
-    return new User(data.id, data.name, data.id);
+    return new User(data.account, data.name, data.id);
   }
 }
 
 export interface SerializedUser {
-  account: string | number,
+  account: string,
   name: string,
   id?: string
 }

@@ -28,7 +28,13 @@ export default function(config, logger): HttpClient {
       logger.trace(`${response.status} containing ${JSON.stringify(response.data, null, 4)}`);
       return response;
     },
-    error => Promise.reject(error)
+    error => {
+      if (error.response && error.response.data) {
+        logger.debug(JSON.stringify(error.response.data, null, 4));
+      }
+
+      return Promise.reject(error)
+    }
   );
 
   return {
