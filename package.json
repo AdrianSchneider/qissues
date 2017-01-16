@@ -14,7 +14,7 @@
   "author": {
     "name": "Adrian Schneider",
     "email": "adrian@compiledintent.com",
-    "url": "http://adrianschneider.ca/"
+    "url": "http://twitter.com/adrianschneider"
   },
   "scripts": {
     "test": "make test"
@@ -24,8 +24,6 @@
     "url": "https://github.com/AdrianSchneider/qissues.git"
   },
   "dependencies": {
-    "@types/axios": "^0.9.34",
-    "@types/bluebird": "^3.0.37",
     "async": "^0.9.0",
     "axios": "^0.15.3",
     "blessed": "^0.1.81",
@@ -44,7 +42,9 @@
     "wordwrap": "^1.0.0"
   },
   "devDependencies": {
+    "@types/axios": "^0.9.34",
     "@types/blessed": "^0.1.4",
+    "@types/bluebird": "^3.0.37",
     "@types/chai": "^3.4.34",
     "@types/es6-promise": "0.0.32",
     "@types/es6-shim": "0.31.32",
