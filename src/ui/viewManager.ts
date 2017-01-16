@@ -21,6 +21,7 @@ export default class ViewManager {
   constructor(app: Application, ui, keys) {
     this.app = app;
     this.ui = ui;
+    this.ui.viewManager = this;
     this.keys = keys;
     this.views = {};
   }

@@ -2,6 +2,7 @@ import * as _           from 'underscore';
 import * as Promise     from 'bluebird';
 import * as blessed     from 'blessed';
 import UiControllers    from './controllers';
+import ViewManager      from './viewManager';
 import canvas           from './views/canvas';
 import messageWidget    from './widgets/message';
 import prompt           from './widgets/prompt';
@@ -19,6 +20,7 @@ export default class BlessedInterface {
   private format;
   private keys: KeyMapping;
   public canvas;
+  public viewManager: ViewManager;
 
   private static loadingMessage: string = 'Loading...';
 
@@ -116,18 +118,21 @@ export default class BlessedInterface {
    */
   public selectFromList(text: string, options: string[]): Promise<any> {
     return new Promise((resolve, reject) => { // TODO Promise<string>
-      const list = promptList(text, this.canvas, options);
+      const listView = this.viewManager.getView('list', this.canvas, {
+        text: text,
+        parent: this.canvas
+      });
 
-      list.on('select', (item, i: number) => {
+      listView.node.on('select', (item, i: number) => {
         this.logger.debug('Selected ' + item['originalContent']);
-        this.canvas.remove(list);
+        this.canvas.remove(listView.node);
         this.screen.render();
         this.respondOrCancel(item['originalContent'], resolve, reject);
       });
 
-      list.key(this.keys.back, () => {
+      listView.node.key(this.keys.back, () => {
         this.logger.debug('Back; closing promptList');
-        this.canvas.remove(list);
+        this.canvas.remove(listView.node);
         this.screen.render();
         reject(new Cancellation());
         return false;

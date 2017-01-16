@@ -7,6 +7,7 @@ import Yankable           from '../../ui/behaviors/yankable';
 import ExternallyViewable from '../../ui/behaviors/externallyViewable';
 import Filterable         from '../../ui/behaviors/filterable';
 import Searchable         from '../../ui/behaviors/searchable';
+import List               from '../../ui/views/list';
 import IssueList          from '../../ui/views/issueList';
 import SingleIssue        from '../../ui/views/single';
 import ViewManager        from '../../ui/viewManager';
@@ -20,6 +21,7 @@ export default function(container: Container, config: BootstrapParams) {
     'ui.view-manager',
     (app, ui, keyConfig, ...behaviours) => {
       const viewManager = new ViewManager(app, ui, keyConfig);
+      viewManager.registerView('list', List, behaviours.slice(-1));
       viewManager.registerView('issues:view', SingleIssue, behaviours);
       viewManager.registerView('issues:list', IssueList, behaviours);
       return viewManager;
