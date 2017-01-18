@@ -7,9 +7,12 @@ import HasIssues            from '../views/hasIssues';
 import { ChangeSetBuilder } from '../../domain/model/changeSet';
 import TrackerMetadata      from '../../domain/model/trackerMetadata';
 import Cancellation         from '../../domain/errors/cancellation';
+import Filter               from '../../domain/model/filter';
+import FilterSet            from '../../domain/model/filterSet';
 
 interface FilterableOptions {
-  keys: FilterableKeys
+  keys: FilterableKeys,
+  getFilters: () => FilterSet
 }
 
 interface FilterableKeys {
@@ -28,6 +31,7 @@ export default class Filterable implements Behaviour {
   private readonly sequencer: Sequencer;
   private readonly metadata: TrackerMetadata;
   private readonly ui: BlessedInterface;
+  private filters: FilterSet;
 
   public readonly name: string = 'filterable';
   public readonly events: string[] = [];
@@ -43,6 +47,7 @@ export default class Filterable implements Behaviour {
    */
   public attach(view: HasIssues, options: FilterableOptions): void {
     if (this.view) throw new Error('Filterable already has a view');
+    this.filters = options.getFilters();
 
     this.view = view;
     this.sequencer
@@ -79,20 +84,32 @@ export default class Filterable implements Behaviour {
     };
   }
 
+  /**
+   * Shows the manipulable list of filters
+   */
   private listFilters() {
     return () => {
+      console.error(this.filters.serialize());
       console.error('listFilters()');
     };
   }
 
+  /**
+   * Resolves to the application of a filter chosen from a lazily
+   * loaded list
+   */
   private filterFromSelection(getOptions: (i) => Promise<string[]>, message: string, field: string) {
     return () => this.ui.selectFromCallableList(message, getOptions)
-      .then(selection => this.emitChanged(field, selection))
+      .then(selection => this.filterBy(field, selection))
       .catch(Cancellation, () => {});
   }
 
-  private emitChanged(field: string, selection: string) {
+  /**
+   * Applies the filters
+   */
+  private filterBy(field: string, selection: string) {
     console.error(`Selected ${field} = ${selection}`);
+    this.filters.add(new Filter(field, selection));
   }
 
 }
