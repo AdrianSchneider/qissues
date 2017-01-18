@@ -4,17 +4,16 @@ import View             from '../view';
 import ListWidget       from '../widgets/list';
 import Application      from "../../app/main";
 import KeyMapping       from '../../app/config/keys';
-import Cancellation     from '../../domain/errors/cancellation';
-import Id               from '../../domain/model/id';
-import Issue            from '../../domain/model/issue';
-import IssuesCollection from '../../domain/model/issues';
-import Filter           from '../../domain/model/filter';
 import BlessedInterface from "../interface";
+
+interface ListOptions {
+  text: string
+}
 
 /**
  * Responsible for managing the main issue list
  */
-class List extends EventEmitter implements View {
+class PromptList extends EventEmitter implements View {
   public node: Widgets.BlessedElement;
 
   private readonly app: Application;
@@ -36,9 +35,11 @@ class List extends EventEmitter implements View {
   /**
    * Renders the issue list
    */
-  public render(parent: Widgets.BlessedElement, options: Object) {
+  public render(parent: Widgets.BlessedElement, options: ListOptions) {
     this.node = this.createList(options.text, parent);
     this.node.key(this.keys.refresh, () => this.emit('refresh'));
+
+    this.node.on('change.items', items => this.emit('change.items', items));
 
     parent.append(this.node);
     parent.screen.render();
@@ -71,4 +72,4 @@ class List extends EventEmitter implements View {
   }
 }
 
-export default List;
+export default PromptList;

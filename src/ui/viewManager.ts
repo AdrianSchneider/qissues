@@ -39,6 +39,7 @@ export default class ViewManager {
 
   /**
    * Gets a view attached to the parent element
+   * This attaches the behaviours to the view and the marker re-rendering
    */
   public getView(name: string, element: Widgets.BlessedElement, options: Object = {}): View {
     if (typeof this.views[name] === 'undefined') {
@@ -46,7 +47,6 @@ export default class ViewManager {
     }
 
     const markers = [];
-
     const viewConfig = this.views[name];
     const view = this.construct(viewConfig.view, element, options);
 
@@ -57,6 +57,7 @@ export default class ViewManager {
         getFilters: () => this.app.getFilters()
       })
 
+      view.onAddBehaviour(behaviour);
       if (behaviour.marker) markers.push(behaviour.marker);
     });
 
@@ -69,10 +70,7 @@ export default class ViewManager {
   private construct(ctor, ...args): View {
     return new ctor(this.app, this.ui, this.keys, ...args);
   }
-}
 
-interface ViewMap {
-  [key: string]: ViewConfig
 }
 
 interface ViewConfig {

@@ -26,6 +26,8 @@ class IssueList extends EventEmitter implements View, HasIssues {
   private parent;
   private options;
 
+  private behaviours: Behaviour[];
+
   constructor(app: Application, ui, keys, parent, options: IssueListOptions) {
     super();
     this.app = app;
@@ -33,6 +35,7 @@ class IssueList extends EventEmitter implements View, HasIssues {
     this.keys = keys;
     this.parent = parent;
     this.options = options;
+    this.behaviours = [];
     this.render(this.parent, this.options);
   }
 
@@ -45,7 +48,7 @@ class IssueList extends EventEmitter implements View, HasIssues {
     this.renderIssues(this.issues);
 
     this.node.on('select', (li, i) => {
-      this.emit('select', this.issues.getByIndex(i).id);
+      this.emit('open', this.issues.getByIndex(i).id);
     });
 
     this.node.key(this.keys['issue.lookup'], () => {
@@ -64,6 +67,10 @@ class IssueList extends EventEmitter implements View, HasIssues {
     this.node.focus();
 
     return this.node;
+  }
+
+  public onAddBehaviour(behaviour: Behaviour) {
+    this.behaviours.push(behaviour);
   }
 
   /**

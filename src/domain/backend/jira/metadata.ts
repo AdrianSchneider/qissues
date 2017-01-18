@@ -36,7 +36,6 @@ export default class JiraMetadata implements TrackerMetadata {
     return this.getProjects()
       .map((project: Project) => {
         return this.client.get('/rest/api/2/user/assignable/search', { params: { project: project.id } })
-          .tap(console.error)
           .then(r => r.data)
           .then(response => response.map(user => new User(user.name)));
       })
@@ -77,6 +76,7 @@ export default class JiraMetadata implements TrackerMetadata {
     return this.getProjects()
       .map((project: Project) => {
         return this.client.get(`/rest/api/2/project/${project.internalId}/statuses`)
+          .then(response => response.data)
           .reduce((statuses, type) => uniq(statuses.concat(type['statuses']), row => row.name), [])
       })
       .reduce((statuses, perProject) => uniq(statuses.concat(perProject), status => status.name), [])

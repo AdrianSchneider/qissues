@@ -33,6 +33,11 @@ export default class ListDecorator {
     const config = this.identify(view);
     view.on('change.items', items => this.handleChangeItems(config, items));
     view.on('change.markers', () => this.handleChangeMarkers(config));
+
+    view.node.on('select', item => {
+      view.emit('select', config.items[view.node['selected']]);
+    });
+
   }
 
   /**

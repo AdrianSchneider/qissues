@@ -3,7 +3,7 @@ import * as blessed from 'blessed';
 export default function Prompt(text: string, parent) {
   text = text + ' ';
 
-  var form = new blessed.Widgets.FormElement({
+  var form = new blessed.widget.Form({
     top: 'center',
     left: 'center',
     content: text,
@@ -24,7 +24,7 @@ export default function Prompt(text: string, parent) {
     }
   });
 
-  var input = new blessed.Widgets.TextboxElement({
+  var input = new blessed['Textbox']({
     top: 'center',
     right: 2,
     padding: 0,

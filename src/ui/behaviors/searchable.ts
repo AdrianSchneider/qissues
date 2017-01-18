@@ -11,7 +11,8 @@ import { nextIndex, prevIndex } from '../../util/circularArray'
 
 export interface SearchableOptions {
   parent: Widgets.BlessedElement,
-  keys: SearchKeys
+  keys: SearchKeys,
+  state?: SearchState
 }
 
 interface SearchKeys {
@@ -19,6 +20,12 @@ interface SearchKeys {
   nextResult: string | string[],
   prevResult: string | string[],
   clearResults: string | string[]
+}
+
+interface SearchState {
+  activeSearch: string,
+  searchResults: string[],
+  resultNumber: number
 }
 
 export default class Searchable implements Behaviour {
@@ -58,6 +65,12 @@ export default class Searchable implements Behaviour {
     this.element = this.view.node;
     this.parent = options.parent;
     this.startListening(options.keys);
+
+    if (options.state) {
+      this.activeSearch = options.state.activeSearch;
+      this.searchResults = options.state.searchResults;
+      this.resultNumber = options.state.resultNumber;
+    }
   }
 
   /**
@@ -147,6 +160,14 @@ export default class Searchable implements Behaviour {
     this.activeSearch = '';
     this.view.emit('change.markers');
     this.element.screen.render();
+  }
+
+  public serializeState() {
+    return {
+      searchResults: this.searchResults,
+      resultNumber: this.resultNumber,
+      activeSearch: this.activeSearch
+    };
   }
 
   /**

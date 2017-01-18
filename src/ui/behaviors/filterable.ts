@@ -14,7 +14,8 @@ interface FilterableOptions {
 
 interface FilterableKeys {
   filterList: string,
-  filterAssignee: string
+  filterAssignee: string,
+  filterStatus: string
 }
 
 /**
@@ -48,6 +49,12 @@ export default class Filterable implements Behaviour {
           .then(users => ['Unassigned'].concat(users.map(String))),
         'Assignee',
         'assignee'
+      ))
+      .on(view.node, options.keys.filterStatus, this.filterFromSelection(
+        (invalidate) => this.metadata.getStatuses({ invalidate })
+          .then(users => users.map(String)),
+        'Status',
+        'status'
       ));
   }
 

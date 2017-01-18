@@ -1,6 +1,9 @@
 import * as Promise      from 'bluebird';
 import Browser           from '../services/browser';
 import BlessedInterface  from '../interface';
+import { ViewState }     from '../view';
+import ViewManager       from '../viewManager';
+import HasIssues         from '../views/hasIssues';
 import Application       from '../../app/main';
 import KeyMapping        from '../../app/config/keys';
 import Id                from '../../domain/model/id';
@@ -11,8 +14,6 @@ import FilterSet         from '../../domain/model/filterSet';
 import TrackerRepository from '../../domain/model/trackerRepository';
 import Cancellation      from '../../domain/errors/cancellation';
 import MoreInfoRequired  from '../../domain/errors/infoRequired';
-import ViewManager from '../viewManager';
-import HasIssues from '../views/hasIssues';
 
 export default class ListIssuesController {
   private readonly app: Application;
@@ -58,7 +59,7 @@ export default class ListIssuesController {
         keys: this.keys
       });
 
-      view.on('select', num => {
+      view.on('open', num => {
         this.viewIssue({ num }).catch(err => this.handleError(err, `Could not load ${num}`));
       });
 
@@ -76,7 +77,7 @@ export default class ListIssuesController {
    * Failures are passed back up to the caller
    */
   public viewIssue(options: ViewIssueOptions): Promise<void> {
-    const { num } = options;
+    const { num, state } = options;
     this.logger.info('Viewing issue ' + num);
 
     this.ui.clearScreen();
@@ -90,7 +91,8 @@ export default class ListIssuesController {
 
       const view = this.viewManager.getView('issues:view', this.ui.canvas, {
         issue: issue,
-        comments: comments
+        comments: comments,
+        state
       });
 
       view.on('back', () => this.listIssues({ focus: num }));
@@ -149,5 +151,6 @@ interface ListIssuesOptions {
 
 interface ViewIssueOptions {
   num: string,
-  invalidate?: boolean
+  invalidate?: boolean,
+  state?: Object
 }

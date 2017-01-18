@@ -149,18 +149,27 @@ export default class BlessedInterface {
    */
   public selectFromCallableList(text: string, provider: (invalidate?: boolean) => Promise<string[]>): Promise<any> { // TODO Promise<string>
     return new Promise((resolve, reject) => {
-      var list = promptList(text, this.canvas, [BlessedInterface.loadingMessage]);
+      const listView = this.viewManager.getView('core:promptList', this.canvas, {
+        text: text,
+        parent: this.canvas
+      });
+
+      const list = listView.node;
+
+      list['setItems']([
+        BlessedInterface.loadingMessage
+      ]);
 
       var setItems = (options: string[]) => {
-        list.setItems(<any>options.map(String));
+        list['setItems'](<any>options.map(String));
         this.canvas.screen.render();
       };
 
-      list.on('select', (item, i) => {
-        this.logger.debug('Selected ' + item['originalContent']);
+      listView.on('select', selection => {
+        this.logger.debug('Selected ' + selection);
         this.canvas.remove(list);
         this.canvas.screen.render();
-        this.respondOrCancel(item['originalContent'], resolve, reject);
+        this.respondOrCancel(selection, resolve, reject);
       });
 
       list.key(this.keys.back, () => {
@@ -173,7 +182,6 @@ export default class BlessedInterface {
       list.key(this.keys.refresh, () => {
         this.logger.debug('Refreshing promptList');
         setItems([BlessedInterface.loadingMessage]);
-
         provider(true).then(results => setItems(results));
       });
 

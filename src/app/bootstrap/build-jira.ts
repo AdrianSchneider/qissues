@@ -16,6 +16,7 @@ import User                   from '../../domain/model/meta/user';
 import Type                   from '../../domain/model/meta/type';
 import Label                  from '../../domain/model/meta/label';
 import Sprint                 from '../../domain/model/meta/sprint';
+import Status                 from '../../domain/model/meta/status';
 import Project                from '../../domain/model/meta/project';
 import HttpClient             from '../../domain/shared/httpClient';
 
@@ -43,6 +44,7 @@ export default function buildJira(container: Container, config: BootstrapParams)
           getUsers: ['metadata.users', User.unserialize],
           getSprints: ['metadata.sprints', Sprint.unserialize],
           getLabels: ['metadata.labels', Label.unserialize],
+          getStatuses: ['metadata.statuses', Status.unserialize],
           getProjects: ['metadata.projects', Project.unserialize]
         };
 
@@ -53,7 +55,7 @@ export default function buildJira(container: Container, config: BootstrapParams)
           unserializer: (data, key) => data.map(methodsToCacheKeys[key][1]),
           invalidator: (method, args) => {
             const [options] = args;
-            return !!options.invalidate;
+            return options && !!options.invalidate;
           }
         };
       })()
