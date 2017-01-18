@@ -30,6 +30,7 @@ interface SearchState {
 
 export default class Searchable implements Behaviour {
 
+  public readonly name: string = 'searchable';
   public readonly events: string[] = [];
 
   private view: View;
@@ -162,7 +163,7 @@ export default class Searchable implements Behaviour {
     this.element.screen.render();
   }
 
-  public serializeState() {
+  public serialize(): SearchState {
     return {
       searchResults: this.searchResults,
       resultNumber: this.resultNumber,

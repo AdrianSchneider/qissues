@@ -15,7 +15,9 @@ interface FilterableOptions {
 interface FilterableKeys {
   filterList: string,
   filterAssignee: string,
-  filterStatus: string
+  filterStatus: string,
+  filterSprint: string,
+  filterType: string,
 }
 
 /**
@@ -27,6 +29,7 @@ export default class Filterable implements Behaviour {
   private readonly metadata: TrackerMetadata;
   private readonly ui: BlessedInterface;
 
+  public readonly name: string = 'filterable';
   public readonly events: string[] = [];
 
   constructor(ui: BlessedInterface, sequencer: Sequencer, metadata: TrackerMetadata) {
@@ -50,12 +53,30 @@ export default class Filterable implements Behaviour {
         'Assignee',
         'assignee'
       ))
+      .on(view.node, options.keys.filterSprint, this.filterFromSelection(
+        (invalidate) => this.metadata.getSprints({ invalidate })
+          .then(sprints => ['Backlog'].concat(sprints.map(String))),
+        'Sprint',
+        'sprint'
+      ))
+      .on(view.node, options.keys.filterType, this.filterFromSelection(
+        (invalidate) => this.metadata.getTypes({ invalidate })
+          .then(types => types.map(String)),
+        'Type',
+        'type'
+      ))
       .on(view.node, options.keys.filterStatus, this.filterFromSelection(
         (invalidate) => this.metadata.getStatuses({ invalidate })
           .then(users => users.map(String)),
         'Status',
         'status'
       ));
+  }
+
+  public serialize() {
+    return {
+
+    };
   }
 
   private listFilters() {

@@ -1,17 +1,18 @@
-import { Widgets }      from 'blessed';
-import { EventEmitter } from 'events';
-import HasIssues        from './hasIssues';
-import View             from '../view';
-import List             from '../widgets/list';
-import FilterableList   from '../widgets/filterableList';
-import Application      from "../../app/main";
-import KeyMapping       from '../../app/config/keys';
-import Cancellation     from '../../domain/errors/cancellation';
-import Id               from '../../domain/model/id';
-import Issue            from '../../domain/model/issue';
-import IssuesCollection from '../../domain/model/issues';
-import Filter           from '../../domain/model/filter';
-import BlessedInterface from "../interface";
+import { Widgets }         from 'blessed';
+import { EventEmitter }    from 'events';
+import HasIssues           from './hasIssues';
+import View, { ViewState } from '../view';
+import List                from '../widgets/list';
+import FilterableList      from '../widgets/filterableList';
+import Application         from "../../app/main";
+import KeyMapping          from '../../app/config/keys';
+import Cancellation        from '../../domain/errors/cancellation';
+import Id                  from '../../domain/model/id';
+import Issue               from '../../domain/model/issue';
+import IssuesCollection    from '../../domain/model/issues';
+import Filter              from '../../domain/model/filter';
+import BlessedInterface    from '../interface';
+import Behaviour           from '../behaviour';
 
 /**
  * Responsible for managing the main issue list
@@ -26,7 +27,7 @@ class IssueList extends EventEmitter implements View, HasIssues {
   private parent;
   private options;
 
-  private behaviours: Behaviour[];
+  private behaviours: Behaviour[] = [];
 
   constructor(app: Application, ui, keys, parent, options: IssueListOptions) {
     super();
@@ -37,6 +38,16 @@ class IssueList extends EventEmitter implements View, HasIssues {
     this.options = options;
     this.behaviours = [];
     this.render(this.parent, this.options);
+  }
+
+  public serialize(): ViewState {
+    return {
+      mine: { focus: this.options.focus },
+      behaviours: this.behaviours.reduce(
+        (out, behaviour) => ({ [behaviour.name]: behaviour.serialize(), ...out }),
+        {}
+      )
+    };
   }
 
   /**

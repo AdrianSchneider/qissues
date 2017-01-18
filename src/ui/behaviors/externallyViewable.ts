@@ -32,6 +32,8 @@ export default class ExternallyViewable implements Behaviour {
   private browser: Browser;
   private normalizer: TrackerNormalizer;
 
+  public readonly name: string = 'externallyViewable';
+
   constructor(browser: Browser, normalizer: TrackerNormalizer) {
     this.browser = browser;
     this.normalizer = normalizer;
@@ -45,6 +47,10 @@ export default class ExternallyViewable implements Behaviour {
       options.keys.web,
       () => this.browser.open(this.getUrl(options.getFilters()))
     );
+  }
+
+  public serialize(): Object {
+    return {};
   }
 
   private getUrl(filters: FilterSet): string {

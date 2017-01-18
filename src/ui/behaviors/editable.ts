@@ -28,6 +28,7 @@ export default class Editable implements Behaviour {
   private readonly metadata: TrackerMetadata;
   private readonly ui: BlessedInterface;
 
+  public readonly name: string = 'editable';
   public readonly events: string[] = [
     'changeset'
   ];
@@ -65,6 +66,10 @@ export default class Editable implements Behaviour {
         'Sprint',
         'sprint'
       ));
+  }
+
+  public serialize(): Object {
+    return {};
   }
 
   /**

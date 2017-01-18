@@ -1,10 +1,11 @@
-import { Widgets }      from 'blessed';
-import { EventEmitter } from 'events';
-import View             from '../view';
-import ListWidget       from '../widgets/list';
-import Application      from "../../app/main";
-import KeyMapping       from '../../app/config/keys';
-import BlessedInterface from "../interface";
+import { Widgets }         from 'blessed';
+import { EventEmitter }    from 'events';
+import View, { ViewState } from '../view';
+import ListWidget          from '../widgets/list';
+import Application         from "../../app/main";
+import KeyMapping          from '../../app/config/keys';
+import BlessedInterface    from '../interface';
+import Behaviour           from '../behaviour';
 
 interface ListOptions {
   text: string
@@ -21,6 +22,7 @@ class PromptList extends EventEmitter implements View {
   private readonly keys: KeyMapping;
   private parent;
   private options;
+  private behaviours: Behaviour[] = [];
 
   constructor(app: Application, ui, keys, parent, options: Object) {
     super();
@@ -30,6 +32,17 @@ class PromptList extends EventEmitter implements View {
     this.parent = parent;
     this.options = options;
     this.render(this.parent, this.options);
+  }
+
+  public onAddBehaviour(behaviour: Behaviour) {
+    this.behaviours.push(behaviour);
+  }
+
+  public serialize(): ViewState {
+    return {
+      mine: {},
+      behaviours: {}
+    };
   }
 
   /**

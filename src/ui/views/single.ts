@@ -5,10 +5,11 @@ import { Widgets }        from 'blessed'
 import { format }         from 'util';
 import { mapObject }      from 'underscore';
 import HasIssues          from './hasIssues';
+import Behaviour          from '../behaviour';
+import BlessedInterface   from '../interface';
 import View               from '../view';
-import Application        from "../../app/main";
+import Application        from '../../app/main';
 import KeyMapping         from '../../app/config/keys';
-import BlessedInterface   from "../interface";
 import Id                 from '../../domain/model/id';
 import Issue              from '../../domain/model/issue';
 import IssuesCollection   from '../../domain/model/issues';
@@ -34,6 +35,7 @@ class SingleIssueView extends EventEmitter implements View, HasIssues {
 
   private parent;
   private options;
+  private behaviours: Behaviour[] = [];
 
   constructor(app: Application, ui, keys, element, options) {
     super();
@@ -43,6 +45,17 @@ class SingleIssueView extends EventEmitter implements View, HasIssues {
     this.parent = element;
     this.options = options;
     this.render(this.parent, this.options);
+  }
+
+  public serialize() {
+    return {
+      mine: {},
+      behaviours: {}
+    }
+  }
+
+  public onAddBehaviour(behaviour: Behaviour) {
+    this.behaviours.push(behaviour);
   }
 
 

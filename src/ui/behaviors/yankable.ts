@@ -20,9 +20,8 @@ interface YankableKeys {
  * Responsible for yanking issue data into the clipboard
  */
 export default class Yankable implements Behaviour {
-  public readonly events: string[] = [
-    'yanked'
-  ];
+  public readonly name: string = 'yankable';
+  public readonly events: string[] = ['yanked'];
 
   private view: View;
   private readonly clipboard: Clipboard;
@@ -44,6 +43,12 @@ export default class Yankable implements Behaviour {
       .on(view.node, options.keys.yankId,    this.yank(view, 'id'))
       .on(view.node, options.keys.yankTitle, this.yank(view, 'title'))
       .on(view.node, options.keys.yankDescription,  this.yank(view, 'description'));
+  }
+
+  public serialize() {
+    return {
+
+    };
   }
 
   /**

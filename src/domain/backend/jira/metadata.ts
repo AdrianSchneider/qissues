@@ -22,6 +22,7 @@ export default class JiraMetadata implements TrackerMetadata {
 
   public getTypes(options?): Promise<Type[]>{
     return this.client.get('/rest/api/2/issue/createmeta')
+      .then(response => response.data)
       .then(response => {
         return response.projects.map(project => {
           return project.issuetypes.map(type => new Type(type.id, type.name));
@@ -47,6 +48,7 @@ export default class JiraMetadata implements TrackerMetadata {
 
   public getViews(options?): Promise<Object> {
     return this.client.get('/rest/greenhopper/1.0/rapidview')
+      .then(response => response.data)
       .then(response => response.views)
   }
 
@@ -54,6 +56,8 @@ export default class JiraMetadata implements TrackerMetadata {
     return this.getViews()
       .map(view => {
         return this.client.get('/rest/greenhopper/1.0/xboard/plan/backlog/data.json', { rapidViewId: view['id'] })
+          .then(response => response.data)
+          // catch errors here??
           .then(response => response.sprints.map(sprint => new Sprint(sprint.id, sprint.name)));
       })
       .reduce((allSprints, sprintsPerView) => allSprints.concat(sprintsPerView), [])

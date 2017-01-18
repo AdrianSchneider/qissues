@@ -24,7 +24,7 @@ interface View extends EventEmitter {
    * This should always be passable back to a view at render time
    * and should bubble up to all of its behaviours
    */
-  serialize: ViewState;
+  serialize(): ViewState;
 }
 
 export interface ViewState {

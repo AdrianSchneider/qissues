@@ -21,6 +21,8 @@ export default class Selectable implements Behaviour {
   private selected: string[] = [];
   private items: Object[];
 
+  public readonly name: string = 'selectable';
+
   public marker: ListMarker = {
     name: 'checked',
     test: () => false, // this.isChecked,
@@ -38,7 +40,10 @@ export default class Selectable implements Behaviour {
     this.element = this.view.node;
     this.parent = options.parent;
     this.startListening(options.keys);
+  }
 
+  public serialize() {
+    return {};
   }
 
   /**
