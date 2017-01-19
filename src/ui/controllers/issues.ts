@@ -81,7 +81,7 @@ export default class ListIssuesController {
     this.logger.info('Viewing issue ' + num);
 
     this.ui.clearScreen();
-    this.ui.showLoading(options.invalidate ? 'Refreshing...' : 'Loading ' + num + '...');
+    this.ui.showLoading(options.invalidate ? `Refreshing ${num}...` : `Loading ${num}...`);
 
     return Promise.all([
       this.repository.lookup(new Id(num), options),
