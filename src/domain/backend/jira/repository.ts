@@ -13,17 +13,22 @@ import NewComment         from '../../model/newComment';
 import MoreInfoRequired   from '../../errors/infoRequired';
 import HttpClient         from '../../shared/httpClient';
 import Cache              from '../../../app/services/cache';
+import Logger             from '../../../app/services/logger';
 
 interface QueryOptions {
   invalidate?: boolean
 }
 
+/**
+ * Responsible for all primary tracker interactions with JIRA through the
+ * configured JIRA HTTP client
+ */
 class JiraRepository implements TrackerRepository {
   private client: HttpClient;
   private cache: Cache;
   private normalizer;
   private metadata;
-  private logger;
+  private logger: Logger;
 
   public constructor(client: HttpClient, cache: Cache, normalizer, metadata, logger) {
     this.client = client;

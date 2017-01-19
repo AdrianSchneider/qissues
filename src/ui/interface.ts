@@ -118,19 +118,24 @@ export default class BlessedInterface {
    */
   public selectFromList(text: string, options: string[]): Promise<any> {
     return new Promise((resolve, reject) => { // TODO Promise<string>
-      const listView = this.viewManager.getView('list', this.canvas, {
+      const listView = this.viewManager.getView('core:promptList', this.canvas, {
         text: text,
         parent: this.canvas
       });
 
-      listView.node.on('select', (item, i: number) => {
+
+      const list = listView.node;
+
+      list['setItems'](options);
+
+      list.on('select', (item, i: number) => {
         this.logger.debug('Selected ' + item['originalContent']);
         this.canvas.remove(listView.node);
         this.screen.render();
         this.respondOrCancel(item['originalContent'], resolve, reject);
       });
 
-      listView.node.key(this.keys.back, () => {
+      list.key(this.keys.back, () => {
         this.logger.debug('Back; closing promptList');
         this.canvas.remove(listView.node);
         this.screen.render();

@@ -20,6 +20,9 @@ export default class JiraMetadata implements TrackerMetadata {
     this.client = client;
   }
 
+  /**
+   * Gets types from JIRA (combine types from all projects)
+   */
   public getTypes(options?): Promise<Type[]>{
     return this.client.get('/rest/api/2/issue/createmeta')
       .then(response => response.data)
@@ -33,6 +36,9 @@ export default class JiraMetadata implements TrackerMetadata {
       }, []);
   }
 
+  /**
+   * Gets users from JIRA (combine users from all projects)
+   */
   public getUsers(options?): Promise<User[]> {
     return this.getProjects()
       .map((project: Project) => {
@@ -46,28 +52,42 @@ export default class JiraMetadata implements TrackerMetadata {
       .filter((user: User) => user.account.indexOf('addon_') !== 0);
   }
 
+  /**
+   * Get views from JIRA
+   */
   public getViews(options?): Promise<Object> {
     return this.client.get('/rest/greenhopper/1.0/rapidview')
       .then(response => response.data)
       .then(response => response.views)
   }
 
+  /**
+   * Get sprints from JIRA (combine sprints from all views)
+   */
   public getSprints(options?): Promise<Sprint[]> {
     return this.getViews()
       .map(view => {
-        return this.client.get('/rest/greenhopper/1.0/xboard/plan/backlog/data.json', { rapidViewId: view['id'] })
+        const opts = { params: { rapidViewId: view['id'] } };
+        return this.client.get('/rest/greenhopper/1.0/xboard/plan/backlog/data.json', opts)
           .then(response => response.data)
-          // catch errors here??
-          .then(response => response.sprints.map(sprint => new Sprint(sprint.id, sprint.name)));
+          .then(response => response.sprints.map(sprint => new Sprint(sprint.id, sprint.name)))
+          .catch(e => ([]))
       })
       .reduce((allSprints, sprintsPerView) => allSprints.concat(sprintsPerView), [])
   }
 
+  /**
+   * Get labels from JIRA
+   */
   public getLabels(options?): Promise<Label[]> {
     return this.client.get('/rest/api/1.0/labels/suggest?query=')
+      .then(response => response.data)
       .then(body => body.suggestions.map(label => new Label(null, label.label)))
   }
 
+  /**
+   * Gets projects from JIRA
+   */
   public getProjects(options?): Promise<Project[]> {
     return this.client.get('/rest/api/2/issue/createmeta')
       .then(response => response.data)
@@ -76,6 +96,9 @@ export default class JiraMetadata implements TrackerMetadata {
       ))
   }
 
+  /**
+   * Gets statuses from JIRA (combine statuses from all projects)
+   */
   public getStatuses(options?): Promise<Status[]> {
     return this.getProjects()
       .map((project: Project) => {
@@ -87,12 +110,18 @@ export default class JiraMetadata implements TrackerMetadata {
       .map(status => new Status(status['name']))
   }
 
+  /**
+   * Get transitions from JIRA for a given issue
+   */
   public getTransitions(num: string): Promise<JiraTransition[]> {
     const opts = { qs: { expand: 'transitions.fields' } };
     return this.client.get('/rest/api/2/issue/' + num + '/transitions', opts)
       .then(response => response.transitions)
   }
 
+  /**
+   * Gets transitions for JIRA for a given issue that is valid for a current status
+   */
   public getIssueTransition(num: string, status: string) {
     return this.getTransitions(num).then(transitions => {
       const transition: JiraTransition = transitions.find(transition => {
@@ -104,6 +133,9 @@ export default class JiraMetadata implements TrackerMetadata {
     });
   }
 
+  /**
+   * Gets the expectations for an issue transition
+   */
   public transitionToExpectations(transition: JiraTransition): Expectations {
     return new Expectations(
       chain(transition.fields)
@@ -118,7 +150,7 @@ export default class JiraMetadata implements TrackerMetadata {
         .filter(field => field.required)
         .map(field => ({ ...field, choices: field.choices.map(f => f.name) }))
         .indexBy('field')
-        .vlaue()
+        .value()
     );
   }
 }

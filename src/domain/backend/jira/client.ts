@@ -30,7 +30,7 @@ export default function(config, logger): HttpClient {
     },
     error => {
       if (error.response && error.response.data) {
-        logger.debug(JSON.stringify(error.response.data, null, 4));
+        logger.trace(JSON.stringify(error.response.data, null, 4));
       }
 
       return Promise.reject(error)

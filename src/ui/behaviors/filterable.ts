@@ -79,9 +79,7 @@ export default class Filterable implements Behaviour {
   }
 
   public serialize() {
-    return {
-
-    };
+    return {};
   }
 
   /**
@@ -89,8 +87,9 @@ export default class Filterable implements Behaviour {
    */
   private listFilters() {
     return () => {
-      console.error(this.filters.serialize());
-      console.error('listFilters()');
+      const options = this.filters.map(filter => `${filter.type} = ${filter.value}`);
+      return this.ui.selectFromList( 'Filters', options)
+        .catch(Cancellation, () => {});
     };
   }
 

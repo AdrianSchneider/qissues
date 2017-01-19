@@ -66,6 +66,13 @@ export default class FilterSet extends EventEmitter {
     );
   }
 
+  /**
+   * Maps over the filters
+   */
+  public map(func: (f: Filter) => any): any[] {
+    return this.filters.map(func);
+  }
+
   public toValues(): Object {
     return this.filters.reduce(
       (out: Object, filter: Filter) => ({ ...out, [filter.type]: filter.value }),
