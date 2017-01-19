@@ -88,7 +88,7 @@ export default class Filterable implements Behaviour {
   private listFilters() {
     return () => {
       const options = this.filters.map(filter => `${filter.type} = ${filter.value}`);
-      return this.ui.selectFromList( 'Filters', options)
+      return this.ui.selectFromList('Filters', options)
         .catch(Cancellation, () => {});
     };
   }

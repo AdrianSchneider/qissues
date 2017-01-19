@@ -59,21 +59,49 @@ export default class Issue {
     if (attributes.commentCount) this.commentCount = attributes.commentCount;
   }
 
+  /**
+   * Serializes an issue for storage
+   */
   public serialize(): SerializedIssue {
     return {
       id: this.id.toString(),
       title: this.title,
       description: this.description,
-      status: this.status
+      status: this.status,
+      project: this.project ? this.project.serialize() : null,
+      priority: this.priority ? this.priority.serialize() : null,
+      sprint: this.sprint ? this.sprint.serialize() : null,
+      label: this.label ? this.label.serialize() : null,
+      type: this.type ? this.type.serialize() : null,
+      assignee: this.assignee ? this.assignee.serialize() : null,
+      reporter: this.reporter ? this.reporter.serialize() : null,
+      dateCreated: this.dateCreated ? this.dateCreated.toString() : null,
+      dateUpdated: this.dateUpdated ? this.dateUpdated.toString() : null,
+      commentCount: this.commentCount 
     };
   }
 
+  /**
+   * Deserializes an issue from storage
+   */
   public static unserialize(serialized: SerializedIssue) {
     return new Issue(
       new Id(serialized.id),
       serialized.title,
       serialized.description,
-      Status.unserialize(serialized.status)
+      Status.unserialize(serialized.status),
+      {
+        project: serialized.project ? Project.unserialize(serialized.project) : null,
+        priority: serialized.priority ? Priority.unserialize(serialized.priority) : null,
+        assignee: serialized.assignee ? User.unserialize(serialized.assignee) : null,
+        reporter: serialized.reporter ? User.unserialize(serialized.reporter) : null,
+        type: serialized.type ? Type.unserialize(serialized.type) : null,
+        sprint: serialized.sprint ? Sprint.unserialize(serialized.sprint) : null,
+        label: serialized.label ? Label.unserialize(serialized.label) : null,
+        dateCreated: serialized.dateCreated ? new Date(serialized.dateCreated) : null,
+        dateUpdated: serialized.dateUpdated ? new Date(serialized.dateUpdated) : null,
+        commentCount: serialized.commentCount
+      }
     );
   }
 }
@@ -83,8 +111,9 @@ export interface SerializedIssue {
   title: string,
   description: string,
   status?: SerializedStatus,
+  type?: SerializedType,
   project?: SerializedProject,
-  priority?: SerializedProject,
+  priority?: SerializedPriority,
   sprint?: SerializedSprint,
   label?: SerializedLabel,
   assignee?: SerializedUser,
