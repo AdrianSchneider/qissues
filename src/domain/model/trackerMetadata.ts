@@ -8,12 +8,12 @@ import Status       from './meta/status';
 import Project      from './meta/project';
 
 interface TrackerMetadata {
-  getTypes:    (options: Object) => Promise<Type[]>;
-  getUsers:    (options: Object) => Promise<User[]>;
-  getSprints:  (options: Object) => Promise<Sprint[]>;
-  getLabels:   (options: Object) => Promise<Label[]>;
-  getProjects: (options: Object) => Promise<Project[]>;
-  getStatuses: (options: Object) => Promise<Status[]>;
+  getTypes:    (options?: Object) => Promise<Type[]>;
+  getUsers:    (options?: Object) => Promise<User[]>;
+  getSprints:  (options?: Object) => Promise<Sprint[]>;
+  getLabels:   (options?: Object) => Promise<Label[]>;
+  getProjects: (options?: Object) => Promise<Project[]>;
+  getStatuses: (options?: Object) => Promise<Status[]>;
 }
 
 export default TrackerMetadata;

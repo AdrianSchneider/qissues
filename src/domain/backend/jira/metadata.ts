@@ -46,10 +46,9 @@ export default class JiraMetadata implements TrackerMetadata {
           .then(r => r.data)
           .then(response => response.map(user => new User(user.name)));
       })
-      .reduce((users, usersInProject) => {
-        return uniq(users.concat(usersInProject), false, user => user.account)
-      }, [])
-      .filter((user: User) => user.account.indexOf('addon_') !== 0);
+      .reduce((users, usersInProject) => users.concat(usersInProject), [])
+      .filter((user: User) => user.account.indexOf('addon_') !== 0)
+      .then(users => uniq(users, false, user => user.account));
   }
 
   /**

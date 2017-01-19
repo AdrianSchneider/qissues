@@ -25,7 +25,9 @@ describe('JIRA Metadata', () => {
 
     it('Promises Types from response', () => {
       client.mock('get', url, {}, {
-        projects: [ { issuetypes: [ { id: 1, name: 'bug' } ] } ]
+        data: {
+          projects: [ { issuetypes: [ { id: 1, name: 'bug' } ] } ]
+        }
       });
 
       return metadata.getTypes().then(types => {
@@ -37,17 +39,24 @@ describe('JIRA Metadata', () => {
     });
 
     it('Removes duplicates from other projects', () => {
-      client.mock('get', url, {}, { projects: [ {
-        issuetypes: [
-          { id: 1, name: 'bug' },
-          { id: 2, name: 'feature' },
-        ]
-      }, {
-        issuetypes: [
-          { id: 2, name: 'feature' },
-          { id: 3, name: 'request' }
-        ]
-      }]});
+      client.mock('get', url, {}, {
+        data: {
+          projects: [
+            {
+              issuetypes: [
+                { id: 1, name: 'bug' },
+                { id: 2, name: 'feature' },
+              ]
+            },
+            {
+              issuetypes: [
+                { id: 2, name: 'feature' },
+                { id: 3, name: 'request' }
+              ]
+            }
+          ]
+        }
+      });
 
       return metadata.getTypes().then(types => assert.deepEqual(
         types.map(type => type.name),
@@ -62,11 +71,15 @@ describe('JIRA Metadata', () => {
     const usersUrl = '/rest/api/2/user/assignable/search';
 
     it('Returns users from all of the defined projects', () => {
-      client.mock('get', projectsUrl, {}, { projects: [
-        { key: 'TEST', name: 'Test', id: 1200 }
-      ]});
+      client.mock('get', projectsUrl, {}, {
+        data: {
+          projects: [
+            { key: 'TEST', name: 'Test', id: 1200 }
+          ]
+        }
+      });
 
-      client.mock('get', usersUrl, { project: 'TEST' }, [{ name: 'adrian' }]);
+      client.mock('get', usersUrl, { project: 'TEST' }, { data: [{ name: 'adrian' }] });
 
       return metadata.getUsers().then(users => {
         assert.lengthOf(users, 1);
@@ -76,23 +89,36 @@ describe('JIRA Metadata', () => {
     });
 
     it('Removes duplicates from other projects', () => {
-      client.mock('get', projectsUrl, {}, { projects: [
-        { key: 'PROJA', name: 'Project A', id: 1200 },
-        { key: 'PROJB', name: 'Project B', id: 1201 },
-      ]});
+      client.mock('get', projectsUrl, {}, {
+        data: {
+          projects: [
+            { key: 'PROJA', name: 'Project A', id: 1200 },
+            { key: 'PROJB', name: 'Project B', id: 1201 },
+          ]
+        }
+      });
 
-      client.mock('get', usersUrl, { project: 'PROJA' }, [{ name: 'adrian' }]);
-      client.mock('get', usersUrl, { project: 'PROJB' }, [{ name: 'adrian' }, { name: 'joe' }]);
+      client.mock('get', usersUrl, { project: 'PROJA' }, { data: [{ name: 'adrian' }]});
+      client.mock('get', usersUrl, { project: 'PROJB' }, { data: [{ name: 'adrian' }, { name: 'joe' }]});
 
       return metadata.getUsers().then(users => {
-        assert.lengthOf(users, 2);
         assert.deepEqual(users.map(user => user.account), ['adrian', 'joe']);
       });
     });
 
     it('Strips out addon users', () => {
-      client.mock('get', projectsUrl, {}, { projects: [ { key: 'PROJA', name: 'Project A', id: 1200 } ]});
-      client.mock('get', usersUrl, { project: 'PROJA' }, [{ name: 'addon_github' }]);
+      client.mock('get', projectsUrl, {}, {
+        data: {
+          projects: [
+            { key: 'PROJA', name: 'Project A', id: 1200 }
+          ]
+        }
+      });
+
+      client.mock('get', usersUrl, { project: 'PROJA' }, {
+        data: [{ name: 'addon_github' }]
+      });
+
       return metadata.getUsers().then(users => assert.lengthOf(users, 0));
     });
 
@@ -102,7 +128,9 @@ describe('JIRA Metadata', () => {
 
     it('Gets all of the views', () => {
       client.mock('get', '/rest/greenhopper/1.0/rapidview', {}, {
-        views: [ { id: '100' } ]
+        data: { 
+          views: [ { id: '100' } ]
+        }
       });
 
       return metadata.getViews().then(views => assert.deepEqual(
@@ -117,13 +145,17 @@ describe('JIRA Metadata', () => {
 
     it('Gets all of the sprints', () => {
       client.mock('get', '/rest/greenhopper/1.0/rapidview', {}, {
-        views: [ { id: '100' } ]
+        data: {
+          views: [ { id: '100' } ]
+        }
       });
 
       client.mock('get', '/rest/greenhopper/1.0/xboard/plan/backlog/data.json', { rapidViewId: '100' }, {
-        sprints: [
-          { id: '1', name: 'Go Fast' }
-        ]
+        data: {
+          sprints: [
+            { id: '1', name: 'Go Fast' }
+          ]
+        }
       });
 
       return metadata.getSprints().then(sprints => {
@@ -136,19 +168,25 @@ describe('JIRA Metadata', () => {
 
     it('Gets sprint from all views and keeps duplicates', () => {
       client.mock('get', '/rest/greenhopper/1.0/rapidview', {}, {
-        views: [ { id: '100' }, { id: '101' } ]
+        data: {
+          views: [ { id: '100' }, { id: '101' } ]
+        }
       });
 
       client.mock('get', '/rest/greenhopper/1.0/xboard/plan/backlog/data.json', { rapidViewId: '100' }, {
-        sprints: [
-          { id: '1', name: 'Go Fast' }
-        ]
+        data: {
+          sprints: [
+            { id: '1', name: 'Go Fast' }
+          ]
+        }
       });
       client.mock('get', '/rest/greenhopper/1.0/xboard/plan/backlog/data.json', { rapidViewId: '101' }, {
-        sprints: [
-          { id: '11', name: 'Go Fast' },
-          { id: '12', name: 'Go Slow' },
-        ]
+        data: {
+          sprints: [
+            { id: '11', name: 'Go Fast' },
+            { id: '12', name: 'Go Slow' },
+          ]
+        }
       });
 
       return metadata.getSprints().then(sprints => assert.lengthOf(sprints, 3));
@@ -160,7 +198,9 @@ describe('JIRA Metadata', () => {
 
     it('Gets all of the labels', () => {
       client.mock('get', '/rest/api/1.0/labels/suggest?query=', {}, {
-        suggestions: [{ label: 'red' }, { label: 'blue' }]
+        data: {
+          suggestions: [{ label: 'red' }, { label: 'blue' }]
+        }
       });
 
       return metadata.getLabels().then(labels => {

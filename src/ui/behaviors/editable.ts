@@ -49,7 +49,7 @@ export default class Editable implements Behaviour {
     this.sequencer
       .on(view.node, options.keys.changeTitle,    this.changeText('Title', 'title'))
       .on(view.node, options.keys.changeAssignee, this.changeList(
-        () => this.metadata.getUsers()
+        () => this.metadata.getUsers({})
           .then(users => ['Unassigned'].concat(users.map(String))),
         'Assignee',
         'assignee'

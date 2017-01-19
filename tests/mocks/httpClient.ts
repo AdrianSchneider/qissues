@@ -29,7 +29,7 @@ class MockHttpClient implements HttpClient {
       return (
         method === mock.method &&
         path === mock.path &&
-        Object.keys(mock.query).every(key => query[key] === mock.query[key])
+        Object.keys(mock.query).every(key => query['params'][key] === mock.query[key])
       );
     });
 

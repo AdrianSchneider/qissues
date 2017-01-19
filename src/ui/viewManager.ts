@@ -1,10 +1,10 @@
-import { Widgets }      from 'blessed';
-import Behaviour        from './behaviour';
-import BlessedInterface from './interface';
-import View             from './view';
-import Application      from '../app/main';
-import KeyMapping       from '../app/config/keys';
-import Marker           from './marker';
+import { Widgets }       from 'blessed';
+import Behaviour         from './behaviour';
+import BlessedInterface  from './interface';
+import View              from './view';
+import Application       from '../app/main';
+import KeyMapping        from '../app/config/keys';
+import Marker            from './marker';
 
 /**
  * Responsible for instantiating views
@@ -71,6 +71,10 @@ export default class ViewManager {
     return new ctor(this.app, this.ui, this.keys, ...args);
   }
 
+}
+
+interface ViewMap {
+  [key: string]: ViewConfig
 }
 
 interface ViewConfig {
