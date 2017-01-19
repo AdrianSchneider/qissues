@@ -22,6 +22,11 @@ export default function buildCore(container: Container, options: BootstrapParams
 
   container.registerService(
     'storage',
+    () => new Storage(options.stateFile)
+  );
+
+  container.registerService(
+    'cache.storage',
     () => new Storage(options.cacheFile)
   );
 
@@ -32,7 +37,7 @@ export default function buildCore(container: Container, options: BootstrapParams
       if (options.clearCache) cache.invalidateAll();
       return cache;
     },
-    ['storage']
+    ['cache.storage']
   );
 
   container.registerService(

@@ -5,6 +5,7 @@ interface BootstrapParams {
   input: stream.Writable,
   output: stream.Readable,
   configFile: string,
+  stateFile: string,
   cacheFile: string,
   logLevel: number,
   clearCache: boolean,
