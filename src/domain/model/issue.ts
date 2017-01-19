@@ -77,7 +77,7 @@ export default class Issue {
       reporter: this.reporter ? this.reporter.serialize() : null,
       dateCreated: this.dateCreated ? this.dateCreated.toString() : null,
       dateUpdated: this.dateUpdated ? this.dateUpdated.toString() : null,
-      commentCount: this.commentCount 
+      commentCount: this.commentCount
     };
   }
 
