@@ -33,11 +33,24 @@ export default class Expectations {
   /**
    * Gets the entered values merged with the defaults
    */
-  public getValues(overrideValues: Object): Object {
-    if (!overrideValues) overrideValues = {};
-    return _.mapObject(this.schema, (field, key) => {
-      return overrideValues[key] || field.default;
-    });
+  public getValues(overrideValues: Object = {}): Promise<Object> {
+    return Promise
+      .map(
+        Object.keys(this.schema),
+        fieldName => {
+          const field = this.schema[fieldName];
+          const value = overrideValues[fieldName] || field.default;
+
+          if (field.matcher && value) {
+            return field.matcher(value).then(matched => {
+              return [fieldName, matched || value];
+            })
+          }
+
+          return Promise.resolve([fieldName, value]);
+        }
+      )
+      .reduce((out, [field, value]) => ({ ...out, [field]: value }), {});
   }
 
   /**
@@ -52,11 +65,13 @@ export default class Expectations {
   /**
    * Ensure the input is valid, otherwise a ValidationError is thrown
    */
-  public ensureValid(data: Object) {
+  public ensureValid(data: Object): Promise<any> {
     return this.objectSchemaToJoi(this.schema).then((schema) => {
-      var result = joi.validate(data, schema, { stripUnknown: true });
-      if (result.error) throw new ValidationError(result.error.message);
-      return result.value;
+      return this.getValues(data).then(values => {
+        var result = joi.validate(values, schema, { stripUnknown: true });
+        if (result.error) throw new ValidationError(result.error.message);
+        return result.value;
+      });
     });
   }
 

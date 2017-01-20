@@ -12,7 +12,7 @@ import Issue                  from '../../domain/model/issue';
 import IssuesCollection       from '../../domain/model/issues';
 import CommentsCollection     from '../../domain/model/comments';
 import IssueTracker           from '../../domain/model/tracker';
-import MetadataMatcher        from '../../domain/model/metadata';
+import MetadataMatcher        from '../../domain/model/metadataMatcher';
 import User                   from '../../domain/model/meta/user';
 import Type                   from '../../domain/model/meta/type';
 import Label                  from '../../domain/model/meta/label';

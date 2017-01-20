@@ -24,25 +24,26 @@ export default class YamlFrontMatterFormat {
   public seed(expectations, values: Object, draft: string, error?: Error): Promise<string> {
     if (draft) return Promise.resolve(this.prependErrorToContent(error, draft));
 
-    let data = expectations.getValues(values);
-    let template = format(
-      "---\n%s---\n%s",
-      this.buildYaml(data),
-      data[this.contentField] || ""
-    );
+    return expectations.getValues(values).then(data => {
+      let template = format(
+        "---\n%s---\n%s",
+        this.buildYaml(data),
+        data[this.contentField] || ""
+      );
 
-    return expectations.getSuggestions()
-      .then(suggestions => {
-        suggestions.forEach(([field, choices]) => {
-          template = template.split('\n').map(line => {
-            if(line.indexOf(field) === 0) {
-              line += ' # [' + choices.map(String).join(', ') + ']';
-            }
-            return line;
-          }).join('\n');
+      return expectations.getSuggestions()
+        .then(suggestions => {
+          suggestions.forEach(([field, choices]) => {
+            template = template.split('\n').map(line => {
+              if(line.indexOf(field) === 0) {
+                line += ' # [' + choices.map(String).join(', ') + ']';
+              }
+              return line;
+            }).join('\n');
+          });
+          return template;
         });
-        return template;
-      });
+    });
   }
 
   /**
