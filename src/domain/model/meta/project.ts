@@ -1,10 +1,10 @@
 export default class Project {
-  public readonly id: string | number;
+  public readonly id: string;
   public readonly name: string;
   public readonly internalId: string;
 
   constructor(id: string | number, name?: string, internalId?: string) {
-    this.id = id;
+    this.id = id.toString();
     this.name = name || '';
     this.internalId = internalId || '';
   }
@@ -15,6 +15,10 @@ export default class Project {
       name: this.name,
       internalId: this.internalId
     };
+  }
+
+  public toString(): string {
+    return this.id;
   }
 
   public static unserialize(data: SerializedProject): Project {

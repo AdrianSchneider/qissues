@@ -103,21 +103,20 @@ export default class ListIssuesController {
 
       view.on('back', () => this.listIssues({ focus: num }));
       view.on('refresh', () => this.viewIssue({ num, invalidate: true }));
-
-      view.on('comment.inline', () => {
-        this.ui.ask('Comment')
-          .then(this.persistComment(num))
-          .then(() => this.viewIssue({ num, invalidate: true }))
-          .catch(Cancellation, () => this.ui.message('Cancelled', this.quickFade));
-      });
-
-      view.on('comment.external', () => {
-        this.ui.editExternally('')
-          .then(this.persistComment(num))
-          .then(() => this.viewIssue({ num, invalidate: true }))
-          .catch(Cancellation, () => this.ui.message('Cancelled', this.quickFade));
-      });
+      view.on('comment.inline', () => this.postCommentFrom(() => this.ui.ask('Comment'), num));
+      view.on('comment.external', () => this.postCommentFrom(() => this.ui.editExternally(''), num));
     });
+  }
+
+  /**
+   * Posts a comment from an arbitrary input function
+   */
+  private postCommentFrom(input: () => Promise<string>, num: string): Promise<void> {
+    return input()
+      .then(text => this.repository.postComment(new NewComment(text, new Id(num))))
+      .then(() => this.viewIssue({ num, invalidate: true }))
+      .catch(Cancellation, () => this.ui.message('Cancelled', this.quickFade))
+      .catch(Error, e => this.handleError(e, 'Commenting failed'));
   }
 
   /**
@@ -146,13 +145,6 @@ export default class ListIssuesController {
     return this.repository.applyChanges(changes, moreInfo || {})
       .catch(MoreInfoRequired, e => this.ui.capture(e.expectations)
         .then(evenMoreInfo => this.change(changes, evenMoreInfo)));
-  }
-
-  /**
-   * Returns a function that will persist a comment for a given id
-   */
-  private persistComment(num: string): (text: string) => Promise<Comment> {
-    return text => this.repository.postComment(new NewComment(text, new Id(num)));
   }
 
   /**

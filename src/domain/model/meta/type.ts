@@ -3,7 +3,7 @@ export default class Type {
   public readonly name: string;
 
   constructor(id: string | number, name?: string) {
-    this.id = id.toString();
+    this.id = id ? id.toString() : '';
     this.name = name || '';
   }
 

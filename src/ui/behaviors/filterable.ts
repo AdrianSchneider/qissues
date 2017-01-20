@@ -17,6 +17,7 @@ interface FilterableOptions {
 
 interface FilterableKeys {
   filterList: string,
+  filterProject: string,
   filterAssignee: string,
   filterStatus: string,
   filterSprint: string,
@@ -52,6 +53,12 @@ export default class Filterable implements Behaviour {
     this.view = view;
     this.sequencer
       .on(view.node, options.keys.filterList, this.listFilters())
+      .on(view.node, options.keys.filterProject, this.filterFromSelection(
+        (invalidate) => this.metadata.getProjects({ invalidate })
+          .then(projects => projects.map(String)),
+        'Project',
+        'project'
+      ))
       .on(view.node, options.keys.filterAssignee, this.filterFromSelection(
         (invalidate) => this.metadata.getUsers({ invalidate })
           .then(users => ['Unassigned'].concat(users.map(String))),

@@ -1,6 +1,7 @@
 import * as _             from 'underscore';
 import * as Promise       from 'bluebird';
 import { format }         from 'util';
+import JiraNormalizer     from './normalizer';
 import Id                 from '../../model/id';
 import Report             from '../../model/report';
 import TrackerRepository  from '../../model/trackerRepository';
@@ -26,7 +27,7 @@ interface QueryOptions {
 class JiraRepository implements TrackerRepository {
   private client: HttpClient;
   private cache: Cache;
-  private normalizer;
+  private normalizer: JiraNormalizer;
   private metadata;
   private logger: Logger;
 
@@ -42,7 +43,7 @@ class JiraRepository implements TrackerRepository {
    * Creates a new issue in JIRA
    */
   public createIssue(data: NewIssue): Promise<Id> {
-    return this.client.post('/rest/api/2/issue', this.normalizer.toNewIssueJson(data))
+    return this.client.post('/rest/api/2/issue', this.normalizer.newIssueToJson(data))
       .then(r => r.data)
       .then(json => this.normalizer.toNum(json));
   }

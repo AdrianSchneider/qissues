@@ -1,5 +1,5 @@
 import * as blessed          from 'blessed';
-import jsYaml                from 'js-yaml';
+import * as jsYaml           from 'js-yaml';
 import Container             from '../services/container';
 import BootstrapParams       from '../config/bootstrap';
 import BlessedApplication    from '../../ui/app';

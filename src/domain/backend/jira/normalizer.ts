@@ -87,8 +87,28 @@ export default class JiraNormalizer {
     );
   }
 
-  public toNum(response): string {
-    return response.key;
+  /**
+   * Converts a new issue into the json payload that jira accepts
+   */
+  public newIssueToJson(newIssue: NewIssue): Object {
+    const json = {
+      fields: {
+        project: { key: newIssue.project.id },
+        summary: newIssue.title,
+        description: newIssue.description,
+        issuetype: { name: newIssue.type.name }
+      }
+    };
+
+    if (newIssue.assignee) {
+      json.fields['assignee'] = { name: newIssue.assignee.account };
+    }
+
+    return json;
+  };
+
+  public toNum(response): Id {
+    return new Id(response.key);
   }
 
   public toIssuesCollection(response: JiraIssuesResponse): IssuesCollection {
@@ -133,7 +153,7 @@ export default class JiraNormalizer {
    * @param {FilterSet} filters
    * @return {string}
    */
-  private filterSetToJql(filters: FilterSet): string {
+  public filterSetToJql(filters: FilterSet): string {
     return filters.flatten().map(filter => {
       const key: string = filter[0];
       const value: Array<string> = filter[1];

@@ -39,7 +39,7 @@ describe('JiraRepository', () => {
         return Promise.resolve(responseJson);
       };
 
-      normalizer.toNewIssueJson = data => {
+      normalizer.newIssueToJson = data => {
         assert.deepEqual(data, newIssue);
         return newIssueJson;
       };

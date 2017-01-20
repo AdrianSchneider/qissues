@@ -43,10 +43,10 @@ export default class BlessedInterface {
   public capture(expectations, defaults?, draft?, error?) {
     const data = {};
     return this.format.seed(expectations, defaults || {}, draft || '', error)
-      .then(this.editExternally)
+      .then(template => this.editExternally(template))
       .tap(content => data['content'] = content)
-      .then(this.format.parse)
-      .then(expectations.ensureValid)
+      .then(content => this.format.parse(content))
+      .then(payload => expectations.ensureValid(payload))
       .catch(ValidationError, e => {
         return this.capture(expectations, defaults, data['content'], e);
       });
