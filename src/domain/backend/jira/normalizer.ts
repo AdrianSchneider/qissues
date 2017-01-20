@@ -30,11 +30,11 @@ export default class JiraNormalizer {
   private readonly createRequirements: Expectations;
   private readonly updateRequirements: Expectations;
 
-  constructor(metadata, config, requirements) {
+  constructor(metadata, matcher, config, requirements) {
     this.metadata = metadata;
     this.config = config;
-    this.createRequirements = requirements.create(metadata);
-    this.updateRequirements = requirements.update(metadata);
+    this.createRequirements = requirements.create(metadata, matcher);
+    this.updateRequirements = requirements.update(metadata, matcher);
   }
 
   /**

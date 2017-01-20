@@ -12,6 +12,7 @@ import Issue                  from '../../domain/model/issue';
 import IssuesCollection       from '../../domain/model/issues';
 import CommentsCollection     from '../../domain/model/comments';
 import IssueTracker           from '../../domain/model/tracker';
+import MetadataMatcher        from '../../domain/model/metadata';
 import User                   from '../../domain/model/meta/user';
 import Type                   from '../../domain/model/meta/type';
 import Label                  from '../../domain/model/meta/label';
@@ -67,12 +68,18 @@ export default function buildJira(container: Container, config: BootstrapParams)
   );
 
   container.registerService(
+    'tracker.jira.metadata-matcher',
+    metadata => new MetadataMatcher(metadata),
+    ['tracker.jira.metadata']
+  );
+
+  container.registerService(
     'tracker.jira.normalizer',
-    (metadata: JiraMetadata, config: Config) => {
-      const normalizer = new JiraNormalizer(metadata, config, issueExpectations);
+    (metadata: JiraMetadata, matcher, config: Config) => {
+      const normalizer = new JiraNormalizer(metadata, matcher, config, issueExpectations);
       return normalizer;
     },
-    ['tracker.jira.metadata', 'config']
+    ['tracker.jira.metadata', 'tracker.jira.metadata-matcher', 'config']
   );
 
   container.registerService(

@@ -71,7 +71,7 @@ export default class ListIssuesController {
 
       view.on('refresh', () => this.listIssues({ focus: view.getIssue().id.toString(), invalidate: true }));
       view.on('createIssue', () => this.createIssue());
-      // view.on('createIssueContextually', () => this.createIssue(this.app.getFilters().toValues()));
+      view.on('createIssueContextual', () => this.createIssue(this.app.getFilters()));
       view.on('changeset', changeSet => {
         this.change(changeSet).then(() => this.listIssues({ invalidate: true }))
       });
@@ -124,7 +124,8 @@ export default class ListIssuesController {
    */
   public createIssue(filters?: FilterSet): Promise<any> {
     this.ui.showLoading();
-    return this.ui.capture(this.normalizer.getNewIssueRequirements(), filters)
+    const defaults = filters ? filters.toValues() : {};
+    return this.ui.capture(this.normalizer.getNewIssueRequirements(), defaults)
       .then(data => this.repository.createIssue(this.normalizer.toNewIssue(data)))
       .then(num => this.viewIssue({ num: "" + num }))
       .catch(Cancellation, () => {

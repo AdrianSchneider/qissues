@@ -110,7 +110,8 @@ interface SchemaFieldDefinition {
   type: string,
   required: boolean,
   default?: any,
-  choices?: () => Promise<string[]>
+  choices?: () => Promise<string[]>,
+  matcher?: (input: string) => Promise<string>
 }
 
 interface FieldAndSchema {
