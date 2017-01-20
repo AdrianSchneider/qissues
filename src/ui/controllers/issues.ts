@@ -49,7 +49,8 @@ export default class ListIssuesController {
    * Failures are passed back up to the caller
    */
   public listIssues(options: ListIssuesOptions = {}): Promise<void> {
-    this.ui.showLoading();
+    this.ui.showLoading(options.invalidate ? 'Refreshing...' : 'Loading...');
+
     if (options.focus) {
       this.logger.info(`Listing issues focusing on ${options.focus}`);
     } else {
