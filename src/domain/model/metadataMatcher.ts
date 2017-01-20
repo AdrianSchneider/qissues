@@ -29,11 +29,15 @@ export default class MetadataMatcher {
   }
 
   private matchOrThrow<T>(promised: Promise<T[]>, name: string, type: string, fields: string[]): Promise<T> {
-    console.trace('#matchOrThrow');
     return promised.then(data => {
-      const row = data.find(this.matchField(name, fields));
-      if (!row) throw new ValidationError(`${name} is not a valid ${type}`);
-      return Promise.resolve(row);
+      const matching = data.filter(this.matchField(name, fields));
+      if (matching.length > 1) {
+        const options = matching.join(' or ');
+        throw new ValidationError(`${type} of ${name} is ambiguous; did you want ${options}?`);
+      }
+
+      if (!matching.length) throw new ValidationError(`${name} is not a valid ${type}`);
+      return Promise.resolve(matching[0]);
     });
   }
 
