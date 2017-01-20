@@ -95,15 +95,14 @@ export default class BlessedInterface {
   public ask(text: string, parent?: blessed.Widgets.Node): Promise<any> { // TODO Promise<string>
     if (!parent) parent = this.canvas;
     return new Promise((resolve, reject) => {
-      var input = prompt(text + ' ', parent);
+      var input = prompt(text, parent);
       input.key(this.keys['input.cancel'], () => {
-        parent.remove(input);
-        this.screen.render();
+        input.remove();
         reject(new Cancellation());
       });
 
       input.readInput((err, text) => {
-        parent.remove(input);
+        input.remove();
         this.respondOrCancel(<string>text, resolve, reject);
       });
     });
@@ -210,12 +209,16 @@ export default class BlessedInterface {
   public editExternally(initial: string): Promise<any> { // TODO Promise<string>
     return new Promise((resolve, reject) => {
       this.screen.readEditor({ value: initial }, (err, read) => {
-        const text = read.toString('utf-8');
+        const text = read ? read.toString('utf-8') : '';
         if (err) return reject(err);
         if (text === initial) return reject(new Cancellation());
         this.respondOrCancel(text, resolve, reject);
       });
     })
+    .catch(
+      e => e.toString().indexOf('Unsuccessful') !== -1,
+      () => { throw new Cancellation(); }
+    )
     .catch({ code: 'ENOENT' }, e => {
       throw new Cancellation();
     });

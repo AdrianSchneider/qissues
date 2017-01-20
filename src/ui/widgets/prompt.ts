@@ -1,7 +1,8 @@
 import * as blessed from 'blessed';
 
 export default function Prompt(text: string, parent) {
-  text = text + ' ';
+  text = text + '';
+  const width = 70;
 
   var form = new blessed.widget.Form({
     top: 'center',
@@ -9,11 +10,10 @@ export default function Prompt(text: string, parent) {
     content: text,
     align: 'left',
     valign: 'middle',
-    width: 70,
+    width: width,
     height: 5,
-    tags: true,
+    tags: false,
     parent: parent,
-    padding: { left: 1, right: 1, top: 0, bottom: 0 },
     border: 0,
     style: {
       fg: 'white',
@@ -29,9 +29,9 @@ export default function Prompt(text: string, parent) {
     right: 2,
     padding: 0,
     height: 1,
-    width: <number>form['width'] - text.length - <number>form['padding']['left'] - <number>form['padding']['right'] - 2,
+    width: width - text.length - <number>form['padding']['left'] - <number>form['padding']['right'] - 2,
     input: true,
-    tags: true,
+    tags: false,
     parent: form,
     border: 0,
     style: {
@@ -46,7 +46,7 @@ export default function Prompt(text: string, parent) {
 
   input.remove = function() {
     parent.remove(form);
-    parent.render();
+    parent.screen.render();
   };
 
   parent.screen.render();

@@ -52,6 +52,8 @@ export default class ListDecorator {
    * Redraw elements decorated with markers
    */
   protected handleChangeMarkers(state: ViewState) {
+    if (!state.element['items']) return;
+
     state.element['items'].forEach((item: Widgets.BlessedElement, k: number) => {
       item.content = this.renderItem(state.items[k], item);
     });

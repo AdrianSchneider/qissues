@@ -1,19 +1,21 @@
-import * as Promise      from 'bluebird';
-import Browser           from '../services/browser';
-import BlessedInterface  from '../interface';
-import { ViewState }     from '../view';
-import ViewManager       from '../viewManager';
-import HasIssues         from '../views/hasIssues';
-import Application       from '../../app/main';
-import KeyMapping        from '../../app/config/keys';
-import Id                from '../../domain/model/id';
-import Comment           from '../../domain/model/comment';
-import NewComment        from '../../domain/model/newComment';
-import { ChangeSet }     from '../../domain/model/changeSet';
-import FilterSet         from '../../domain/model/filterSet';
-import TrackerRepository from '../../domain/model/trackerRepository';
-import Cancellation      from '../../domain/errors/cancellation';
-import MoreInfoRequired  from '../../domain/errors/infoRequired';
+import * as Promise       from 'bluebird';
+import Browser            from '../services/browser';
+import BlessedInterface   from '../interface';
+import { ViewState }      from '../view';
+import ViewManager        from '../viewManager';
+import HasIssues          from '../views/hasIssues';
+import Application        from '../../app/main';
+import KeyMapping         from '../../app/config/keys';
+import Id                 from '../../domain/model/id';
+import Comment            from '../../domain/model/comment';
+import Issue              from "../../domain/model/issue";
+import CommentsCollection from "../../domain/model/comments";
+import NewComment         from '../../domain/model/newComment';
+import { ChangeSet }      from '../../domain/model/changeSet';
+import FilterSet          from '../../domain/model/filterSet';
+import TrackerRepository  from '../../domain/model/trackerRepository';
+import Cancellation       from '../../domain/errors/cancellation';
+import MoreInfoRequired   from '../../domain/errors/infoRequired';
 
 export default class ListIssuesController {
   private readonly app: Application;
@@ -24,6 +26,9 @@ export default class ListIssuesController {
   private readonly normalizer;
   private readonly logger;
   private viewManager: ViewManager;
+
+  private quickFade: number = 500;
+  private fade: number = 1000;
 
   constructor(app, ui: BlessedInterface, viewManager: ViewManager, keys: KeyMapping, tracker, browser, logger) {
     this.app = app;
@@ -97,6 +102,20 @@ export default class ListIssuesController {
 
       view.on('back', () => this.listIssues({ focus: num }));
       view.on('refresh', () => this.viewIssue({ num, invalidate: true }));
+
+      view.on('comment.inline', () => {
+        this.ui.ask('Comment')
+          .then(this.persistComment(num))
+          .then(() => this.viewIssue({ num, invalidate: true }))
+          .catch(Cancellation, () => this.ui.message('Cancelled', this.quickFade));
+      });
+
+      view.on('comment.external', () => {
+        this.ui.editExternally('')
+          .then(this.persistComment(num))
+          .then(() => this.viewIssue({ num, invalidate: true }))
+          .catch(Cancellation, () => this.ui.message('Cancelled', this.quickFade));
+      });
     });
   }
 

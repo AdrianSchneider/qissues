@@ -72,6 +72,9 @@ class SingleIssueView extends EventEmitter implements View, HasIssues {
     this.node.key(this.keys.back, () => this.emit('back'));
     this.node.key(this.keys.refresh, () => this.emit('refresh'));
 
+    this.node.key(this.keys.commentInline, () => this.emit('comment.inline'));
+    this.node.key(this.keys.commentExternally, () => this.emit('comment.external'));
+
     /*
     this.node.key(this.keys['issue.comment.inline'], () => this.ui.ask('Comment')
       .then(this.persistComment(num))
