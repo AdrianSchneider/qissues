@@ -36,6 +36,16 @@ describe('Metadata Matcher', () => {
           'project of qissues is ambiguous; did you want qissues1 or qissues2?'
         ));
     });
+
+    it('An exact match will always pass the ambiguous check', () => {
+      metadata.getProjects = (opts?) => Promise.resolve([
+        <Project>{ id: "feature dev", toString: () => 'feature dev' },
+        <Project>{ id: "dev", toString: () => 'dev' }
+      ]);
+
+      return matcher.matchProject('dev').then(project => assert.equal(project.id, 'dev'));
+    });
+
   });
 
   describe('#matchProject', () => {

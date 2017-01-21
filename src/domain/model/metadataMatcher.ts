@@ -1,3 +1,4 @@
+import { partition } from 'underscore';
 import * as Promise    from 'bluebird';
 import Project         from './meta/project';
 import User            from './meta/user';
@@ -7,6 +8,7 @@ import ValidationError from '../errors/validation';
 import Metadata        from './trackerMetadata';
 
 export default class MetadataMatcher {
+
   private metadata: Metadata;
   constructor(metadata: Metadata) {
     this.metadata = metadata;
@@ -30,33 +32,43 @@ export default class MetadataMatcher {
 
   private matchOrThrow<T>(promised: Promise<T[]>, name: string, type: string, fields: string[]): Promise<T> {
     return promised.then(data => {
-      const matching = data.filter(this.matchField(name, fields));
-      if (matching.length > 1) {
-        const options = matching.join(' or ');
+      const input = name.toLowerCase();
+
+      const matches = data
+        .map(this.getMatch(input, fields))
+        .reduce((rows, row) => rows.concat(row), [])
+        .filter(([obj, match]) => match && match.indexOf(input) !== -1);
+
+      const [exacts, partials] = partition(matches, ([obj, match]) => match === input);
+
+      if (exacts.length == 1) {
+        return Promise.resolve(exacts[0][0]);
+      }
+
+      if (partials.length > 1) {
+        const options = partials.map(row => row[1]).join(' or ');
         throw new ValidationError(`${type} of ${name} is ambiguous; did you want ${options}?`);
       }
 
-      if (!matching.length) throw new ValidationError(`${name} is not a valid ${type}`);
-      return Promise.resolve(matching[0]);
+      if (!partials.length) throw new ValidationError(`${name} is not a valid ${type}`);
+      return Promise.resolve(partials[0][0]);
     });
   }
 
-  private matchField(text: string, fields: string[]): (Object) => boolean {
+  private getMatch(text: string, fields: string[]): (Object) => Array<any> {
     return doc => {
       if(typeof doc === 'string') {
-        return doc.toLowerCase().indexOf(text.toLowerCase()) !== -1;
+        return [[doc, doc.toLowerCase()]];
       }
 
+      const results = [];
       for (var i in fields) {
         const val = "" + doc[fields[i]];
-        if (!val) return false;
-
-        if(val.toLowerCase().indexOf(text.toLowerCase()) !== -1) {
-          return true;
-        }
+        if (!val) continue;
+        results.push([doc, val.toLowerCase()]);
       }
 
-      return false;
+      return results;
     };
   }
 
