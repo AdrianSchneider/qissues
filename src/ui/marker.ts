@@ -55,7 +55,7 @@ export default class ListDecorator {
     if (!state.element['items']) return;
 
     state.element['items'].forEach((item: Widgets.BlessedElement, k: number) => {
-      item.content = this.renderItem(state.items[k], item);
+      item.content = this.renderItem(state.items[k] || '', item);
     });
 
     state.element.screen.render();
