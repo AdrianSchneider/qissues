@@ -65,8 +65,8 @@ export default function(container: Container, config: BootstrapParams) {
 
   container.registerService(
     'ui.behaviours.filterable',
-    (ui, sequencer, tracker) => () => new Filterable(ui, sequencer, tracker.metadata),
-    ['ui.interface', 'ui.sequencer', 'tracker']
+    (ui, sequencer, tracker, reportManager) => () => new Filterable(ui, sequencer, tracker.metadata, reportManager),
+    ['ui.interface', 'ui.sequencer', 'tracker', 'domain.report-manager']
   );
 
 

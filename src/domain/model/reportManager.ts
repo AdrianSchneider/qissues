@@ -35,6 +35,14 @@ export default class ReportManager {
     return this.get(name);
   }
 
+  /**
+   * Saves the current filter data as a new report
+   */
+  public saveAs(name: string): Report {
+    this.addReport(name, this.get('default').filters);
+    return this.get(name);
+  }
+
   public serialize(): SerializedReport[] {
     return this.reports.map(report => report.serialize());
   }

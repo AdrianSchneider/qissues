@@ -9,6 +9,7 @@ import TrackerMetadata      from '../../domain/model/trackerMetadata';
 import Cancellation         from '../../domain/errors/cancellation';
 import Filter               from '../../domain/model/filter';
 import FilterSet            from '../../domain/model/filterSet';
+import ReportManager        from '../../domain/model/reportManager';
 
 interface FilterableOptions {
   keys: FilterableKeys,
@@ -22,6 +23,8 @@ interface FilterableKeys {
   filterStatus: string,
   filterSprint: string,
   filterType: string,
+  reportsSave: string,
+  reportsList: string
 }
 
 /**
@@ -33,14 +36,16 @@ export default class Filterable implements Behaviour {
   private readonly metadata: TrackerMetadata;
   private readonly ui: BlessedInterface;
   private filters: FilterSet;
+  private reportManager: ReportManager;
 
   public readonly name: string = 'filterable';
   public readonly events: string[] = [];
 
-  constructor(ui: BlessedInterface, sequencer: Sequencer, metadata: TrackerMetadata) {
+  constructor(ui: BlessedInterface, sequencer: Sequencer, metadata: TrackerMetadata, reports: ReportManager) {
     this.ui = ui;
     this.sequencer = sequencer;
     this.metadata = metadata;
+    this.reportManager = reports;
   }
 
   /**
@@ -52,6 +57,8 @@ export default class Filterable implements Behaviour {
 
     this.view = view;
     this.sequencer
+      .on(view.node, options.keys.reportsSave, this.saveReport())
+      .on(view.node, options.keys.reportsList, this.listReports())
       .on(view.node, options.keys.filterList, this.listFilters())
       .on(view.node, options.keys.filterProject, this.filterFromSelection(
         (invalidate) => this.metadata.getProjects({ invalidate })
@@ -114,8 +121,30 @@ export default class Filterable implements Behaviour {
    * Applies the filters
    */
   private filterBy(field: string, selection: string) {
-    console.error(`Selected ${field} = ${selection}`);
     this.filters.add(new Filter(field, selection));
+  }
+
+  /**
+   * Saves a new report
+   */
+  private saveReport(): () => Promise<any> {
+    return () => {
+      return this.ui.ask('Save Filters As')
+        .then(name => this.reportManager.saveAs(name))
+        .catch(Cancellation, () => {});
+    }
+  }
+
+  /**
+   * Lists all of the reports
+   */
+  private listReports() {
+    return () => {
+      return this.ui.selectFromList(
+        'Reports',
+        this.reportManager.serialize().map(row => row.name)
+      ).catch(Cancellation, () => {});
+    }
   }
 
 }
