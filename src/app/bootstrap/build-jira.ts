@@ -61,7 +61,8 @@ export default function buildJira(container: Container, config: BootstrapParams)
           invalidator: (method, args) => {
             const [options] = args;
             return options && !!options.invalidate;
-          }
+          },
+          ttl: 86400 * 7
         };
       })()
     }
@@ -118,7 +119,8 @@ export default function buildJira(container: Container, config: BootstrapParams)
           if (method === 'query')  return IssuesCollection.unserialize(data);
           if (method === 'getComments') return CommentsCollection.unserialize(data);
           throw new Error('Unknown method to serialize: ' + method);
-        }
+        },
+        ttl: 3600
       }
     }
   );
