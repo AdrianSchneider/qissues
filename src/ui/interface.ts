@@ -92,18 +92,18 @@ export default class BlessedInterface {
    * @param text - the question to ask
    * @return the answer
    */
-  public ask(text: string, parent?: blessed.Widgets.Node): Promise<any> { // TODO Promise<string>
+  public ask(text: string, parent?: blessed.Widgets.Node): Promise<string> {
     if (!parent) parent = this.canvas;
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve: (content: string) => void, reject: (e: Error) => void) => {
       var input = prompt(text, parent);
       input.key(this.keys['input.cancel'], () => {
         input.remove();
         reject(new Cancellation());
       });
 
-      input.readInput((err, text) => {
+      input.readInput((err, text: string) => {
         input.remove();
-        this.respondOrCancel(<string>text, resolve, reject);
+        this.respondOrCancel(text, resolve, reject);
       });
     });
   }
@@ -115,8 +115,8 @@ export default class BlessedInterface {
    * @param options - the options to pick from
    * @return promised answer
    */
-  public selectFromList(text: string, options: string[]): Promise<any> {
-    return new Promise((resolve, reject) => { // TODO Promise<string>
+  public selectFromList(text: string, options: string[]): Promise<string> {
+    return new Promise((resolve: (content: string) => void, reject: (e: Error) => void) => {
       const listView = this.viewManager.getView('core:promptList', this.canvas, {
         text: text,
         parent: this.canvas
@@ -151,8 +151,8 @@ export default class BlessedInterface {
    * @param provider - function providing promised choices
    * @return promised answer
    */
-  public selectFromCallableList(text: string, provider: (invalidate?: boolean) => Promise<string[]>): Promise<any> { // TODO Promise<string>
-    return new Promise((resolve, reject) => {
+  public selectFromCallableList(text: string, provider: (invalidate?: boolean) => Promise<string[]>): Promise<string> {
+    return new Promise((resolve: (content: string) => void, reject: (e: Error) => void) => {
       const listView = this.viewManager.getView('core:promptList', this.canvas, {
         text: text,
         parent: this.canvas
@@ -206,8 +206,8 @@ export default class BlessedInterface {
    * @param initial - the initial content
    * @return promised answer
    */
-  public editExternally(initial: string): Promise<any> { // TODO Promise<string>
-    return new Promise((resolve, reject) => {
+  public editExternally(initial: string): Promise<string> {
+    return new Promise((resolve: (content: string) => void, reject: (e: Error) => void) => {
       this.screen.readEditor({ value: initial }, (err, read) => {
         const text = read ? read.toString('utf-8') : '';
         if (err) return reject(err);

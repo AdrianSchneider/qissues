@@ -26,7 +26,7 @@ export default class Selectable implements Behaviour {
     name: 'checked',
     test: item => this.isChecked(item),
     activeTest: () => this.selected.length > 0,
-    activeDecorator: text => `{yellow-fg}x{/yellow-fg} ${text}`,
+    activeDecorator: text => `{cyan-fg}x{/cyan-fg} ${text}`,
     inactiveDecorator: text => `  ${text}`
   };
 
@@ -51,6 +51,7 @@ export default class Selectable implements Behaviour {
     this.selected = [];
     this.element.key(keys.multiSelectToggle, () => this.toggle());
     this.element.key(keys.multiSelectClear, () => this.clearSelection());
+    this.element['getSelectedItems'] = () => this.getSelectedItems();
   }
 
   /**
