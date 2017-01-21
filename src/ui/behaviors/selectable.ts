@@ -17,9 +17,7 @@ export default class Selectable implements Behaviour {
   private view: View;
   private activeSelection: boolean = false;
   private element: Widgets.BlessedElement;
-  private parent: Widgets.BlessedElement;
   private selected: string[] = [];
-  private items: Object[];
 
   public readonly name: string = 'selectable';
 
@@ -39,7 +37,6 @@ export default class Selectable implements Behaviour {
     if (this.view) throw new Error('Already attached');
     this.view = view;
     this.element = this.view.node;
-    this.parent = options.parent;
     this.startListening(options.keys);
   }
 
