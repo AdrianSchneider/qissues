@@ -7,6 +7,7 @@ import Yankable           from '../../ui/behaviors/yankable';
 import ExternallyViewable from '../../ui/behaviors/externallyViewable';
 import Filterable         from '../../ui/behaviors/filterable';
 import Searchable         from '../../ui/behaviors/searchable';
+import Selectable         from '../../ui/behaviors/selectable';
 import PromptList         from '../../ui/views/promptList';
 import IssueList          from '../../ui/views/issueList';
 import SingleIssue        from '../../ui/views/single';
@@ -31,7 +32,8 @@ export default function(container: Container, config: BootstrapParams) {
       'ui.behaviours.yankable',
       'ui.behaviours.externally-viewable',
       'ui.behaviours.filterable',
-      'ui.behaviours.searchable'
+      'ui.behaviours.searchable',
+      'ui.behaviours.selectable'
     ]
   );
 
@@ -69,6 +71,11 @@ export default function(container: Container, config: BootstrapParams) {
     ['ui.interface', 'ui.sequencer', 'tracker', 'domain.report-manager']
   );
 
+  container.registerService(
+    'ui.behaviours.selectable',
+    (ui, logger) => () => new Selectable(),
+    []
+  );
 
   return container;
 }
