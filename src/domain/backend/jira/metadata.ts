@@ -66,13 +66,16 @@ export default class JiraMetadata implements TrackerMetadata {
   public getSprints(options?): Promise<Sprint[]> {
     return this.getViews()
       .map(view => {
-        const opts = { params: { rapidViewId: view['id'] } };
-        return this.client.get('/rest/greenhopper/1.0/xboard/plan/backlog/data.json', opts)
+        const opts = { params: { includeHistoricSprints: 'false', includeFutureSprints: 'true' } };
+        return this.client.get(`/rest/greenhopper/1.0/sprintquery/${view['id']}`, opts)
           .then(response => response.data)
-          .then(response => response.sprints.map(sprint => new Sprint(sprint.id, sprint.name)))
-          .catch(e => ([]))
+          .then(response => {
+            return response.sprints
+              .filter(sprint => sprint.state != 'CLOSED')
+              .map(sprint => new Sprint(sprint.id, sprint.name));
+          });
       })
-      .reduce((allSprints, sprintsPerView) => allSprints.concat(sprintsPerView), [])
+      .reduce((allSprints, sprintsPerView) => uniq(allSprints.concat(sprintsPerView), String), [])
   }
 
   /**

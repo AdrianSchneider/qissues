@@ -128,7 +128,7 @@ describe('JIRA Metadata', () => {
 
     it('Gets all of the views', () => {
       client.mock('get', '/rest/greenhopper/1.0/rapidview', {}, {
-        data: { 
+        data: {
           views: [ { id: '100' } ]
         }
       });
@@ -150,10 +150,10 @@ describe('JIRA Metadata', () => {
         }
       });
 
-      client.mock('get', '/rest/greenhopper/1.0/xboard/plan/backlog/data.json', { rapidViewId: '100' }, {
+      client.mock('get', '/rest/greenhopper/1.0/sprintquery/100', {}, {
         data: {
           sprints: [
-            { id: '1', name: 'Go Fast' }
+            { id: '1', name: 'Go Fast', state: 'ACTIVE' }
           ]
         }
       });
@@ -166,30 +166,48 @@ describe('JIRA Metadata', () => {
       });
     });
 
-    it('Gets sprint from all views and keeps duplicates', () => {
+    it('Filters out CLOSED sprints', () => {
+      client.mock('get', '/rest/greenhopper/1.0/rapidview', {}, {
+        data: {
+          views: [ { id: '100' } ]
+        }
+      });
+
+      client.mock('get', '/rest/greenhopper/1.0/sprintquery/100', {}, {
+        data: {
+          sprints: [
+            { id: '1', name: 'Go Fast', state: 'CLOSED' }
+          ]
+        }
+      });
+
+      return metadata.getSprints().then(sprints => assert.deepEqual(sprints, []));
+    });
+
+    it('Gets sprint from all views and removes duplicates', () => {
       client.mock('get', '/rest/greenhopper/1.0/rapidview', {}, {
         data: {
           views: [ { id: '100' }, { id: '101' } ]
         }
       });
 
-      client.mock('get', '/rest/greenhopper/1.0/xboard/plan/backlog/data.json', { rapidViewId: '100' }, {
+      client.mock('get', '/rest/greenhopper/1.0/sprintquery/100', {}, {
         data: {
           sprints: [
             { id: '1', name: 'Go Fast' }
           ]
         }
       });
-      client.mock('get', '/rest/greenhopper/1.0/xboard/plan/backlog/data.json', { rapidViewId: '101' }, {
+      client.mock('get', '/rest/greenhopper/1.0/sprintquery/101', {}, {
         data: {
           sprints: [
-            { id: '11', name: 'Go Fast' },
-            { id: '12', name: 'Go Slow' },
+            { id: '1', name: 'Go Fast' },
+            { id: '2', name: 'Go Slow' },
           ]
         }
       });
 
-      return metadata.getSprints().then(sprints => assert.lengthOf(sprints, 3));
+      return metadata.getSprints().then(sprints => assert.lengthOf(sprints, 2));
     });
 
   });
