@@ -57,11 +57,6 @@ export default class BlessedApplication {
 
         this.screen.key(this.keys.help, () => controllers.help.help());
         this.screen.key(this.keys.exit, () => app.exit(0));
-        this.screen.key(this.keys['issue.lookup'], () => {
-          this.ui.ask('Issue #', this.ui.canvas)
-            .then(num => controllers.issues.viewIssue({ num }))
-            .catch(Cancellation, _.noop);
-        });
 
         return controllers.issues.listIssues();
       })

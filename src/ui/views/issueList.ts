@@ -64,7 +64,8 @@ class IssueList extends EventEmitter implements View, HasIssues {
 
     this.node.key(this.keys['issue.lookup'], () => {
       this.ui.ask('Open Issue')
-        .then(num => this.emit('select', new Id(num)));
+        .then(num => this.emit('open', new Id(num)))
+        .catch(Cancellation, () => {});
     });
 
     this.node.key(this.keys['issue.create'], () => this.emit('createIssue'));

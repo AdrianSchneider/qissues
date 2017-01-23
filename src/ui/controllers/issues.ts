@@ -66,7 +66,11 @@ export default class ListIssuesController {
       });
 
       view.on('open', num => {
-        this.viewIssue({ num }).catch(err => this.handleError(err, `Could not load ${num}`));
+        this.viewIssue({ num })
+          .catch(err => {
+            this.handleError(err, `Could not load ${num}`)
+              .then(() => this.listIssues());
+          });
       });
 
       view.on('refresh', () => this.listIssues({ focus: view.getIssue().id.toString(), invalidate: true }));
