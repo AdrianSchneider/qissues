@@ -1,6 +1,5 @@
 import * as Promise       from 'bluebird';
 import { uniq, chain }    from 'underscore';
-import * as fallback      from 'promise-fallback';
 import { JiraTransition } from './types';
 import TrackerMetadata    from '../../model/trackerMetadata';
 import Expectations       from '../../model/expectations';

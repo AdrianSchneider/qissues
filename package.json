@@ -34,7 +34,6 @@
     "js-yaml": "^3.4.3",
     "longjohn": "^0.2.11",
     "moment": "^2.8.3",
-    "promise-fallback": "^1.0.0",
     "request": "^2.45.0",
     "typescript": "^2.1.4",
     "underscore": "^1.8.3",
