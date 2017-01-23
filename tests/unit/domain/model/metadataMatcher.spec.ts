@@ -23,6 +23,14 @@ describe('Metadata Matcher', () => {
       return matcher.matchProject('qi').then(project => assert.equal(project.id, 'QI'));
     });
 
+    it('Can do partial matches', () => {
+      metadata.getProjects = (opts?) => Promise.resolve([
+        <Project>{ id: "new features", toString: () => 'new features' }
+      ]);
+
+      return matcher.matchProject('feature').then(project => assert.equal(project.id, 'new features'));
+    });
+
     it('Throws an error when results are ambiguous', () => {
       metadata.getProjects = (opts?) => Promise.resolve([
         <Project>{ id: "qissues1", toString: () => 'qissues1' },
@@ -44,6 +52,18 @@ describe('Metadata Matcher', () => {
       ]);
 
       return matcher.matchProject('dev').then(project => assert.equal(project.id, 'dev'));
+    });
+
+    it('Throws a ValidationError when no matches found', () => {
+      metadata.getProjects = (opts?) => Promise.resolve([
+        <Project>{ id: "a", toString: () => 'a' },
+      ]);
+
+      return matcher.matchProject('b')
+        .catch(error => assert.equal(
+          error.message,
+          'b is not a valid project'
+        ));
     });
 
   });
