@@ -1,7 +1,7 @@
 import * as blessed from 'blessed';
 
 export default function Prompt(text: string, parent) {
-  text = text + '';
+  text = ` ${text} `;
   const width = 70;
 
   var form = new blessed.widget.Form({
@@ -26,10 +26,10 @@ export default function Prompt(text: string, parent) {
 
   var input = new blessed['Textbox']({
     top: 'center',
-    right: 2,
+    left: text.length + 1,
     padding: 0,
     height: 1,
-    width: width - text.length - <number>form['padding']['left'] - <number>form['padding']['right'] - 2,
+    width: width - text.length - <number>form['padding']['left'] - <number>form['padding']['right'] - 4,
     input: true,
     tags: false,
     parent: form,
