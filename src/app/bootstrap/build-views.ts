@@ -22,7 +22,7 @@ export default function(container: Container, config: BootstrapParams) {
     'ui.view-manager',
     (app, ui, keyConfig, ...behaviours) => {
       const viewManager = new ViewManager(app, ui, keyConfig);
-      viewManager.registerView('core:promptList', PromptList, behaviours.slice(-1));
+      viewManager.registerView('core:promptList', PromptList, [behaviours[4]]);
       viewManager.registerView('issues:view', SingleIssue, behaviours);
       viewManager.registerView('issues:list', IssueList, behaviours);
       return viewManager;
