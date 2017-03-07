@@ -1,14 +1,14 @@
 import { assert }    from 'chai';
 import Cache         from '../../../../src/app/services/cache';
-import MemoryStorage from '../../../../src/app/services/storage/memory';
 import CacheProxy    from '../../../../src/util/proxy/cache';
+import MemoryCache   from '../../../../src/system/cache/memory';
 
 describe('Cache Proxy', () => {
 
   var proxier;
-  var cache;
+  var cache: Cache;
   beforeEach(() => {
-    cache = new Cache(new MemoryStorage());
+    cache = new MemoryCache();
     proxier = new CacheProxy(cache);
   });
 
@@ -19,15 +19,16 @@ describe('Cache Proxy', () => {
   });
 
   it('Short circuits and returns from cache when available', () => {
-    cache.set('cache key', [{ id: 1, name: 'adrian' }] );
-    const o = { getUsers: () => { throw new Error('do not call'); } };
-    const proxy = proxier.createProxy(o, {
-      predicate: () => true,
-      cacheKey: () => 'cache key'
-    });
+    return cache.set('cache key', [{ id: 1, name: 'adrian' }] ).then(() => {
+      const o = { getUsers: () => { throw new Error('do not call'); } };
+      const proxy = proxier.createProxy(o, {
+        predicate: () => true,
+        cacheKey: () => 'cache key'
+      });
 
-    return proxy.getUsers()
-      .then(users => assert.equal(users.length, 1));
+      return proxy.getUsers()
+        .then(users => assert.equal(users.length, 1));
+    });
   });
 
   it('Falls back to metadata call and caches result', () => {
@@ -39,8 +40,9 @@ describe('Cache Proxy', () => {
 
     return proxy.getUsers()
       .then(users => {
-        assert.equal(users.length, 0);
-        assert.typeOf(cache.get('users'), 'array');
+        return cache.get('users').then(cached => {
+          assert.deepEqual(cached, users);
+        });
       });
   });
 

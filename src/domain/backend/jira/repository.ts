@@ -98,27 +98,28 @@ class JiraRepository implements TrackerRepository {
    * Applies a changeset
    */
   public applyChanges(changes, details): Promise<any> {
+    return Promise.reject(new Error('wip'));
     // TODO refactor into cache wrapper
     // secondary key invalidation?
-    this.cache.invalidateAll(key => key.indexOf('issues:') === 0);
-    changes.getIssues().forEach(num => this.cache.invalidate('lookup:' + num));
+    // this.cache.invalidateAll(key => key.indexOf('issues:') === 0);
+    // changes.getIssues().forEach(num => this.cache.invalidate('lookup:' + num));
 
-    var changeFunctions = {
-      title    : this.changeTitle,
-      assignee : this.changeAssignee,
-      status   : this.changeStatus,
-      sprint   : this.changeSprint
-    };
+    // var changeFunctions = {
+    //   title    : this.changeTitle,
+    //   assignee : this.changeAssignee,
+    //   status   : this.changeStatus,
+    //   sprint   : this.changeSprint
+    // };
 
-    return Promise.each(changes.getChanges(), function([field, value]) {
-      if (typeof changeFunctions[field] === 'undefined') {
-        throw new Error('Jira cannot apply change for field ' + field);
-      }
+    // return Promise.each(changes.getChanges(), function([field, value]) {
+    //   if (typeof changeFunctions[field] === 'undefined') {
+    //     throw new Error('Jira cannot apply change for field ' + field);
+    //   }
 
-      return Promise.each(changes.getIssues(), function(issue) {
-        return changeFunctions[field](issue, value, details);
-      });
-    });
+    //   return Promise.each(changes.getIssues(), function(issue) {
+    //     return changeFunctions[field](issue, value, details);
+    //   });
+    // });
   }
 
   private getIssueUrl(num: Id, append?: string): string {

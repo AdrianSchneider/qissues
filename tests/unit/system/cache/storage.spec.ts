@@ -1,7 +1,7 @@
 import { assert }   from 'chai';
 import * as moment  from 'moment';
 import * as Promise from 'bluebird';
-import Cache        from '../../../../src/app/services/cache';
+import Cache        from '../../../../src/system/cache/storage';
 
 describe('Cache', function() {
 
@@ -21,17 +21,23 @@ describe('Cache', function() {
   describe('#get', function() {
 
     it('Returns undefined when invalidate flag is passed', function() {
-      assert.equal(cache.get('anything', true), undefined);
+      return cache.get('anything', true).then(cached => {
+        assert.equal(cached, undefined);
+      });
     });
 
     it('Returns undefined when key has expired', function() {
       storage.get = storageKey => ({ expires: moment().subtract(1, 'hour').toDate() });
-      assert.equal(cache.get('key'), undefined);
+      return cache.get('key').then(cached => {
+        assert.equal(cached, undefined);
+      });
     });
 
     it('Returns the value when its still valid', function() {
       storage.get = key => ({ data: 'cool beans', expires: moment().add(1, 'hour').toDate() });
-      assert.equal(cache.get('key'), 'cool beans');
+      return cache.get('key').then(cached => {
+        assert.equal(cached, 'cool beans');
+      });
     });
 
   });
@@ -45,7 +51,7 @@ describe('Cache', function() {
         return done();
       };
 
-      cache.set('key', 'cool beans');
+      return cache.set('key', 'cool beans');
     });
 
     it('Setting a ttl stores it in the entry', done => {
@@ -58,7 +64,7 @@ describe('Cache', function() {
         return done();
       };
 
-      cache.set('key', 'cool beans', 1);
+      return cache.set('key', 'cool beans', 1);
     });
 
   });
@@ -67,7 +73,7 @@ describe('Cache', function() {
 
     it('Invalidates a cache entry', function() {
       storage.remove = key => assert.equal(key, 'key');
-      cache.invalidate('key');
+      return cache.invalidate('key');
     });
 
   });
@@ -77,13 +83,13 @@ describe('Cache', function() {
     it('Defaults to removing all', () => {
       storage.keys = () => ['a', 'b'];
       storage.removeMulti = keys => assert.deepEqual(keys, ['a', 'b']);
-      cache.invalidateAll();
+      return cache.invalidateAll();
     });
 
     it('Accepts a predicate to remove things by', () => {
       storage.keys = () => ['aa', 'b'];
       storage.removeMulti = keys => assert.deepEqual(keys, ['aa']);
-      cache.invalidateAll(key => key.length > 1);
+      return cache.invalidateAll(key => key.length > 1);
     });
 
   });

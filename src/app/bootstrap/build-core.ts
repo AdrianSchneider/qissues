@@ -1,6 +1,6 @@
 import * as fs         from 'fs';
 import Config          from '../services/config';
-import Cache           from '../services/cache';
+import Cache           from '../../system/cache/storage';
 import Storage         from '../services/storage/disk';
 import Logger          from '../services/logger';
 import { getLogger }   from '../services/logger';

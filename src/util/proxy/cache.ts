@@ -68,11 +68,13 @@ export default class CacheProxy {
         const unserializer = config.unserializer || ((data, key: string, args) => data);
         const invalidator  = config.invalidator || (() => false);
 
-        const cached = this.cache.get(cacheKey, invalidator(method, args));
-        if (cached) return Promise.resolve(unserializer(cached, method, args));
+        return this.cache.get(cacheKey, invalidator(method, args)).then(cached => {
+          if (cached) return unserializer(cached, method, args);
 
-        return target[method].apply(target, args)
-          .then(this.cacheResultsAs(cacheKey, serializer, ttl, method, args));
+          return target[method].apply(target, args)
+            .then(this.cacheResultsAs(cacheKey, serializer, ttl, method, args));
+
+        });
       };
     };
   }
@@ -82,10 +84,10 @@ export default class CacheProxy {
    * before returning it
    */
   private cacheResultsAs<T>(name: string, serializer: (data: T, method, args) => any, ttl: number, method, args): (data: T) => Promise<T> {
-    return result => Promise.resolve(this.cache.set(
+    return result => this.cache.set(
       name,
       serializer(result, method, args),
       ttl
-    )).then(() => result);
+    ).then(() => result);
   }
 }
