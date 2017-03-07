@@ -30,7 +30,7 @@ export default function buildJira(container: Container, config: BootstrapParams)
       retryable: {
         backoff: attempt => Math.pow(2, attempt) * 1000,
         errorPredicate: e => {
-          const ignore = ['status code 400', 'status code 403', 'status code 404'];
+          const ignore = ['status code 400', 'status code 401', 'status code 403', 'status code 404'];
           const retry = !ignore.some(message => e.stack.indexOf(message) !== -1);
           return retry;
         }
