@@ -8,7 +8,7 @@ export interface SerializedReport {
 }
 
 export default class Report extends EventEmitter {
-  public name: string;
+  public readonly name: string;
   public filters: FilterSet;
 
   constructor(name: string, filters: FilterSet) {
