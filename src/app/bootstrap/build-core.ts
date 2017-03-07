@@ -1,10 +1,9 @@
 import * as fs         from 'fs';
 import Config          from '../services/config';
-import Cache           from '../../system/cache/storage';
 import Storage         from '../services/storage/disk';
-import Logger          from '../services/logger';
-import { getLogger }   from '../services/logger';
 import Container       from '../services/container';
+import Cache           from '../../system/cache/storage';
+import WinstonLogger   from '../../system/logger/winston';
 import BootstrapParams from './../config/bootstrap';
 import CacheProxy      from '../../util/proxy/cache';
 import RetryProxy      from '../../util/proxy/retry';
@@ -12,7 +11,7 @@ import RetryProxy      from '../../util/proxy/retry';
 export default function buildCore(container: Container, options: BootstrapParams) {
   container.registerService(
     'logger',
-    () => getLogger(options.logLevel)
+    () => WinstonLogger(options.logLevel)
   );
 
   container.registerService(
