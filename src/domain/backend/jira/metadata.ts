@@ -59,10 +59,8 @@ export default class JiraMetadata implements TrackerMetadata {
    * Get views from JIRA
    */
   public async getViews(options?): Promise<Object[]> {
-    return values(
-      (await this.client.get('/rest/greenhopper/1.0/rapidview'))
-        .data.views
-    );
+    let response = await this.client.get('/rest/greenhopper/1.0/rapidview');
+    return values(response.data.views);
   }
 
   /**
