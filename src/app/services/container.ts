@@ -1,5 +1,4 @@
 import { once, values } from 'underscore'
-import * as Promise     from 'bluebird'
 
 export default class Container {
   private registered: DefinitionMap = {};
@@ -35,7 +34,7 @@ export default class Container {
   /**
    * Gets a service from the container
    */
-  public get(serviceName: string, satisfying?: string): Promise<any> {
+  public async get(serviceName: string, satisfying?: string): Promise<any> {
     if (!this.isRegistered(serviceName)) {
       const suffix = satisfying ? ` for ${satisfying}` : '';
       throw new ReferenceError(`Cannot get undefined service ${serviceName}${suffix}`);
@@ -45,40 +44,47 @@ export default class Container {
       return Promise.resolve(this.readyServices[serviceName]);
     }
 
-    return this.getServiceFromDefinition(this.registered[serviceName], serviceName)
-      .tap(service => this.readyServices[serviceName] = service)
+    let service = await this.getServiceFromDefinition(this.registered[serviceName], serviceName);
+    this.readyServices[serviceName] = service;
+    return service;
   }
 
   /**
    * Gets the services after waiting for its dependencies
    */
-  private getServiceFromDefinition(definition: Definition, satisfying: string): Promise<any> {
-    return Promise
-      .map(definition.dependencies, dependency => this.get(dependency, satisfying))
-      .then(dependencies => definition.f.apply(definition.f, dependencies))
-      .then(service => this.decorateService(service, definition));
+  private async getServiceFromDefinition(definition: Definition, satisfying: string): Promise<any> {
+    let resolvedDependencies = await Promise.all(
+      definition.dependencies.map(async dependency => this.get(dependency, satisfying))
+    );
+
+    let dependency = await definition.f.apply(definition.f, resolvedDependencies);
+
+    return this.decorateService(dependency, definition);
   }
 
   /**
    * Decorates a service before returning it
    */
-  private decorateService(service: any, definition: Definition): Promise<any> {
-    return Promise.reduce(
-      Object.keys(definition.behaviours).map(b => this.behaviours[b]),
-      (service: any, behaviour: BehaviourDefinition) => {
-        return this.getMatching(behaviour.dependencies).then(dependencies => {
-          return behaviour.f(service, definition.behaviours[behaviour.name], ...dependencies);
-        });
-      },
-      service
+  private async decorateService(service: any, definition: Definition): Promise<any> {
+    let decoratedService = service;
+    await Promise.all(
+      Object.keys(definition.behaviours)
+        .map(b => this.behaviours[b])
+        .map(async behaviour => {
+          let dependencies = await this.getMatching(behaviour.dependencies);
+          decoratedService = behaviour.f(service, definition.behaviours[behaviour.name], ...dependencies);
+        })
     );
+    return decoratedService;
   }
 
   /**
    * Gets mutliple services at once
    */
-  public getMatching(services: string[]): Promise<Array<any>> {
-    return Promise.map(services, name => this.get(name));
+  public async getMatching(services: string[]): Promise<Array<any>> {
+    return Promise.all(
+      services.map(async name => this.get(name))
+    );
   }
 
   /**

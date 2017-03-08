@@ -1,4 +1,3 @@
-import * as Promise from 'bluebird';
 import Type         from './meta/type';
 import User         from './meta/user';
 import Sprint       from './meta/sprint';

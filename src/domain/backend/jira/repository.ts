@@ -1,5 +1,4 @@
 import * as _             from 'underscore';
-import * as Promise       from 'bluebird';
 import { format }         from 'util';
 import JiraNormalizer     from './normalizer';
 import Id                 from '../../model/id';
@@ -42,25 +41,27 @@ class JiraRepository implements TrackerRepository {
   /**
    * Creates a new issue in JIRA
    */
-  public createIssue(data: NewIssue): Promise<Id> {
-    return this.client.post('/rest/api/2/issue', this.normalizer.newIssueToJson(data))
-      .then(r => r.data)
-      .then(json => this.normalizer.toNum(json));
+  public async createIssue(data: NewIssue): Promise<Id> {
+    let response = await this.client.post(
+      '/rest/api/2/issue',
+      this.normalizer.newIssueToJson(data)
+    );
+
+    return this.normalizer.toNum(response.data);
   }
 
   /**
    * Looks up an issue in Jira
    */
-  public lookup(num: Id, opts: QueryOptions = {}): Promise<Issue> {
-    return this.client.get(this.getIssueUrl(num))
-      .then(r => r.data)
-      .then(issue => this.normalizer.toIssue(issue));
+  public async lookup(num: Id, opts: QueryOptions = {}): Promise<Issue> {
+    let response = await this.client.get(this.getIssueUrl(num));
+    return this.normalizer.toIssue(response.data);
   }
 
   /**
    * Queries JIRA by generating JQL from the report
    */
-  public query(report: Report, options: QueryOptions = {}): Promise<IssuesCollection> {
+  public async query(report: Report, options: QueryOptions = {}): Promise<IssuesCollection> {
     const qs = {
       params: {
         maxResults: 500,
@@ -70,28 +71,28 @@ class JiraRepository implements TrackerRepository {
 
     this.logger.trace('JQL = ' + qs.params.jql);
 
-    return this.client.get('/rest/api/2/search', qs)
-      .then(r => r.data)
-      .then(issues => this.normalizer.toIssuesCollection(issues));
+    let response = await this.client.get('/rest/api/2/search', qs);
+    return this.normalizer.toIssuesCollection(response.data);
   }
 
   /**
    * Gets the comments from an issue
    */
-  public getComments(num: Id, options: QueryOptions = {}): Promise<CommentsCollection> {
-    return this.client.get(this.getIssueUrl(num, '/comment'))
-      .then(r => r.data)
-      .then(comments => this.normalizer.toCommentsCollection(comments));
+  public async getComments(num: Id, options: QueryOptions = {}): Promise<CommentsCollection> {
+    let response = await this.client.get(this.getIssueUrl(num, '/comment'));
+    return this.normalizer.toCommentsCollection(response.data);
   }
 
   /**
    * Posts a new Comment
    */
-  public postComment(data: NewComment): Promise<Comment> {
-    return this.client.post(
+  public async postComment(data: NewComment): Promise<Comment> {
+    let response = await this.client.post(
       this.getIssueUrl(data.issue, '/comment'),
       this.normalizer.newCommentToJson(data)
-    ).then(r => r.data);
+    );
+
+    return response.data;
   }
 
   /**

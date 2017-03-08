@@ -1,5 +1,4 @@
 import * as axios from 'axios';
-import * as Promise from 'bluebird';
 import HttpClient from '../../shared/httpClient';
 
 /**

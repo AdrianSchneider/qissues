@@ -1,5 +1,3 @@
-import * as Promise from 'bluebird';
-
 interface HttpClient {
   get: (path: string, query?: Object) => Promise<any>;
   put: (path: string, data?: Object) => Promise<any>;

@@ -1,5 +1,3 @@
-import * as Promise from 'bluebird';
-
 /**
  * Describes interface for storing temporary cache data
  */

@@ -1,6 +1,5 @@
 import { assert }   from 'chai';
 import * as moment  from 'moment';
-import * as Promise from 'bluebird';
 import Cache        from '../../../../src/system/cache/storage';
 
 describe('Cache', function() {

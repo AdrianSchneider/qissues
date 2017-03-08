@@ -1,16 +1,15 @@
-import * as Promise       from 'bluebird';
-import { uniq, chain }    from 'underscore';
-import { JiraTransition } from './types';
-import TrackerMetadata    from '../../model/trackerMetadata';
-import Expectations       from '../../model/expectations';
-import Type               from '../../model/meta/type';
-import User               from '../../model/meta/user';
-import Sprint             from '../../model/meta/sprint';
-import Label              from '../../model/meta/label';
-import Priority           from '../../model/meta/priority';
-import Status             from '../../model/meta/status';
-import Project            from '../../model/meta/project';
-import HttpClient         from '../../shared/httpClient';
+import { uniq, chain, values } from 'underscore';
+import { JiraTransition }      from './types';
+import TrackerMetadata         from '../../model/trackerMetadata';
+import Expectations            from '../../model/expectations';
+import Type                    from '../../model/meta/type';
+import User                    from '../../model/meta/user';
+import Sprint                  from '../../model/meta/sprint';
+import Label                   from '../../model/meta/label';
+import Priority                from '../../model/meta/priority';
+import Status                  from '../../model/meta/status';
+import Project                 from '../../model/meta/project';
+import HttpClient              from '../../shared/httpClient';
 
 export default class JiraMetadata implements TrackerMetadata {
 
@@ -22,13 +21,12 @@ export default class JiraMetadata implements TrackerMetadata {
   /**
    * Gets types from JIRA (combine types from all projects)
    */
-  public getTypes(options?): Promise<Type[]>{
-    return this.client.get('/rest/api/2/issue/createmeta')
-      .then(response => response.data)
-      .then(response => {
-        return response.projects.map(project => {
-          return project.issuetypes.map(type => new Type(type.id, type.name));
-        })
+  public async getTypes(options?): Promise<Type[]>{
+    let response = await this.client.get('/rest/api/2/issue/createmeta');
+
+    return response.data.projects
+      .map(project => {
+        return project.issuetypes.map(type => new Type(type.id, type.name));
       })
       .reduce((types: Type[], typesByProject: Type[]) => {
         return uniq(types.concat(typesByProject), false, String);
@@ -38,92 +36,118 @@ export default class JiraMetadata implements TrackerMetadata {
   /**
    * Gets users from JIRA (combine users from all projects)
    */
-  public getUsers(options?): Promise<User[]> {
-    return this.getProjects()
-      .map((project: Project) => {
-        return this.client.get('/rest/api/2/user/assignable/search', { params: { project: project.id } })
-          .then(r => r.data)
-          .then(response => response.map(user => new User(user.name)));
-      })
-      .reduce((users, usersInProject) => users.concat(usersInProject), [])
-      .filter((user: User) => user.account.indexOf('addon_') !== 0)
-      .then(users => uniq(users, false, user => user.account));
+  public async getUsers(options?): Promise<User[]> {
+    let projects = await this.getProjects();
+
+    let usersPerProject = await Promise.all(projects.map(async project => {
+      let response = await this.client.get(
+        '/rest/api/2/user/assignable/search',
+        { params: { project: project.id } }
+      );
+
+      return response.data.map(user => new User(user.name));
+    }));
+
+    return uniq(
+      usersPerProject
+        .reduce((users, usersInProject) => users.concat(usersInProject), [])
+        .filter((user: User) => user.account.indexOf('addon_') !== 0),
+      false,
+      user => user.account
+    );
   }
 
   /**
    * Get views from JIRA
    */
-  public getViews(options?): Promise<Object> {
-    return this.client.get('/rest/greenhopper/1.0/rapidview')
-      .then(response => response.data)
-      .then(response => response.views)
+  public async getViews(options?): Promise<Object[]> {
+    let response = await this.client.get('/rest/greenhopper/1.0/rapidview');
+    return values(response.data.views);
   }
 
   /**
    * Get sprints from JIRA (combine sprints from all views)
    */
-  public getSprints(options?): Promise<Sprint[]> {
-    return this.getViews()
-      .map(view => {
-        const opts = { params: { includeHistoricSprints: 'false', includeFutureSprints: 'true' } };
-        return this.client.get(`/rest/greenhopper/1.0/sprintquery/${view['id']}`, opts)
-          .then(response => response.data)
-          .then(response => {
-            return response.sprints
-              .filter(sprint => sprint.state != 'CLOSED')
-              .map(sprint => new Sprint(sprint.id, sprint.name));
-          });
-      })
-      .reduce((allSprints, sprintsPerView) => uniq(allSprints.concat(sprintsPerView), String), [])
+  public async getSprints(options?): Promise<Sprint[]> {
+    let views = await this.getViews();
+
+    let sprintsPerView = await Promise.all(views.map(async view => {
+      let response = await this.client.get(`/rest/greenhopper/1.0/sprintquery/${view['id']}`, options);
+      return response.data.sprints
+        .filter(sprint => sprint.state != 'CLOSED')
+        .map(sprint => new Sprint(sprint.id, sprint.name));
+    }));
+
+    return sprintsPerView.reduce(
+      (sprints, sprintsPerView) => uniq(
+        sprints.concat(sprintsPerView), String),
+      []
+    );
   }
 
   /**
    * Get labels from JIRA
    */
-  public getLabels(options?): Promise<Label[]> {
-    return this.client.get('/rest/api/1.0/labels/suggest?query=')
-      .then(response => response.data)
-      .then(body => body.suggestions.map(label => new Label(null, label.label)))
+  public async getLabels(options?): Promise<Label[]> {
+    let response = await this.client.get('/rest/api/1.0/labels/suggest?query=');
+    return response.data.suggestions.map(
+      label => new Label(null, label.label)
+    );
   }
 
   /**
    * Gets projects from JIRA
    */
-  public getProjects(options?): Promise<Project[]> {
-    return this.client.get('/rest/api/2/issue/createmeta')
-      .then(response => response.data)
-      .then(response => response.projects.map(
-        project => new Project(project.key, project.name, project.id)
-      ))
+  public async getProjects(options?): Promise<Project[]> {
+    let response = await this.client.get('/rest/api/2/issue/createmeta');
+    return response.data.projects.map(
+      project => new Project(project.key, project.name, project.id)
+    );
   }
 
   /**
    * Gets statuses from JIRA (combine statuses from all projects)
    */
-  public getStatuses(options?): Promise<Status[]> {
-    return this.getProjects()
-      .map((project: Project) => {
-        return this.client.get(`/rest/api/2/project/${project.internalId}/statuses`)
-          .then(response => response.data)
-          .reduce((statuses, type) => uniq(statuses.concat(type['statuses']), row => row.name), [])
-      })
-      .reduce((statuses, perProject) => uniq(statuses.concat(perProject), status => status.name), [])
-      .map(status => new Status(status['name']))
+  public async getStatuses(options?): Promise<Status[]> {
+    let projects = await this.getProjects();
+
+    let statusesPerProject = await Promise.all(projects.map(async project => {
+      let response = await this.client.get(`/rest/api/2/project/${project.internalId}/statuses`);
+      return response.data.reduce(
+        (statuses, type) => uniq(
+          statuses.concat(type['statuses']),
+          row => row.name
+        ),
+        []
+      );
+    }));
+
+    return statusesPerProject
+      .reduce(
+        (statuses, perProject) => uniq(
+          statuses.concat(perProject),
+          status => status.name
+        ),
+        []
+      )
+      .map(status => new Status(status['name']));
   }
 
   /**
    * Get transitions from JIRA for a given issue
    */
-  public getTransitions(num: string): Promise<JiraTransition[]> {
+  public async getTransitions(num: string): Promise<JiraTransition[]> {
     const opts = { qs: { expand: 'transitions.fields' } };
-    return this.client.get('/rest/api/2/issue/' + num + '/transitions', opts)
-      .then(response => response.transitions)
+    let response = await this.client.get('/rest/api/2/issue/' + num + '/transitions', opts)
+    return response.transitions;
   }
 
   /**
    * Gets transitions for JIRA for a given issue that is valid for a current status
    */
-  public getIssueTransition(num: string, status: string) {
+  public async getIssueTransition(num: string, status: string) {
+    let transitions = await this.getTransitions(num);
+
     return this.getTransitions(num).then(transitions => {
       const transition: JiraTransition = transitions.find(transition => {
         return transition.to.name.toLowerCase() === status.toLowerCase();

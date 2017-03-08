@@ -7,32 +7,32 @@ interface Storage {
   /**
    * Get data from storage
    */
-  get(key: string, defaults?: any): any;
+  get(key: string, defaults?: any): Promise<any>;
 
   /**
    * Write data to storage
    */
-  set(key: string, value: any);
+  set(key: string, value: any): Promise<void>;
 
   /**
    * Remove data from storage
    */
-  remove(key: string);
+  remove(key: string): Promise<void>;
 
   /**
    * Remove multiple keys from storage
    */
-  removeMulti(keys: string[]);
+  removeMulti(keys: string[]): Promise<void>;
 
   /**
    * List all keys in storage
    */
-  keys(): string[];
+  keys(): Promise<string[]>;
 
   /**
    * Serialize all storage contents
    */
-  serialize: Object;
+  serialize: Promise<Object>;
 }
 
 export default Storage;

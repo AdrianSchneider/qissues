@@ -1,4 +1,3 @@
-import * as Promise from 'bluebird';
 import HttpClient from '../../src/domain/shared/httpClient';
 
 class MockHttpClient implements HttpClient {

@@ -1,4 +1,3 @@
-import * as Promise       from 'bluebird';
 import Id                 from './id';
 import Issue              from './issue';
 import NewIssue           from './newIssue';
