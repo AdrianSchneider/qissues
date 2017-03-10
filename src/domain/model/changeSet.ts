@@ -20,25 +20,36 @@ export class ChangeSet {
 }
 
 export class ChangeSetBuilder {
-  private readonly issues: Id[] = [];
-  private readonly changes: Object = {};
+  private readonly issues: Id[];
+  private readonly changes: Object;
+
+  public constructor(issues: Id[] = [], changes: Object = {}) {
+    this.issues = issues;
+    this.changes = changes;
+  }
 
   public addIssue(issue: Id): ChangeSetBuilder {
-    this.issues.push(issue);
-    return this;
+    return new ChangeSetBuilder(
+      this.issues.concat([issue]),
+      { ...this.changes }
+    );
   }
 
   public addIssues(issues: Id[]): ChangeSetBuilder {
-    issues.forEach(id => this.addIssue(id));
-    return this;
+    return new ChangeSetBuilder(
+      this.issues.concat(issues),
+      { ...this.changes }
+    );
   }
 
   public addChange(field: string, value: any): ChangeSetBuilder {
-    this.changes[field] = value;
-    return this;
+    return new ChangeSetBuilder(
+      this.issues.concat([]),
+      { ...this.changes, [field]: value }
+    );
   }
 
   public get(): ChangeSet {
-    return new ChangeSet(uniq(this.issues), this.changes);
+    return new ChangeSet(uniq(this.issues), { ...this.changes });
   }
 }
