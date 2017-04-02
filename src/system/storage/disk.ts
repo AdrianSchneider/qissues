@@ -14,7 +14,12 @@ export default class DiskStorage extends MemoryStorage {
     this.filename = filename;
   }
 
-  protected flush() {
-    fs.writeFileSync(this.filename, JSON.stringify(this.data, null, 2));
+  protected flush(): Promise<any> {
+    return new Promise((resolve, reject) => {
+      fs.writeFileSync(this.filename, JSON.stringify(this.data, null, 2), err => {
+        if (err) return reject(err);
+        return resolve();
+      });
+    });
   }
 }

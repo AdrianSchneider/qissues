@@ -1,5 +1,4 @@
 import { assert }      from 'chai';
-import * as Promise    from 'bluebird';
 import ValidationError from '../../../../src/domain/errors/validation';
 import Expectations    from '../../../../src/domain/model/expectations';
 
@@ -141,10 +140,16 @@ describe('Expectations', () => {
       return expectations.ensureValid({ title: 'hello' });
     });
 
-    it('Fails when required fields are missing', () => {
+    it('Fails when required fields are missing', async () => {
       const expectations = new Expectations({ title: { type: 'string', required: true } });
-      return expectations.ensureValid({ title: '' })
-        .catch(ValidationError, e => assert.include(e.message, 'title'));
+
+      try {
+        await expectations.ensureValid({ title: '' })
+        throw new Error('unreachable');
+      } catch (e) {
+        assert.isTrue(e instanceof ValidationError);
+        assert.include(e.message, 'title');
+      }
     });
 
     it('Passes when using a preselected choice', () => {
@@ -153,18 +158,17 @@ describe('Expectations', () => {
       return expectations.ensureValid({ title: 'adrian' });
     });
 
-    it('Fails when not using a preselected choice', () => {
+    it('Fails when not using a preselected choice', async () => {
       const choices = Promise.resolve(['adrian']);
       const expectations = new Expectations({ title: { type: 'string', required: true, choices: () => choices } });
-      return expectations.ensureValid({ title: 'dude' })
-        .catch(ValidationError, e => assert.include(e.message, 'must be one of'));
-    });
 
-    it('Fails when not using a preselected choice', () => {
-      const choices = Promise.resolve(['adrian', 'joe']);
-      const expectations = new Expectations({ title: { type: 'string', required: true, choices: () => choices } });
-      return expectations.ensureValid({ title: 'dude' })
-        .catch(ValidationError, e => assert.include(e.message, 'must be one of'));
+      try {
+        await expectations.ensureValid({ title: 'dude' })
+        throw new Error('unreachable');
+      } catch (e) {
+        assert.isTrue(e instanceof ValidationError);
+        assert.include(e.message, 'must be one of');
+      }
     });
 
     it('Expands matched fields within validity checks', () => {
@@ -185,7 +189,7 @@ describe('Expectations', () => {
       return expectations.ensureValid({ user: 'adr' });
     });
 
-    it('Doesnt expand non-matching fields', () => {
+    it('Doesnt expand non-matching fields', async () => {
       const abbrev = 'adr';
       const choices = ['adrian', 'joe'];
       const expectations = new Expectations({
@@ -200,8 +204,13 @@ describe('Expectations', () => {
         }
       });
 
-      return expectations.ensureValid({ user: 'jo' })
-        .catch(ValidationError, e => assert.include(e.message, 'must be one of'));
+      try {
+        await expectations.ensureValid({ user: 'jo' })
+        throw new Error('unreachable');
+      } catch (e) {
+        assert.isTrue(e instanceof ValidationError);
+        assert.include(e.message, 'must be one of');
+      }
     });
 
   });

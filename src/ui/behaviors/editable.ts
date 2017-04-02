@@ -1,4 +1,3 @@
-import * as Promise         from 'bluebird';
 import * as blessed         from 'blessed'
 import Behaviour            from '../behaviour';
 import BlessedInterface     from '../interface';
@@ -75,19 +74,29 @@ export default class Editable implements Behaviour {
   /**
    * Returns a function that will prompt the user, then emit a changeset
    */
-  private changeText(message: string, field: string) {
-    return () => this.ui.ask(message)
-      .then(input => this.emitChanged(field, input))
-      .catch(Cancellation, () => {});
+  private changeText(message: string, field: string): () => Promise<void> {
+    return async () => {
+      try {
+        this.emitChanged(field, await this.ui.ask(message));
+      } catch (e) {
+        if (e instanceof Cancellation) return;
+        throw e;
+      }
+    };
   }
 
   /**
    * Returns a function that will prompt the user with a list, then emit a changeset
    */
   private changeList(getOptions: () => Promise<string[]>, message: string, field: string) {
-    return () => this.ui.selectFromCallableList(message, getOptions)
-      .then(selection => this.emitChanged(field, selection))
-      .catch(Cancellation, () => {});
+    return async () => {
+      try {
+        this.emitChanged(field, await this.ui.selectFromCallableList(message, getOptions));
+      } catch (e) {
+        if (e instanceof Cancellation) return;
+        throw e;
+      }
+    };
   }
 
   /**

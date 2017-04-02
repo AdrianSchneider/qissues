@@ -1,4 +1,4 @@
-import * as Promise from 'bluebird';
+import { delay } from '../promise-helpers';
 
 interface RetryConfiguration {
   /**
@@ -45,12 +45,16 @@ export default class RetryProxy {
       // only override functions
       if (typeof target[method] !== 'function') return target[method];
 
-      return (...args: any[]): Promise<any> => {
-        return Promise.resolve(target[method].apply(target, args))
-          .catch(
-            config.errorPredicate,
-            e => this.retryTrap(config, { error: e, current: 1, method, target, args })
-          );
+      return async (...args: any[]): Promise<any> => {
+        try {
+          return await target[method].apply(target, args);
+        } catch (e) {
+          if (config.errorPredicate(e)) {
+            return this.retryTrap(config, { error: e, current: 1, method, target, args });
+          }
+
+          throw e;
+        }
       };
     };
   }
@@ -59,14 +63,18 @@ export default class RetryProxy {
    * Recursive retry trap
    * Keeps trying until it suceeds, we hit our limit, or the faiulre is uncatchable
    */
-  private retryTrap(config: RetryConfiguration, attempt: RetryAttempt): Promise<any> {
-    if (attempt.current > config.times) return Promise.reject(attempt.error);
+  private async retryTrap(config: RetryConfiguration, attempt: RetryAttempt): Promise<any> {
+    if (attempt.current > config.times) throw attempt.error;
+    await delay(config.backoff(attempt.current));
 
-    return Promise.delay(config.backoff(attempt.current))
-      .then(() => attempt.target[attempt.method].apply(attempt.target, attempt.args))
-      .catch(
-        config.errorPredicate,
-        error => this.retryTrap(config, { ...attempt, error, current: attempt.current + 1 })
-      );
+    try {
+      return await attempt.target[attempt.method].apply(attempt.target, attempt.args);
+    } catch(e) {
+      if (config.errorPredicate(e)) {
+        return await this.retryTrap(config, { ...attempt, e, current: attempt.current + 1 });
+      }
+
+      throw e;
+    }
   }
 }

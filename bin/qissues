@@ -18,11 +18,11 @@ program
   .parse(process.argv);
 
 // Promise configuration
-const Promise = require('bluebird');
-global.Promise = Promise;
-Promise.config({
-  longStackTraces: program.verbose
-});
+// const Promise = require('bluebird');
+// global.Promise = Promise;
+// Promise.config({
+//   longStackTraces: program.verbose
+// });
 
 process.title = 'qissues';
 
@@ -36,16 +36,16 @@ var container = bootstrap({
   output     : process.stdout
 });
 
-container.getMatching(['app', 'ui', 'logger'])
-  .spread((app, ui, logger) => {
-    logger.debug('Container initialized');
-    app.start(ui);
-    app.exit = process.exit;
-  })
-  .catch(error => {
-    console.error(`Failed to booot; ${error.stack}`);
-    process.exit(1);
-  });
+container.getMatching(['app', 'ui', 'logger']).then(([app, ui, logger]) => {
+  logger.debug('Container initialized');
+  app.start(ui);
+  app.exit = process.exit;
+});
+
+//  .catch(error => {
+//    console.error(`Failed to booot; ${error.stack}`);
+//    process.exit(1);
+//  });
 
 process.on('unhandledRejection', function(reason, promise) {
   console.error(`Unhandled Rejection: ${reason.stack}`);

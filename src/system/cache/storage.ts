@@ -51,10 +51,16 @@ class StorageCache implements Cache {
     if (entry && !this.hasExpired(entry)) return entry.data;
   }
 
+  /**
+   * Invalidates a cache key
+   */
   public invalidate(key: string): Promise<void> {
     return this.remove(key);
   }
 
+  /**
+   * Invalidates all cache keys matching a predicate
+   */
   public async invalidateAll(predicate?: (key: string) => Boolean): Promise<void> {
     if (!predicate) predicate = () => true;
 

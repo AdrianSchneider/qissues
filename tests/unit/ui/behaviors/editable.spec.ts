@@ -1,6 +1,5 @@
 import { assert }       from 'chai';
 import { EventEmitter } from 'events';
-import * as Promise     from 'bluebird';
 import Editable         from "../../../../src/ui/behaviors/editable";
 import Sequencer        from "../../../../src/ui/services/sequencer";
 import BlessedInterface from "../../../../src/ui/interface";
@@ -117,14 +116,17 @@ describe('Editable Behaviour', () => {
     assert.throws(() => editable.attach(view, config), Error, 'already');
   });
 
-  it('Handles cancellations gracefully for text changes', () => {
-    ui.ask = message => Promise.reject(new Cancellation());
+  it('Handles cancellations gracefully for text changes', async () => {
+    ui.ask = message => { throw new Cancellation(); };
     view.on('changeset', changeset => { throw new Error('should cancel instead'); });
     actions[config.keys.changeTitle]();
   });
 
   it('Handles cancellations gracefully for list changes', () => {
-    ui.selectFromCallableList = (message, getOpts) => Promise.reject(new Cancellation());
+    ui.selectFromCallableList = (message, getOpts) => {
+      throw new Cancellation();
+    };
+
     metadata.getSprints = () => Promise.resolve([new Sprint('1', 'urgent')]);
     view.on('changeset', changeset => { throw new Error('should cancel instead'); });
     actions[config.keys.changeSprint]();

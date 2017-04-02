@@ -1,6 +1,5 @@
 import { assert }       from 'chai';
 import { EventEmitter } from 'events';
-import * as Promise     from 'bluebird';
 import Yankable         from '../../../../src/ui/behaviors/yankable';
 import Sequencer        from "../../../../src/ui/services/sequencer";
 import Clipboard        from "../../../../src/ui/services/clipboard";

@@ -1,4 +1,3 @@
-import * as Promise       from 'bluebird';
 import * as blessed       from 'blessed';
 import { EventEmitter }   from 'events';
 import { Widgets }        from 'blessed'

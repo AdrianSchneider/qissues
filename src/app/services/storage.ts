@@ -32,7 +32,7 @@ interface Storage {
   /**
    * Serialize all storage contents
    */
-  serialize: Promise<Object>;
+  serialize(): Promise<Object>;
 }
 
 export default Storage;

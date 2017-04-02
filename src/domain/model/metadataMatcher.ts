@@ -1,5 +1,4 @@
-import { partition } from 'underscore';
-import * as Promise    from 'bluebird';
+import { partition }   from 'underscore';
 import Project         from './meta/project';
 import User            from './meta/user';
 import Type            from './meta/type';
@@ -30,29 +29,28 @@ export default class MetadataMatcher {
     return this.matchOrThrow(this.metadata.getSprints(), name, 'sprint', ['name']);
   }
 
-  private matchOrThrow<T>(promised: Promise<T[]>, name: string, type: string, fields: string[]): Promise<T> {
-    return promised.then(data => {
-      const input = name.toLowerCase();
+  private async matchOrThrow<T>(promised: Promise<T[]>, name: string, type: string, fields: string[]): Promise<T> {
+    const data = await promised;
+    const input = name.toLowerCase();
 
-      const matches = data
-        .map(this.getMatch(input, fields))
-        .reduce((rows, row) => rows.concat(row), [])
-        .filter(([obj, match]) => match && match.indexOf(input) !== -1);
+    const matches = data
+      .map(this.getMatch(input, fields))
+      .reduce((rows, row) => rows.concat(row), [])
+      .filter(([obj, match]) => match && match.indexOf(input) !== -1);
 
-      const [exacts, partials] = partition(matches, ([obj, match]) => match === input);
+    const [exacts, partials] = partition(matches, ([obj, match]) => match === input);
 
-      if (exacts.length == 1) {
-        return Promise.resolve(exacts[0][0]);
-      }
+    if (exacts.length == 1) {
+      return Promise.resolve(exacts[0][0]);
+    }
 
-      if (partials.length > 1) {
-        const options = partials.map(row => row[1]).join(' or ');
-        throw new ValidationError(`${type} of ${name} is ambiguous; did you want ${options}?`);
-      }
+    if (partials.length > 1) {
+      const options = partials.map(row => row[1]).join(' or ');
+      throw new ValidationError(`${type} of ${name} is ambiguous; did you want ${options}?`);
+    }
 
-      if (!partials.length) throw new ValidationError(`${name} is not a valid ${type}`);
-      return Promise.resolve(partials[0][0]);
-    });
+    if (!partials.length) throw new ValidationError(`${name} is not a valid ${type}`);
+    return Promise.resolve(partials[0][0]);
   }
 
   private getMatch(text: string, fields: string[]): (Object) => Array<any> {

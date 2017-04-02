@@ -1,6 +1,5 @@
 import * as _          from 'underscore';
 import * as joi        from 'joi';
-import * as Promise    from 'bluebird';
 import ValidationError from '../errors/validation';
 
 /**
@@ -33,59 +32,61 @@ export default class Expectations {
   /**
    * Gets the entered values merged with the defaults
    */
-  public getValues(overrideValues: Object = {}): Promise<Object> {
-    return Promise
-      .map(
-        Object.keys(this.schema),
-        fieldName => {
-          const field = this.schema[fieldName];
-          const value = overrideValues[fieldName] || field.default;
+  public async getValues(overrideValues: Object = {}): Promise<Object> {
+    const results = await Promise.all(Object.keys(this.schema).map(async fieldName => {
+      const field = this.schema[fieldName];
+      const value = overrideValues[fieldName] || field.default;
 
-          if (field.matcher && value) {
-            return field.matcher(value).then(matched => {
-              return [fieldName, matched || value];
-            })
-          }
+      if (field.matcher && value) {
+        const matched = await field.matcher(value);
+        return [fieldName, matched || value];
+      }
 
-          return Promise.resolve([fieldName, value]);
-        }
-      )
-      .reduce((out, [field, value]) => ({ ...out, [field]: value }), {});
+      return [fieldName, value];
+    }));
+
+    return results.reduce(
+      (out, [field, value]) => ({ ...out, [field]: value }),
+      {}
+    );
   }
 
   /**
    * Gets the suggestions for the choice fields
    */
   public getSuggestions(): Promise<Array<any>> {
-    return Promise
-      .filter(Object.keys(this.schema), field => !!this.schema[field].choices)
-      .map((field: string) => this.schema[field].choices().then((choices) => ([field, choices.map(String)])));
+    return Promise.all(
+      Object.keys(this.schema)
+        .filter(field => !!this.schema[field].choices)
+        .map(async field => {
+          const choices = await this.schema[field].choices();
+          return [field, choices.map(String)];
+        })
+    );
   }
 
   /**
    * Ensure the input is valid, otherwise a ValidationError is thrown
    */
-  public ensureValid(data: Object): Promise<any> {
-    return this.objectSchemaToJoi(this.schema).then((schema) => {
-      return this.getValues(data).then(values => {
-        var result = joi.validate(values, schema, { stripUnknown: true });
-        if (result.error) throw new ValidationError(result.error.message);
-        return result.value;
-      });
-    });
+  public async ensureValid(data: Object): Promise<any> {
+    const schema = await this.objectSchemaToJoi(this.schema);
+    const result = joi.validate(await this.getValues(data), schema, { stripUnknown: true });
+
+    if (result.error) throw new ValidationError(result.error.message);
+    return result.value;
   }
 
   /**
    * Utility to convert the schema to a joi schema
    */
-  private objectSchemaToJoi(schema: SchemaDefinition): Promise<joi.Schema> {
-    return Promise
-      .map(Object.keys(schema), field => this.fieldSchemaToJoi(field))
-      .reduce((out, fs: FieldAndSchema) => {
-        out[fs.field] = fs.schema;
-        return out;
-      }, {})
-      .then(fields => joi.object(fields));
+  private async objectSchemaToJoi(schema: SchemaDefinition): Promise<joi.Schema> {
+    const fields = await Promise.all(
+      Object.keys(schema).map(async field => await this.fieldSchemaToJoi(field))
+    );
+
+    return joi.object(
+      fields.reduce((out, fs) => ({ ...out, [fs.field]: fs.schema }), {})
+    );
   }
 
   /**

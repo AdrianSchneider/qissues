@@ -1,4 +1,3 @@
-import * as Promise from 'bluebird';
 import Cache from '../../app/services/cache';
 
 interface ProxyConfiguration {
@@ -61,20 +60,19 @@ export default class CacheProxy {
     return (target: Object, method: string) => {
       if (!config.predicate(method)) return target[method];
 
-      return (...args): Promise<any> => {
+      return async (...args): Promise<any> => {
         const ttl          = config.ttl || this.defaultTtl;
         const cacheKey     = config.cacheKey(method, args)
         const serializer   = config.serializer || ((data, method, args) => data);
         const unserializer = config.unserializer || ((data, key: string, args) => data);
         const invalidator  = config.invalidator || (() => false);
 
-        return this.cache.get(cacheKey, invalidator(method, args)).then(cached => {
-          if (cached) return unserializer(cached, method, args);
+        const cached = await this.cache.get(cacheKey, invalidator(method, args));
+        if (cached) return unserializer(cached, method, args);
 
-          return target[method].apply(target, args)
-            .then(this.cacheResultsAs(cacheKey, serializer, ttl, method, args));
-
-        });
+        const result = await target[method].apply(target, args);
+        await this.cacheResultsAs(cacheKey, serializer, ttl, method, args)(result);
+        return result;
       };
     };
   }
@@ -83,11 +81,13 @@ export default class CacheProxy {
    * Returns a thenable that caches the serialized result
    * before returning it
    */
-  private cacheResultsAs<T>(name: string, serializer: (data: T, method, args) => any, ttl: number, method, args): (data: T) => Promise<T> {
-    return result => this.cache.set(
-      name,
-      serializer(result, method, args),
-      ttl
-    ).then(() => result);
+  private cacheResultsAs<T>(
+    name: string, 
+    serializer: (data: T, method, args) => any, 
+    ttl: number, 
+    method, 
+    args
+  ): (data: T) => Promise<void> {
+    return async result => await this.cache.set(name, serializer(result, method, args), ttl);
   }
 }

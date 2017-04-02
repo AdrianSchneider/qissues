@@ -1,4 +1,3 @@
-import * as Promise from 'bluebird';
 declare function require(moduleName: string): any;
 
 export default class Config {
@@ -11,8 +10,8 @@ export default class Config {
     this.fs = fs;
   }
 
-  public initialize(): Promise<Config> {
-    return (new Promise((resolve, reject) => {
+  public async initialize(): Promise<Config> {
+    await (new Promise((resolve, reject) => {
       this.fs.exists(this.filename, exists => {
         if (exists) return resolve();
         this.fs.writeFile(this.filename, '{}', err => {
@@ -20,10 +19,10 @@ export default class Config {
           resolve(this);
         });
       });
-    }))
-    .then(() => Promise.resolve(require(this.filename)))
-    .tap(configData => this.config = configData)
-    .then(() => this);
+    }));
+
+    this.config = require(this.filename);
+    return this;
   }
 
   public get(key: string, def?: any): any {

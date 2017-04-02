@@ -6,13 +6,13 @@ describe('Report Manager', () => {
 
   var storage: Storage;
   beforeEach(() => {
-    storage = {
-      get: str => null,
-      set: (key: string, value: any) => null,
-      remove: (key) => null,
-      removeMulti: (keys: string[]) => null,
-      keys: (): string[] => ([]),
-      serialize: (): Object => ({})
+    storage = <Storage>{
+      get: async str => await null,
+      set: async (key: string, value: any) => await null,
+      remove: async (key) => await null,
+      removeMulti: async (keys: string[]) => await null,
+      // keys: (): string[] => Promise.resolve([]),
+      // serialize: (): Object => Promise.resolve([])
     };
   });
 

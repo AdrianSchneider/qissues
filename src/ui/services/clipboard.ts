@@ -1,4 +1,3 @@
-import * as Promise from 'bluebird';
 import * as copyPaste from 'copy-paste';
 
 export default class Clipboard {

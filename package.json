@@ -27,7 +27,6 @@
     "async": "^0.9.0",
     "axios": "^0.15.3",
     "blessed": "^0.1.81",
-    "bluebird": "^3.0.2",
     "commander": "^2.3.0",
     "copy-paste": "^1.1.4",
     "joi": "^6.9.0",
@@ -41,7 +40,6 @@
   "devDependencies": {
     "@types/axios": "^0.9.34",
     "@types/blessed": "^0.1.4",
-    "@types/bluebird": "^3.0.37",
     "@types/chai": "^3.4.34",
     "@types/es6-promise": "0.0.32",
     "@types/es6-shim": "0.31.32",

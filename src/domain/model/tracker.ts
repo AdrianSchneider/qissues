@@ -1,4 +1,3 @@
-import * as Promise      from 'bluebird';
 import TrackerNormalizer from './trackerNormalizer';
 import TrackerRepository from './trackerRepository';
 import TrackerMetadata   from './trackerMetadata';
@@ -25,10 +24,15 @@ export default class IssueTracker {
   /**
    * Ensures that the issue tracker has the required configuration it needs
    */
-  public assertConfigured(config: Object): Promise<void> {
-    return this.expectations.ensureValid(config)
-      .catch(e => e instanceof ValidationError, err => {
-        throw new MoreInfoRequired(err.message, this.expectations);
-      });
+  public async assertConfigured(config: Object): Promise<void> {
+    try {
+      await this.expectations.ensureValid(config);
+    } catch (e) {
+      if (e instanceof ValidationError) {
+        throw new MoreInfoRequired(e.message, this.expectations);
+      }
+
+      throw e;
+    }
   }
 }

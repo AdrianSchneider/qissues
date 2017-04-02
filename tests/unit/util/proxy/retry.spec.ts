@@ -27,7 +27,7 @@ describe('Retry Proxy', () => {
       .catch(e => assert.equal(e.message, '403'));
   });
 
-  it('Retries the failure', () => {
+  it('Retries the failure', async () => {
     let attempts = 0;
     service['getName'] = () => {
       if (!attempts) {
@@ -38,10 +38,10 @@ describe('Retry Proxy', () => {
     };
 
     const proxy = proxier.createProxy(service);
-    return proxy['getName']().then(response => assert.equal(response, 200));
+    assert.equal(await proxy['getName'](), 200);
   });
 
-  it('Retries the failure up to <times> times', () => {
+  it('Retries the failure up to <times> times', async () => {
     const max = 10;
     let attempts = 0;
 
@@ -55,7 +55,7 @@ describe('Retry Proxy', () => {
     };
 
     const proxy = proxier.createProxy(service, { times: max });
-    return proxy['getName']().then(response => assert.equal(response, max));
+    assert.equal(await proxy['getName'](), max);
   });
 
   it('Fails after max attempts', () => {

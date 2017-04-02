@@ -1,5 +1,4 @@
 import { assert }      from 'chai';
-import * as Promise    from 'bluebird';
 import Project         from '../../../../src/domain/model/meta/project';
 import Type            from '../../../../src/domain/model/meta/type';
 import User            from '../../../../src/domain/model/meta/user';

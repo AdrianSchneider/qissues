@@ -4,8 +4,8 @@ import buildJira        from './build-jira';
 import buildUi          from './build-ui';
 import buildViews       from './build-views';
 import buildControllers from './build-controllers';
-import Container        from '../services/container';
 import BootstrapParams  from '../config/bootstrap';
+import Container        from '../../system/container';
 
 /**
  * Exports a fully provisioned container

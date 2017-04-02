@@ -41,7 +41,7 @@ export default class Container {
     }
 
     if (typeof this.readyServices[serviceName] !== 'undefined') {
-      return Promise.resolve(this.readyServices[serviceName]);
+      return await this.readyServices[serviceName];
     }
 
     let service = await this.getServiceFromDefinition(this.registered[serviceName], serviceName);

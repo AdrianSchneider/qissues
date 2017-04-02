@@ -1,5 +1,4 @@
 import * as _           from 'underscore';
-import * as Promise     from 'bluebird';
 import * as blessed     from 'blessed';
 import UiControllers    from './controllers';
 import ViewManager      from './viewManager';
@@ -206,22 +205,25 @@ export default class BlessedInterface {
    * @param initial - the initial content
    * @return promised answer
    */
-  public editExternally(initial: string): Promise<string> {
-    return new Promise((resolve: (content: string) => void, reject: (e: Error) => void) => {
-      this.screen.readEditor({ value: initial }, (err, read) => {
-        const text = read ? read.toString('utf-8') : '';
-        if (err) return reject(err);
-        if (text === initial) return reject(new Cancellation());
-        this.respondOrCancel(text, resolve, reject);
+  public async editExternally(initial: string): Promise<string> {
+    try {
+      return await new Promise((resolve: (content: string) => void, reject: (e: Error) => void) => {
+        this.screen.readEditor({ value: initial }, (err, read) => {
+          const text = read ? read.toString('utf-8') : '';
+          if (err) return reject(err);
+          if (text === initial) return reject(new Cancellation());
+          this.respondOrCancel(text, resolve, reject);
+        });
       });
-    })
-    .catch(
-      e => e.toString().indexOf('Unsuccessful') !== -1,
-      () => { throw new Cancellation(); }
-    )
-    .catch({ code: 'ENOENT' }, e => {
-      throw new Cancellation();
-    });
+    } catch (e) {
+      if (e.toString().indexOf('Unsuccessful') !== -1) {
+        throw new Cancellation();
+      }
+      if (e.code === 'ENOENT') {
+        throw new Cancellation();
+      }
+      throw e;
+    }
   }
 
   /**

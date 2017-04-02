@@ -10,12 +10,12 @@ export default class ReportManager {
 
   constructor(storage: Storage) {
     this.storage = storage;
-    this.reports = this.unserialize(this.storage.get('reports', []));
+    this.reports = []; // this.unserialize(this.storage.get('reports', []));
 
-    const def = this.get('default');
-    if (def) {
-      def.on('change', () => storage.set('reports', this.serialize()));
-    }
+    // const def = this.get('default');
+    // if (def) {
+    //   def.on('change', () => storage.set('reports', this.serialize()));
+    // }
   }
 
   public get(name: string): Report | null {

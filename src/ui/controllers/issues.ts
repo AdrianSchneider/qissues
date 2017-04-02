@@ -1,4 +1,3 @@
-import * as Promise       from 'bluebird';
 import Browser            from '../services/browser';
 import BlessedInterface   from '../interface';
 import { ViewState }      from '../view';
@@ -126,30 +125,39 @@ export default class ListIssuesController {
   /**
    * Creates a new issue
    */
-  public createIssue(filters?: FilterSet): Promise<any> {
+  public async createIssue(filters?: FilterSet): Promise<any> {
     this.ui.showLoading();
-    const defaults = filters ? filters.toValues() : {};
-    return this.ui.capture(this.normalizer.getNewIssueRequirements(), defaults)
-      .then(data => this.repository.createIssue(this.normalizer.toNewIssue(data)))
-      .then(num => this.viewIssue({ num: "" + num }))
-      .catch(Cancellation, () => {
-        this.ui.message('Cancelled').then(() => this.listIssues());
-      })
-      .catch(Error, error => {
-        this.logger.error('Caught error: ' + error.stack);
-        this.ui.message(error.message, 5000)
-          .then(() => this.listIssues());
-      });
-  }
 
+    try {
+      var data = await this.ui.capture(
+        this.normalizer.getNewIssueRequirements(),
+        filters ? filters.toValues() : {}
+      );
+    } catch (e) {
+      if (e instanceof Cancellation) {
+        return this.ui.message('Cancelled').then(() => this.listIssues());
+      }
+      throw e;
+    }
+
+    let num = await this.repository.createIssue(this.normalizer.toNewIssue(data));
+    return this.viewIssue({ num: num.toString() });
+  }
 
   /**
    * Prompts the user for changes
    */
-  public change(changes: ChangeSet, moreInfo?: Object): Promise<any> {
-    return this.repository.applyChanges(changes, moreInfo || {})
-      .catch(MoreInfoRequired, e => this.ui.capture(e.expectations)
-        .then(evenMoreInfo => this.change(changes, evenMoreInfo)));
+  public async change(changes: ChangeSet, moreInfo?: Object): Promise<any> {
+    try {
+      await this.repository.applyChanges(changes, moreInfo || {});
+    } catch (e) {
+      if (e instanceof MoreInfoRequired) {
+        let info = await this.ui.capture(e.expectations);
+        return this.change(changes, info);
+      }
+
+      throw e;
+    }
   }
 
   /**

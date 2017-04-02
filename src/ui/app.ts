@@ -1,5 +1,4 @@
 import * as _           from 'underscore';
-import * as Promise     from 'bluebird';
 import * as blessed     from 'blessed';
 import BlessedInterface from './interface';
 import UiControllers    from './controllers';

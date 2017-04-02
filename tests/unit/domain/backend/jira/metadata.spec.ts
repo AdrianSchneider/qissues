@@ -1,4 +1,3 @@
-import * as Promise   from 'bluebird';
 import { assert }     from 'chai';
 import MockHttpClient from '../../../../mocks/httpClient';
 import JiraMetadata   from '../../../../../src/domain/backend/jira/metadata';

@@ -1,7 +1,7 @@
 'use strict';
 
 import { assert }   from 'chai';
-import Container    from '../../../../src/app/services/container';
+import Container    from '../../../src/system/container';
 
 describe('Container', function() {
 
@@ -10,9 +10,9 @@ describe('Container', function() {
     container = new Container();
   });
 
-  it('Can set and get an asynchronous service', () => {
+  it('Can set and get an asynchronous service', async () => {
     container.registerService('test', () => Promise.resolve(5));
-    return container.get('test').then(value => assert.equal(value, 5));
+    assert.equal(await container.get('test'), 5);
   });
 
   it('Cannot replace an existing service', () => {
@@ -38,7 +38,7 @@ describe('Container', function() {
     return container.get('test').catch(e => assert.include(e.message, 'for test'));
   });
 
-  it('Dependencies are never loaded more than once', () => {
+  it('Dependencies are never loaded more than once', async () => {
     let ran = false;
     const getIt = () => new Promise((resolve, reject) => {
       if (ran) return reject(new Error('too expensive to repeat'));
@@ -47,9 +47,8 @@ describe('Container', function() {
     });
 
     container.registerService('test', getIt);
-    return container.get('test')
-      .then(value => container.get('test'))
-      .then(value => assert.equal(value, 5));
+    await container.get('test');
+    assert.equal(await container.get('test'), 5);
   });
 
   it('Can get multiple services at once', () => {

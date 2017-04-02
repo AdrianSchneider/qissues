@@ -1,4 +1,3 @@
-import * as Promise from 'bluebird';
 import * as blessed from 'blessed'
 import View         from '../view';
 import Behaviour    from '../behaviour';
@@ -46,9 +45,7 @@ export default class Yankable implements Behaviour {
   }
 
   public serialize() {
-    return {
-
-    };
+    return { };
   }
 
   /**
@@ -60,13 +57,13 @@ export default class Yankable implements Behaviour {
    * @return {Function}
    */
   private yank(view: HasIssues, field: string): () => Promise<any> {
-    return (): Promise<any> => {
+    return async (): Promise<any> => {
       const issues = view.getIssues();
       if (!issues.length) return Promise.resolve();
 
       const payload = issues.map(issue => issue[field]).join('\n');
-      return this.clipboard.copy(payload)
-        .then(() => { view.emit('yanked') });
+      await this.clipboard.copy(payload);
+      view.emit('yanked');
     };
   }
 }

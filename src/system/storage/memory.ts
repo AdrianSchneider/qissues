@@ -46,7 +46,7 @@ export default class MemoryStorage implements Storage {
   /**
    * Deletes the key from memory and flush
    */
-  public remove(key: string): Promise<void> {
+  public async remove(key: string): Promise<void> {
     delete this.data[key];
     return this.flush();
   }

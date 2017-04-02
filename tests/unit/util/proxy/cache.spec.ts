@@ -1,14 +1,14 @@
 import { assert }    from 'chai';
-import Cache         from '../../../../src/app/services/cache';
 import CacheProxy    from '../../../../src/util/proxy/cache';
-import MemoryCache   from '../../../../src/system/cache/memory';
+import Cache   from '../../../../src/system/cache/storage';
+import MemoryStorage  from '../../../../src/system/storage/memory';
 
 describe('Cache Proxy', () => {
 
   var proxier;
   var cache: Cache;
   beforeEach(() => {
-    cache = new MemoryCache();
+    cache = new Cache(new MemoryStorage());
     proxier = new CacheProxy(cache);
   });
 
@@ -31,22 +31,20 @@ describe('Cache Proxy', () => {
     });
   });
 
-  it('Falls back to metadata call and caches result', () => {
+  it('Falls back to metadata call and caches result', async () => {
     const o = { getUsers: () => Promise.resolve([]) };
     const proxy = proxier.createProxy(o, {
       predicate: () => true,
       cacheKey: () => 'users'
     });
 
-    return proxy.getUsers()
-      .then(users => {
-        return cache.get('users').then(cached => {
-          assert.deepEqual(cached, users);
-        });
-      });
+    const users = await proxy.getUsers();
+    const cachedUsers = await cache.get('users');
+
+    assert.deepEqual(users, cachedUsers);
   });
 
-  it('Respects arguments and context of proxied method call', () => {
+  it('Respects arguments and context of proxied method call', async () => {
     const Src = function() {
       this._name = 'adr';
       this.getUsers = function() { return Promise.resolve([this._name]) }
@@ -58,8 +56,8 @@ describe('Cache Proxy', () => {
       cacheKey: () => 'users'
     });
 
-    return proxy.getUsers()
-      .then(users => assert.equal(users[0], 'adr'));
+    const users = await proxy.getUsers();
+    assert.equal(users[0], 'adr');
   });
 
   it('Can override serialize/unserialize');

@@ -42,20 +42,16 @@ class JiraRepository implements TrackerRepository {
    * Creates a new issue in JIRA
    */
   public async createIssue(data: NewIssue): Promise<Id> {
-    let response = await this.client.post(
-      '/rest/api/2/issue',
-      this.normalizer.newIssueToJson(data)
+    return this.normalizer.toNum(
+      (await this.client.post('/rest/api/2/issue', this.normalizer.newIssueToJson(data))).data
     );
-
-    return this.normalizer.toNum(response.data);
   }
 
   /**
    * Looks up an issue in Jira
    */
   public async lookup(num: Id, opts: QueryOptions = {}): Promise<Issue> {
-    let response = await this.client.get(this.getIssueUrl(num));
-    return this.normalizer.toIssue(response.data);
+    return this.normalizer.toIssue((await this.client.get(this.getIssueUrl(num))).data);
   }
 
   /**
@@ -71,16 +67,18 @@ class JiraRepository implements TrackerRepository {
 
     this.logger.trace('JQL = ' + qs.params.jql);
 
-    let response = await this.client.get('/rest/api/2/search', qs);
-    return this.normalizer.toIssuesCollection(response.data);
+    return this.normalizer.toIssuesCollection(
+      (await this.client.get('/rest/api/2/search', qs)).data
+    );
   }
 
   /**
    * Gets the comments from an issue
    */
   public async getComments(num: Id, options: QueryOptions = {}): Promise<CommentsCollection> {
-    let response = await this.client.get(this.getIssueUrl(num, '/comment'));
-    return this.normalizer.toCommentsCollection(response.data);
+    return this.normalizer.toCommentsCollection(
+      (await this.client.get(this.getIssueUrl(num, '/comment'))).data
+    );
   }
 
   /**
@@ -138,22 +136,22 @@ class JiraRepository implements TrackerRepository {
     return this.client.put(this.getIssueUrl(num, '/assignee'), data);
   };
 
-  private changeStatus(num: Id, status: string, details?: Object) {
-    return this.metadata.getIssueTransition(num, status).then(function(transition) {
-      var expectations = this.metadata.transitionToExpectations(transition);
-      if (expectations.hasRules() && !Object.keys(details).length) {
-        throw new MoreInfoRequired('Jira expects more', expectations);
-      }
+  private async changeStatus(num: Id, status: string, details?: Object) {
+    const transition = await this.metadata.getIssueTransition(num, status);
+    const expectations = this.metadata.transitionToExpectations(transition);
 
-      const data = {
-        transition: { id: transition.id },
-        fields: _.mapObject(details, function(value) {
-          return { name: value };
-        })
-      };
+    if (expectations.hasRules() && !Object.keys(details).length) {
+      throw new MoreInfoRequired('Jira expects more', expectations);
+    }
 
-      return this.client.post(this.getIssueUrl(num, '/transitions'), data);
-    });
+    const data = {
+      transition: { id: transition.id },
+      fields: _.mapObject(details, function(value) {
+        return { name: value };
+      })
+    };
+
+    return await this.client.post(this.getIssueUrl(num, '/transitions'), data);
   };
 
   private changeSprint(num: Id, toSprint: string): Promise<void> {

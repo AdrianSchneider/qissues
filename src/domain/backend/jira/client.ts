@@ -37,17 +37,17 @@ export default function(config, logger): HttpClient {
   );
 
   return {
-    get: (path: string, options: Object): Promise<any> => {
-      return Promise.resolve(instance.get(path, options));
+    get: async (path: string, options: Object): Promise<any> => {
+      return await instance.get(path, options);
     },
-    put: (path: string, data: Object): Promise<any> => {
-      return Promise.resolve(instance.put(path, data));
+    put: async (path: string, data: Object): Promise<any> => {
+      return await instance.put(path, data);
     },
-    post: (path: string, data: Object): Promise<any> => {
-      return Promise.resolve(instance.post(path, data));
+    post: async (path: string, data: Object): Promise<any> => {
+      return await instance.post(path, data);
     },
-    delete: (path: string): Promise<any> => {
-      return Promise.resolve(instance.delete(path));
+    delete: async (path: string): Promise<any> => {
+      return await instance.delete(path);
     }
   };
 };

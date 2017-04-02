@@ -22,9 +22,7 @@ export default class JiraMetadata implements TrackerMetadata {
    * Gets types from JIRA (combine types from all projects)
    */
   public async getTypes(options?): Promise<Type[]>{
-    let response = await this.client.get('/rest/api/2/issue/createmeta');
-
-    return response.data.projects
+    return (await this.client.get('/rest/api/2/issue/createmeta')).data.projects
       .map(project => {
         return project.issuetypes.map(type => new Type(type.id, type.name));
       })
@@ -61,17 +59,17 @@ export default class JiraMetadata implements TrackerMetadata {
    * Get views from JIRA
    */
   public async getViews(options?): Promise<Object[]> {
-    let response = await this.client.get('/rest/greenhopper/1.0/rapidview');
-    return values(response.data.views);
+    return values(
+      (await this.client.get('/rest/greenhopper/1.0/rapidview'))
+        .data.views
+    );
   }
 
   /**
    * Get sprints from JIRA (combine sprints from all views)
    */
   public async getSprints(options?): Promise<Sprint[]> {
-    let views = await this.getViews();
-
-    let sprintsPerView = await Promise.all(views.map(async view => {
+    let sprintsPerView = await Promise.all((await this.getViews()).map(async view => {
       let response = await this.client.get(`/rest/greenhopper/1.0/sprintquery/${view['id']}`, options);
       return response.data.sprints
         .filter(sprint => sprint.state != 'CLOSED')
@@ -89,9 +87,8 @@ export default class JiraMetadata implements TrackerMetadata {
    * Get labels from JIRA
    */
   public async getLabels(options?): Promise<Label[]> {
-    let response = await this.client.get('/rest/api/1.0/labels/suggest?query=');
-    return response.data.suggestions.map(
-      label => new Label(null, label.label)
+    return (await this.client.get('/rest/api/1.0/labels/suggest?query='))
+      .data.suggestions.map(label => new Label(null, label.label)
     );
   }
 
@@ -99,10 +96,10 @@ export default class JiraMetadata implements TrackerMetadata {
    * Gets projects from JIRA
    */
   public async getProjects(options?): Promise<Project[]> {
-    let response = await this.client.get('/rest/api/2/issue/createmeta');
-    return response.data.projects.map(
-      project => new Project(project.key, project.name, project.id)
-    );
+    return (await this.client.get('/rest/api/2/issue/createmeta'))
+      .data.projects.map(
+        project => new Project(project.key, project.name, project.id)
+      );
   }
 
   /**
@@ -138,24 +135,17 @@ export default class JiraMetadata implements TrackerMetadata {
    */
   public async getTransitions(num: string): Promise<JiraTransition[]> {
     const opts = { qs: { expand: 'transitions.fields' } };
-    let response = await this.client.get('/rest/api/2/issue/' + num + '/transitions', opts)
-    return response.transitions;
+    return (await this.client.get('/rest/api/2/issue/' + num + '/transitions', opts)).transitions;
   }
 
   /**
    * Gets transitions for JIRA for a given issue that is valid for a current status
    */
   public async getIssueTransition(num: string, status: string) {
-    let transitions = await this.getTransitions(num);
-
-    return this.getTransitions(num).then(transitions => {
-      const transition: JiraTransition = transitions.find(transition => {
-        return transition.to.name.toLowerCase() === status.toLowerCase();
-      });
-
-      if (!transition) throw new Error('Could not find transition for ' + status);
-      return transition;
-    });
+    const transitions = await this.getTransitions(num);
+    const transition = transitions.find(t => t.to.name.toLowerCase() === status.toLowerCase());
+    if (!transition) throw new Error('Could not find transition for ' + status);
+    return transition;
   }
 
   /**
