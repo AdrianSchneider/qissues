@@ -1,5 +1,4 @@
-import * as _             from 'underscore';
-import { format }         from 'util';
+import { mapObject }      from 'underscore';
 import JiraNormalizer     from './normalizer';
 import Id                 from '../../model/id';
 import Report             from '../../model/report';
@@ -146,7 +145,7 @@ class JiraRepository implements TrackerRepository {
 
     const data = {
       transition: { id: transition.id },
-      fields: _.mapObject(details, function(value) {
+      fields: mapObject(details, function(value) {
         return { name: value };
       })
     };
