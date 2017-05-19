@@ -1,7 +1,7 @@
 import * as fs         from 'fs';
+import { Container }   from 'wiry';
 import Config          from '../services/config';
-import Storage         from '../services/storage/disk';
-import Container       from '../services/container';
+import Storage         from '../../system/storage/disk';
 import Cache           from '../../system/cache/storage';
 import WinstonLogger   from '../../system/logger/winston';
 import BootstrapParams from './../config/bootstrap';

@@ -234,7 +234,7 @@ export default class BlessedInterface {
    * @param resolve
    * @param reject
    */
-  private respondOrCancel(text: string, resolve: Function, reject: Function) {
+  private respondOrCancel(text: string, resolve: (answer: string) => void, reject: (error: Error) => void) {
     if (text && text !== BlessedInterface.loadingMessage) {
       resolve(text);
     } else {

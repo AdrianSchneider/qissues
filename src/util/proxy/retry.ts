@@ -37,7 +37,7 @@ export default class RetryProxy {
 
   public createProxy<T>(target: T, config?: RetryConfiguration): T {
     const opts = { ...RetryProxy.defaults, ...config };
-    return new Proxy(target, { get: this.getHandler(opts).bind(this) });
+    return new Proxy(<any>target, { get: this.getHandler(opts).bind(this) });
   }
 
   private getHandler(config: RetryConfiguration): (...args: any[]) => Promise<any> {

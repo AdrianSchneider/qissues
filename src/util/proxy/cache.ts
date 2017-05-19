@@ -50,7 +50,7 @@ export default class CacheProxy {
    * and cache the results
    */
   public createProxy<T>(target: T, config: ProxyConfiguration): T {
-    return new Proxy(target, { get: this.getHandler(config).bind(this) });
+    return new Proxy(<any>target, { get: this.getHandler(config).bind(this) });
   }
 
   /**

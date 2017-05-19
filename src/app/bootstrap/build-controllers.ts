@@ -1,4 +1,4 @@
-import Container        from '../services/container';
+import { Container }    from 'wiry';
 import UiControllers    from '../../ui/controllers';
 import IssuesController from '../../ui/controllers/issues';
 import HelpController   from '../../ui/controllers/help';

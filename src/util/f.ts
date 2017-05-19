@@ -1,5 +1,3 @@
-import * as Promise from 'bluebird';
-
 /**
  * Prepends text before a list of options once they resolve
  *

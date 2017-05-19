@@ -1,5 +1,5 @@
+import { Container }          from 'wiry';
 import Config                 from '../services/config';
-import Container              from '../services/container';
 import BootstrapParams        from '../config/bootstrap';
 import Cache                  from '../../system/cache/storage';
 import jiraClient             from '../../domain/backend/jira/client';

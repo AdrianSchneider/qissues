@@ -95,7 +95,7 @@ export default class ListIssuesController {
     return Promise.all([
       this.repository.lookup(new Id(num), options),
       this.repository.getComments(new Id(num), options)
-    ]).spread((issue, comments) => {
+    ]).then(([issue, comments]) => {
       this.logger.debug('Finished fetching data for single view');
 
       const view = this.viewManager.getView('issues:view', this.ui.canvas, {
@@ -114,12 +114,14 @@ export default class ListIssuesController {
   /**
    * Posts a comment from an arbitrary input function
    */
-  private postCommentFrom(input: () => Promise<string>, num: string): Promise<void> {
-    return input()
-      .then(text => this.repository.postComment(new NewComment(text, new Id(num))))
-      .then(() => this.viewIssue({ num, invalidate: true }))
-      .catch(Cancellation, () => this.ui.message('Cancelled', this.quickFade))
-      .catch(Error, e => this.handleError(e, 'Commenting failed'));
+  private async postCommentFrom(input: () => Promise<string>, num: string): Promise<void> {
+    try {
+      const text = await input();
+      await this.repository.postComment(new NewComment(text, new Id(num)));
+    } catch (e) {
+      if (e instanceof Cancellation) return this.ui.message('Cancelled', this.quickFade);
+      this.handleError(e, 'Commenting failed');
+    }
   }
 
   /**

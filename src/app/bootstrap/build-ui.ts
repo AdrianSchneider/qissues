@@ -1,6 +1,6 @@
 import * as blessed          from 'blessed';
 import * as jsYaml           from 'js-yaml';
-import Container             from '../services/container';
+import { Container }         from 'wiry';
 import BootstrapParams       from '../config/bootstrap';
 import BlessedApplication    from '../../ui/app';
 import BlessedInterface      from '../../ui/interface';

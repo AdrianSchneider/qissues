@@ -1,4 +1,3 @@
-import * as Promise         from 'bluebird';
 import * as blessed         from 'blessed'
 import Behaviour            from '../behaviour';
 import BlessedInterface     from '../interface';
@@ -99,11 +98,15 @@ export default class Filterable implements Behaviour {
   /**
    * Shows the manipulable list of filters
    */
-  private listFilters() {
-    return () => {
+  private listFilters(): () => Promise<string> {
+    return async () => {
       const options = this.filters.map(filter => `${filter.type} = ${filter.value}`);
-      return this.ui.selectFromList('Filters', options)
-        .catch(Cancellation, () => {});
+      try {
+        return await this.ui.selectFromList('Filters', options);
+      } catch (e) {
+        if (e instanceof Cancellation) return;
+        throw e;
+      }
     };
   }
 
@@ -112,9 +115,15 @@ export default class Filterable implements Behaviour {
    * loaded list
    */
   private filterFromSelection(getOptions: (i) => Promise<string[]>, message: string, field: string) {
-    return () => this.ui.selectFromCallableList(message, getOptions)
-      .then(selection => this.filterBy(field, selection))
-      .catch(Cancellation, () => {});
+    return async () => {
+      try {
+        const selection = await this.ui.selectFromCallableList(message, getOptions);
+        return this.filterBy(field, selection);
+      } catch (e) {
+        if (e instanceof Cancellation) return;
+        throw e;
+      }
+    };
   }
 
   /**
@@ -128,10 +137,14 @@ export default class Filterable implements Behaviour {
    * Saves a new report
    */
   private saveReport(): () => Promise<any> {
-    return () => {
-      return this.ui.ask('Save Filters As')
-        .then(name => this.reportManager.saveAs(name))
-        .catch(Cancellation, () => {});
+    return async () => {
+      try {
+        const name = await this.ui.ask('Save Filters As');
+        this.reportManager.saveAs(name);
+      } catch (e) {
+        if (e instanceof Cancellation) return;
+        throw e;
+      }
     }
   }
 
@@ -140,10 +153,15 @@ export default class Filterable implements Behaviour {
    */
   private listReports() {
     return () => {
-      return this.ui.selectFromList(
-        'Reports',
-        this.reportManager.serialize().map(row => row.name)
-      ).catch(Cancellation, () => {});
+      try {
+        return this.ui.selectFromList(
+          'Reports',
+          this.reportManager.serialize().map(row => row.name)
+        );
+      } catch (e) {
+        if (e instanceof Cancellation) return;
+        throw e;
+      }
     }
   }
 
