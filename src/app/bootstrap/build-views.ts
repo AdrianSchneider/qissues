@@ -1,5 +1,5 @@
-import BootstrapParams    from '../config/bootstrap';
 import { Container }      from 'wiry';
+import BootstrapParams    from '../config/bootstrap';
 import BlessedInterface   from '../../ui/interface';
 import Behaviour          from '../../ui/behaviour';
 import Editable           from '../../ui/behaviors/editable';
